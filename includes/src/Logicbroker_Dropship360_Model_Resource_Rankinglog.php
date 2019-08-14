@@ -11,6 +11,6 @@ class Logicbroker_Dropship360_Model_Resource_Rankinglog extends Mage_Core_Model_
 {
     protected function _construct()
     {
-        $this->_init("logicbroker/rankinglog", "id");
+        $this->_init("dropship360/rankinglog", "id");
     }
 }

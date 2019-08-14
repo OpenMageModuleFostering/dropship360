@@ -11,9 +11,9 @@ class Logicbroker_Dropship360_Block_Adminhtml_Ranking extends Mage_Adminhtml_Blo
   public function __construct()
   {
     $this->_controller = 'adminhtml_ranking';
-    $this->_blockGroup = 'logicbroker';
-    $this->_headerText = Mage::helper('logicbroker')->__('Supplier Management');
-    $this->_addButtonLabel = Mage::helper('logicbroker')->__('Add Supplier Ranking');
+    $this->_blockGroup = 'dropship360';
+    $this->_headerText = Mage::helper('dropship360')->__('Supplier Management');
+    $this->_addButtonLabel = Mage::helper('dropship360')->__('Add Supplier Ranking');
    
     
     $this->addButton('show_history',array(
@@ -42,7 +42,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Ranking extends Mage_Adminhtml_Blo
   public function getVendorCollection($type = 'no'){
 
   	$arrVendor = array();
-  	$tempReslt = Mage::getModel('logicbroker/ranking')->getVendorCollection($type);
+  	$tempReslt = Mage::getModel('dropship360/ranking')->getVendorCollection($type);
   	$result['gridData'] = Mage::helper('core')->jsonEncode($tempReslt);
   	if(!empty($tempReslt)){
   	foreach($tempReslt as $value){
@@ -51,6 +51,12 @@ class Logicbroker_Dropship360_Block_Adminhtml_Ranking extends Mage_Adminhtml_Blo
   	}
   	$result['arrayData'] = Mage::helper('core')->jsonEncode($arrVendor);
   	return $result;
+  }
+  public function getAttributeCode()
+  {
+	$helper = Mage::helper('dropship360');
+	$attributeCode = array(array('link'=>'','name'=>$helper::LOGICBROKER_PRODUCT_LINK_NONE),array('link'=>$helper::LOGICBROKER_PRODUCT_LINK_CODE_UPC,'name'=>$helper::LOGICBROKER_PRODUCT_LINK_UPC),array('link'=>$helper::LOGICBROKER_PRODUCT_LINK_CODE_MNP,'name'=>$helper::LOGICBROKER_PRODUCT_LINK_MNP),array('link'=>$helper::LOGICBROKER_PRODUCT_LINK_CODE_SKU,'name'=>$helper::LOGICBROKER_PRODUCT_LINK_SKU));
+	return Mage::helper('core')->jsonEncode($attributeCode);
   }
 
 }

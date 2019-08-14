@@ -25,7 +25,7 @@
  */
 ?>
 <?php $_item = $this->getItem() ?>
-<?php $lbDetails = Mage::getBlockSingleton('logicbroker/adminhtml_sourcing'); ?>
+<?php $lbDetails = Mage::getBlockSingleton('dropship360/adminhtml_sourcing'); ?>
 <?php $this->setPriceDataObject($_item) ?>
 <tr <?php if (!$this->canDisplayGiftmessage()): ?> class="border"<?php endif; ?>>
     <td>
@@ -56,7 +56,7 @@
 	<span id="change_status-<?php echo $lbItem->getItemId() ?>" style="display:none;">
 		<select name="status" id="status-<?php echo $lbItem->getItemId() ?>" onchange="respondToChange(this)">
 			<option value=""><?php echo $this->__('Please select') ?></option>	
-			<?php foreach(Mage::helper('logicbroker')->getLbOrderItemStatus() as $status):?>
+			<?php foreach(Mage::helper('dropship360')->getLbOrderItemStatus() as $status):?>
 				<?php if($lbItemStatus!=$status): ?>
 					<?php if($lbItemStatus=="Sent to Vendor" && $status=="Sent to Supplier"):?>
 						<?php continue; ?>
@@ -268,7 +268,7 @@
     <td class="a-right"><?php echo $this->displayPriceAttribute('tax_amount') ?></td>
     <td class="a-right"><?php echo $this->displayTaxPercent($_item) ?></td>
     <td class="a-right"><?php echo $this->displayPriceAttribute('discount_amount') ?></td>
-    <td class="a-right last">
+   <td class="a-right last">
         <?php echo $this->displayPrices(
             $_item->getBaseRowTotal() + $_item->getBaseTaxAmount() + $_item->getBaseHiddenTaxAmount() + $_item->getBaseWeeeTaxAppliedRowAmount() - $_item->getBaseDiscountAmount(),
             $_item->getRowTotal() + $_item->getTaxAmount() + $_item->getHiddenTaxAmount() + $_item->getWeeeTaxAppliedRowAmount() - $_item->getDiscountAmount()

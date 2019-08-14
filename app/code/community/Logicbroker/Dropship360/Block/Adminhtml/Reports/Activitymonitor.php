@@ -40,7 +40,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor extends Ma
     public function __construct()
     {
         $this->_controller = 'adminhtml_reports_activitymonitor';
-        $this->_blockGroup = 'logicbroker';
+        $this->_blockGroup = 'dropship360';
         $this->_headerText = Mage::helper('reports')->__('Business Activity Monitoring');
         parent::__construct();
         $this->_removeButton('add');
@@ -71,7 +71,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor extends Ma
  
     public function getHtmlElementName()
 	{
-    	return array('input_monitor_order','input_open_monitor');    
+    	return array('input_monitor_order','input_open_monitor','input_transmitting_filter','input_sentosup_filter');    
     }
     
     public function getGraphData(){
@@ -98,9 +98,9 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor extends Ma
     	if($this->getRequest()->getParam('filter'))
     	$reportData = Mage::helper('adminhtml')->prepareFilterString($this->getRequest()->getParam('filter'));
     	else
-    	$reportData = Mage::getModel('logicbroker/report')->getActivityReportData();
+    	$reportData = Mage::getModel('dropship360/report')->getActivityReportData();
     	
     	$reportData['notificationPer'] = $redper;
-    	Mage::getModel('logicbroker/report')->saveActivityData($reportData);
+    	Mage::getModel('dropship360/report')->saveActivityData($reportData);
     }
 }

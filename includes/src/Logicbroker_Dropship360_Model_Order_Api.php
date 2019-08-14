@@ -82,7 +82,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 	protected function isDropshipItemReady($order)
 	{
 		$result = false;
-		$lbItemCollection = Mage::getModel('logicbroker/orderitems')->getCollection()->addFieldToFilter('lb_item_status',$this->_itemStatusTansmitting)->addFieldToFilter('item_order_id',$order->getEntityId());
+		$lbItemCollection = Mage::getModel('dropship360/orderitems')->getCollection()->addFieldToFilter('lb_item_status',$this->_itemStatusTansmitting)->addFieldToFilter('item_order_id',$order->getEntityId());
 		if($lbItemCollection->count() > 0)
 			$result = true;
 		return $result;
@@ -90,7 +90,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 	
 	protected function addItemDetails($order){
 		$result = array();
-		$lbItemCollection = Mage::getModel('logicbroker/orderitems')->getCollection()->addFieldToFilter('item_order_id',$order->getEntityId());
+		$lbItemCollection = Mage::getModel('dropship360/orderitems')->getCollection()->addFieldToFilter('item_order_id',$order->getEntityId());
 		if($lbItemCollection->count() > 0){
 			unset($result);
 			foreach($lbItemCollection as $item)
@@ -152,7 +152,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 		}
 		$productItems = array();
 		$productItems = $this->_getAttributes($item, 'order_item');		
-		$lbItems = Mage::getModel('logicbroker/orderitems')->getCollection()
+		$lbItems = Mage::getModel('dropship360/orderitems')->getCollection()
 				->addFieldToSelect(array('sku', 'lb_vendor_sku', 'lb_item_status', 'lb_vendor_code', 'item_id'))
 					->addFieldToFilter('item_order_id',array('eq'=>$order->getId()))
 					->addFieldToFilter('item_id', array('eq'=>$productItems['item_id']))
@@ -189,7 +189,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 			if(!$status){
 				$status = Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER;
 			}
-			if($itemIdArr && in_array(ucfirst($status),Mage::helper('logicbroker')->getItemStatuses())){
+			if($itemIdArr && in_array(ucfirst($status),Mage::helper('dropship360')->getItemStatuses())){
 				foreach($itemIdArr as $itemId){
 					$result = $this->saveLbStatus($itemId, $status);						
 				}
@@ -208,17 +208,17 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 	* @return bool
 	*/
 	protected function saveLbStatus($itemId, $status){
-		$lbStatus = Mage::getModel('logicbroker/orderitems')->load($itemId, 'item_id');
+		$lbStatus = Mage::getModel('dropship360/orderitems')->load($itemId, 'item_id');
 		$orderCollection = Mage::getModel('sales/order')->load($lbStatus->getItemOrderId());
 		$orderStatus = $orderCollection->getStatus();
-		$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($lbStatus, ucfirst($status), $orderStatus);
+		$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($lbStatus, ucfirst($status), $orderStatus);
 		if($lbStatus->getId()){			
 			$lbStatus->setLbItemStatus(ucfirst($status))
 					->setUpdatedBy('logicbroker')
 					->setItemStatusHistory($itemStatusHistory)
 					->setUpdatedAt(Mage::getModel('core/date')->gmtDate())
 					->save();	
-			Mage::helper('logicbroker')->genrateLog(0,'API Item Update started','API Item Update ended','Item Status updated by Logicbroker API item-status->'.$status.' ,sku->'.$lbStatus->getSku().' ,orderId->'.$lbStatus->getItemOrderId());
+			Mage::helper('dropship360')->genrateLog(0,'API Item Update started','API Item Update ended','Item Status updated by Logicbroker API item-status->'.$status.' ,sku->'.$lbStatus->getSku().' ,orderId->'.$lbStatus->getItemOrderId());
 			return true;
 		}	
 	}
@@ -239,7 +239,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 		$orderItemsdDetails = array();
 		try{
 			
-				$orderCollection = Mage::getModel('logicbroker/orderitems')->getCollection();
+				$orderCollection = Mage::getModel('dropship360/orderitems')->getCollection();
 				$orderCollection->addFieldToFilter('lb_item_status',$orderItemStatus);
 				$orderCollection->getSelect()->join(array('salesOrder'=>Mage::getSingleton('core/resource')->getTableName('sales/order')),
   			'salesOrder.entity_id = main_table.item_order_id', array('increment_id','store_id'))->where('store_id = ?', (int)$store_id);
@@ -271,7 +271,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 		$itemId = array();
 		$itemOrderId = $order->getEntityId();
 		$result = false;
-		$orderCollection = Mage::getModel('logicbroker/orderitems')->getCollection();
+		$orderCollection = Mage::getModel('dropship360/orderitems')->getCollection();
 		$orderCollection->addFieldToFilter('lb_item_status','Transmitting');
 		$orderCollection->addFieldToFilter('item_order_id',$itemOrderId);
 		
@@ -290,7 +290,7 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 			$itemStatus = Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER;
 		}
 			
-			if(!empty($itemId) && in_array(ucfirst($itemStatus),Mage::helper('logicbroker')->getItemStatuses())){
+			if(!empty($itemId) && in_array(ucfirst($itemStatus),Mage::helper('dropship360')->getItemStatuses())){
 				foreach($itemId as $itemId){
 					$result = $this->saveLbStatus($itemId, $itemStatus);						
 				}

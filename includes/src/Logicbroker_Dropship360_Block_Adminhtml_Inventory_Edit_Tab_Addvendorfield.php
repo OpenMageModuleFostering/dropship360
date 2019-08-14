@@ -67,7 +67,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Tab_Addvendorfield 
     			'class' => 'select select-product-option-type required-option-select'
     	))
     	->setName($this->getFieldName().'[{{id}}][lb_vendor_code]')
-    	->setOptions(Mage::getSingleton('logicbroker/system_config_source_vendorlist')->vendorList('',$productsku));
+    	->setOptions(Mage::getSingleton('dropship360/system_config_source_vendorlist')->vendorList('',$productsku));
     	
     	return $select->getHtml();
     }
@@ -76,7 +76,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Tab_Addvendorfield 
         $this->setChild('delete_button_vendor',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label' => Mage::helper('logicbroker')->__('Delete Option'),
+                    'label' => Mage::helper('dropship360')->__('Delete Option'),
                     'class' => 'delete delete-product-option-vendor '
                 ))
         );

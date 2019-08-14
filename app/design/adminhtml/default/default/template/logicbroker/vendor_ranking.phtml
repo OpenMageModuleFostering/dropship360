@@ -6,6 +6,7 @@
  * @package     Logicbroker_Dropship360
  */
 ?>
+<?php $helper = Mage::helper('dropship360')?>
 <?php $dropshipVendorCollection = $this->getVendorCollection('yes'); ?>
 <?php $nonDropshipVendorCollection = $this->getVendorCollection('no'); ?>
 <style type="text/css">
@@ -33,6 +34,7 @@
 </div>
 <script type="text/javascript">
 var arrVendorName = [];
+var arrVendorProductLink = [];
 var arrDropship = <?php echo $dropshipVendorCollection['arrayData'] ?>;
 var arrNonDropship = <?php echo $nonDropshipVendorCollection['arrayData'] ?>;
 var addNew = 1;
@@ -46,7 +48,7 @@ Ext.require([
 
 Ext.define('DataObject', {
     extend: 'Ext.data.Model',
-    fields: ['name', 'code']
+    fields: ['name', 'code','link']
 });
 
 Ext.onReady(function(){	
@@ -56,7 +58,10 @@ Ext.onReady(function(){
         model: 'DataObject',
         data: dropShipData,
 	});
-
+	var pTypes = Ext.create('Ext.data.Store', {
+        fields : ['link', 'name'],
+        data   : <?php echo $this->getAttributeCode(); ?>
+    });
 
     // Column Model shortcut array
     var columns1 = [
@@ -65,7 +70,38 @@ Ext.onReady(function(){
                     xtype: 'textfield',
                     allowBlank:false
                 }},
-		{text: "Supplier Code", flex: 1,hidden:false,hideable:false,sortable: false, dataIndex: 'code'}
+		{text: "Supplier Code", flex: 1,hidden:false,hideable:false,sortable: false, dataIndex: 'code'},
+		{text: 'Link Product',dataIndex: 'link',width: 130,
+		renderer : function (value) {
+                    switch (value) {
+						case '<?php echo $helper::LOGICBROKER_PRODUCT_LINK_CODE_UPC ?>':
+							return '<?php echo $helper::LOGICBROKER_PRODUCT_LINK_UPC ?>';
+							break;
+						case '<?php echo $helper::LOGICBROKER_PRODUCT_LINK_CODE_MNP ?>':
+							return '<?php  echo $helper::LOGICBROKER_PRODUCT_LINK_MNP ?>';
+							break;
+						case '<?php echo $helper::LOGICBROKER_PRODUCT_LINK_CODE_SKU ?>':
+							return '<?php  echo $helper::LOGICBROKER_PRODUCT_LINK_SKU ?>';
+							break;
+						default:
+							return '<?php echo $helper::LOGICBROKER_PRODUCT_LINK_NONE ?>';
+                    }
+                },
+		editor: new Ext.form.field.ComboBox({
+					store        : pTypes,
+                    displayField : 'name',
+                    valueField   : 'link',
+                    queryMode    : 'local',
+					editable: false,
+					listeners: { 
+					select: function(combo, records) {
+					var vendCode = combo.up('grid').editingPlugin.activeRecord.data.code;
+					var proLink = records[0].data.link;
+					updateProductLink(vendCode, proLink,arrVendorProductLink)
+					}
+					}
+            })
+        }
     ];
 
     var columns2 = [
@@ -77,7 +113,7 @@ Ext.onReady(function(){
                 ];
             	
      // create the destination Grid
-	  var rowEditing = Ext.create('Ext.grid.plugin.RowEditing', {
+	  var rowEditing = Ext.create('Ext.grid.plugin.CellEditing', {
         clicksToMoveEditor: 2,
         autoCancel: false
     });
@@ -141,6 +177,9 @@ Ext.onReady(function(){
 							arrNonDropship.splice(fristIndextemp, 1);
 						}
 					$('message').show();
+                },
+		beforedrop: function(node, data, dropRec, dropPosition,dropHandlers){
+		(data.records[0].data.link) ? updateProductLink(data.records[0].data.code, data.records[0].data.link,arrVendorProductLink) : data.records[0].data.link = ''
                 }
             }
         },
@@ -163,9 +202,7 @@ Ext.onReady(function(){
 				});
 				var rowNumber = ($$('.x-grid-cell-row-numberer .x-grid-cell-inner ').length);
                 firstGridStore.insert(rowNumber, r);
-                rowEditing.startEdit(rowNumber, 0);
-				
-				
+                rowEditing.startEditByPosition({row: rowNumber, column: 1});
             }
         }],
 		plugins: [rowEditing],
@@ -188,6 +225,7 @@ Ext.onReady(function(){
 											// Great, commit the record to hide the red changed flags
 											editor.record.set('code',msg_server.message);
 											editor.record.commit();
+											firstGrid.getSelectionModel().selection = null
 											firstGrid.getView().refresh();
 											firstGrid.setLoading(false);
 											arrDropship.push({name:editor.record.data['name'],code:msg_server.message});
@@ -203,10 +241,8 @@ Ext.onReady(function(){
 										}
 							});
 						}
-						if(editor.record.dirty && !isNew){
+						if(editor.record.dirty && !isNew && editor.colIdx == 1){
 						if(arrVendorName.length > 0){
-							
-						
 						var removeIndex
 						arrVendorName.each(function(item,index){
 					
@@ -242,7 +278,7 @@ Ext.onReady(function(){
 					}
             },
 		
-		selType: 'rowmodel'
+		selType: 'cellmodel'
             
     });
 
@@ -306,22 +342,8 @@ Ext.onReady(function(){
 					
 						}
                     }
-						
-						
-					var indextemp;
-						arrDropship.each(function(item,index){
-					
-						if(item.code == data.records[0].get('code')){
-						indextemp = index
-						}
-					})	
-					if (arrDropship.length > 0 && indextemp > -1) {
-							arrDropship.splice(indextemp, 1);
-							$('message').show();
-						}else
-						{
-							$('message').hide();
-						}
+					updateGridData(data,arrDropship,false);
+					updateGridData(data,arrVendorProductLink,true);
 					
                 }
             }
@@ -332,7 +354,7 @@ Ext.onReady(function(){
         title            : 'Non Active Suppliers/Warehouses',
         margins          : '0 0 0 3',
 		plugins: [
-            Ext.create('Ext.grid.plugin.RowEditing', {
+            Ext.create('Ext.grid.plugin.CellEditing', {
                 clicksToEdit : 2,
             listeners: {
                 edit: function(editor, e, eOpts) {				
@@ -366,7 +388,7 @@ Ext.onReady(function(){
             }
             })
         ],
-		selType: 'rowmodel'
+		selType: 'cellmodel'
     });
 	
     //Simple 'border layout' panel to house both grids
@@ -389,8 +411,45 @@ Ext.onReady(function(){
     
 });
 
+function updateGridData(data,tmpArray,isLink)
+{
+	var indextemp;
+		tmpArray.each(function(item,index){
+	
+		if(item.code == data.records[0].get('code')){
+		indextemp = index
+		}
+	})	
+	if (tmpArray.length > 0 && indextemp > -1) {
+			(!isLink) ? tmpArray.splice(indextemp, 1) : tmpArray[indextemp].attr = ""
+			$('message').show();
+		}else
+		{
+			(isLink) ? tmpArray.push({code:data.records[0].get('code'),attr:""}) : ''
+			$('message').hide();
+		}
+}
 
-
-
+function updateProductLink(vendCode, proLink,prolinkArray) {
+					var isAvailable = false;
+					var removeIndex
+					//var vendCode = combo.up('grid').editingPlugin.activeRecord.data.code;
+					//var proLink = records[0].data.link;
+					if(prolinkArray.length > 0){
+						prolinkArray.each(function(item,index){
+							if(item.code == vendCode){
+								isAvailable = true
+								removeIndex = index
+						}
+							})
+					}
+					if(isAvailable){
+								prolinkArray.splice(removeIndex, 1);
+								prolinkArray.push({code:vendCode,attr:proLink})
+						}else
+						{
+							prolinkArray.push({code:vendCode,attr:proLink})
+						}
+					}
 </script>
 

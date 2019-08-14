@@ -39,6 +39,7 @@ foreach ($coreConfigData as $data) {
 
 /* Add attribute to catalog default set */
 
+/*
 $eavModel=Mage::getModel('eav/entity_setup','core_setup');
 $attributeId=$eavModel->getAttribute('catalog_product','manufacturer');
 $attributeSetId=$eavModel->getAttributeSetId('catalog_product','Default');
@@ -47,8 +48,8 @@ $attributeGroupId=$eavModel->getAttributeGroup('catalog_product',$attributeSetId
 //add attribute to a set
 if(!empty($attributeId) && !empty($attributeId) && $attributeSetId)
 $eavModel->addAttributeToSet('catalog_product',$attributeSetId,$attributeGroupId['attribute_group_id'],$attributeId['attribute_id']);
-
-Mage::getModel('logicbroker/ranking')->addPreDefineVendorList();
+*/
+Mage::getModel('dropship360/ranking')->addPreDefineVendorList();
 
 
 

@@ -12,7 +12,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Attributecodes extends 
 {
     public function getAllOptions()
     {
-    	$vendorModel = Mage::getModel('logicbroker/ranking')->getCollection();
+    	$vendorModel = Mage::getModel('dropship360/ranking')->getCollection();
     	$options = array();
     	if($vendorModel->count() > 0 ){
     		foreach ($vendorModel as $vendor) {
@@ -22,7 +22,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Attributecodes extends 
     			);
     		}
     	}
-    	array_unshift($options,array('value' => '', 'label' => Mage::helper('logicbroker')->__('--Please Select--'))
+    	array_unshift($options,array('value' => '', 'label' => Mage::helper('dropship360')->__('--Please Select--'))
     	);
     
         if (!$this->_options) {

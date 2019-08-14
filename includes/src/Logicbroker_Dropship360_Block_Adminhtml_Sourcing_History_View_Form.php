@@ -22,7 +22,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_History_View_Form extends
 	public function getHistory()
 	{
 		$lbItemId = Mage::app()->getRequest()->getParam('lb_item_id');
-		$itemStatusHistory = Mage::getModel ( 'logicbroker/orderitems' )->load($lbItemId, 'item_id')->getItemStatusHistory();
+		$itemStatusHistory = Mage::getModel ( 'dropship360/orderitems' )->load($lbItemId, 'item_id')->getItemStatusHistory();
 		return unserialize($itemStatusHistory);
 	}
 	

@@ -60,16 +60,16 @@ protected function _prepareCollection()
   protected function _prepareColumns()
   {
 	  	$this->addColumn('period', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Period Open'),
+	  			'header'    => Mage::helper('dropship360')->__('Period Open'),
 	  			'align'     =>'right',
 	  			'width'     => 50,
 	  			'index'     => 'period',
 	  			'sortable'      => false,
 	  			 'filter' => false,
-	  			'renderer'      => 'logicbroker/adminhtml_reports_activitymonitor_periodopen',
+	  			'renderer'      => 'dropship360/adminhtml_reports_activitymonitor_periodopen',
 	  	));
 	  	$this->addColumn('increment_id', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Order#'),
+	  			'header'    => Mage::helper('dropship360')->__('Order#'),
 	  			'align'     =>'right',
 	  			'width'     => 50,
 	  			'index'     => 'increment_id',
@@ -77,7 +77,7 @@ protected function _prepareCollection()
 	  			'filter' => false
 	  	));
 	  	$this->addColumn('lb_vendor_name', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Supplier'),
+	  			'header'    => Mage::helper('dropship360')->__('Supplier'),
 	  			'align'     =>'right',
 	  			'width'     => 50,
 	  			'index'     => 'lb_vendor_name',
@@ -86,7 +86,7 @@ protected function _prepareCollection()
 	  	));
 
 	  	$this->addColumn('vendor_cost', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Cost'),
+	  			'header'    => Mage::helper('dropship360')->__('Cost'),
 	  			'align'     =>'right',
 	  			'width'     => 50,
 	  			'index'     => 'vendor_cost',
@@ -94,7 +94,7 @@ protected function _prepareCollection()
 	  			'filter' => false
 	  	));
 	  	$this->addColumn('product_name', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Product Name'),
+	  			'header'    => Mage::helper('dropship360')->__('Product Name'),
 	  			'align'     =>'left',
 	  			'width'     => 50,
 	  			'index'     => 'product_name',
@@ -103,7 +103,7 @@ protected function _prepareCollection()
 	  	));
 	  	
 	  	$this->addColumn('sku', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Product Sku'),
+	  			'header'    => Mage::helper('dropship360')->__('Product Sku'),
 	  			'align'     =>'left',
 	  			'width'     => 50,
 	  			'index'     => 'sku',
@@ -113,7 +113,7 @@ protected function _prepareCollection()
 	  	));
 	  	
 	  	$this->addColumn('lb_vendor_sku', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Supplier Sku'),
+	  			'header'    => Mage::helper('dropship360')->__('Supplier Sku'),
 	  			'align'     =>'left',
 	  			'width'     => 50,
 	  			'index'     => 'lb_vendor_sku',
@@ -123,7 +123,7 @@ protected function _prepareCollection()
 	  	));
 	  	
 	  	$this->addColumn('updated_at', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Last Update'),
+	  			'header'    => Mage::helper('dropship360')->__('Last Update'),
 	  			'align'     =>'left',
 	  			'width'     => 50,
 	  			'index'     => 'updated_at',
@@ -133,7 +133,7 @@ protected function _prepareCollection()
 	  	));
 	  	
 	  	$this->addColumn('created_at', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Order Date'),
+	  			'header'    => Mage::helper('dropship360')->__('Order Date'),
 	  			'align'     =>'left',
 	  			'width'     => 80,
 	  			'index'     => 'created_at',
@@ -143,7 +143,7 @@ protected function _prepareCollection()
 	  	));
 	  	
 	  	$this->addColumn('lb_item_status', array(
-	  			'header'    => Mage::helper('logicbroker')->__('Item Status'),
+	  			'header'    => Mage::helper('dropship360')->__('Item Status'),
 	  			'align'     =>'left',
 	  			'width'     => 50,
 	  			'index'     => 'lb_item_status',

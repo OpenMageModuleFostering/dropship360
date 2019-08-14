@@ -106,7 +106,7 @@ class Logicbroker_Dropship360_Model_Report
 	
 	protected function genrateQueryInput($data){
 		
-		$this->_queryInput = array('dropshipStatus'=> $data['dropshipstatus'],'monitor_order'=> $data['input_monitor_order_post'],'open_monitor'=> $data['input_open_monitor_post']);
+		$this->_queryInput = array('dropshipStatus'=> $data['dropshipstatus'],'monitor_order'=> isset($data['input_monitor_order_post']) ? $data['input_monitor_order_post'] : '0-day','open_monitor'=> isset($data['input_open_monitor_post']) ? $data['input_open_monitor_post'] : '0-day','transmitting_time'=>isset($data['input_transmitting_filter_post']) ? $data['input_transmitting_filter_post'] : '0-day','sts_time'=>(isset($data['input_sentosup_filter_post']) ? $data['input_sentosup_filter_post'] : '0-day'));
 		return $this->_queryInput;
 	}
 	
@@ -129,7 +129,7 @@ class Logicbroker_Dropship360_Model_Report
 		$collectionLbItem = $this->getOrderItemsCollection($open_monitor_from,$open_monitor_to,$orderId,$queryInputs['dropshipStatus']);
 		
 		$collectionLbItem->getSelect()->joinleft(array('salesOrder'=>Mage::getSingleton('core/resource')->getTableName('sales/order')),'salesOrder.entity_id = main_table.item_order_id', array('increment_id'));
-		$collectionLbItem->getSelect()->joinleft(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('logicbroker/ranking')),'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array('lb_vendor_name'));
+		$collectionLbItem->getSelect()->joinleft(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('dropship360/ranking')),'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array('lb_vendor_name'));
 		$collectionLbItem->getSelect()->joinLeft(array('prod' => Mage::getSingleton('core/resource')->getTableName('catalog/product')),'prod.sku = main_table.sku',array('magento_pro_id'=>'entity_id'));
 		$collectionLbItem->getSelect()->joinLeft(array('cpev' => Mage::getSingleton('core/resource')->getTableName('catalog/product').'_varchar'),'cpev.entity_id=prod.entity_id AND cpev.attribute_id='.$prodNameAttrId.'',array('product_name' => 'value'));
 		$collectionLbItem->setOrder('updated_at', 'desc');
@@ -143,9 +143,10 @@ class Logicbroker_Dropship360_Model_Report
 		return $this;
 	}
 	
+	
 	protected function getOrderItemsCollection($open_monitor_from = null,$open_monitor_to =null,$orderId,$status =null,$includeTime = true)
 	{
-		$collectionLbItem = Mage::getModel('logicbroker/orderitems')->getCollection()->addFieldTofilter('item_order_id ', array('in' => $orderId));
+		$collectionLbItem = Mage::getModel('dropship360/orderitems')->getCollection()->addFieldTofilter('item_order_id', array('in' => $orderId));
 		
 		if(!empty($status))
 		{
@@ -187,65 +188,73 @@ class Logicbroker_Dropship360_Model_Report
 			return $this;
 		}
 		
+		
 		$reportData = $this->getActivityReportData();
+		
 		$otherStatus = $this->calculateNotificationForOtherStatus($reportData);
-		$helper = Mage::helper('logicbroker');
-		foreach($otherStatus as $key=>$status){
-			$reportData['dropshipstatus'] = $key;
-			$reportData['notificationPer'] = $status;
-			if($key == $helper::LOGICBROKER_ITEM_STATUS_TRANSMITTING){
-				if(!empty($reportData['notification_transmitting']))
-				($status >= $reportData['notification_transmitting']) ? $this->sendEmail($reportData) : '';
-			}
-			if($key == $helper::LOGICBROKER_ITEM_STATUS_BACKORDER){
-			     if(!empty($reportData['notification_backorder']))
-				($status >= $reportData['notification_backorder']) ? $this->sendEmail($reportData) : '';
-			}
-			if($key == $helper::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER){			
-				if(!empty( $reportData['notification_sent_to_supplier']))
-				($status >= $reportData['notification_sent_to_supplier']) ? $this->sendEmail($reportData) : '';
-			}
+		$helper = Mage::helper('dropship360');
+		foreach($otherStatus['statusPercent'] as $itemStatus=>$percentage){
+			$reportData['dropshipstatus'] = $itemStatus;
+			$reportData['notificationPer'] = $percentage;
+			$reportData['filter'] = false;
+			$this->_selectStatus($itemStatus,$reportData,$percentage);
+			
 		}
-		return;
+		if(!empty($reportData['input_transmitting_filter']) || !empty($reportData['input_sentosup_filter']))
+			$this->sendStaticStatusMail($otherStatus['orderid'],$otherStatus['queryInput'],$reportData);
+		return $this;
 	}
 	
+	protected function _selectStatus($itemStatus,$reportData,$perctange)
+	{
+		$helper = Mage::helper('dropship360');
+		switch($itemStatus)
+		{
+			case $helper::LOGICBROKER_ITEM_STATUS_TRANSMITTING :
+				if(!empty($reportData['notification_transmitting']))
+					($perctange >= $reportData['notification_transmitting']) ? $this->sendEmail($reportData) : '';
+				break;
+			case $helper::LOGICBROKER_ITEM_STATUS_BACKORDER :
+				if(!empty($reportData['notification_backorder']))
+					($perctange >= $reportData['notification_backorder']) ? $this->sendEmail($reportData) : '';
+				break;
+			case $helper::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER:
+				if(!empty( $reportData['notification_sent_to_supplier']))
+					($perctange >= $reportData['notification_sent_to_supplier']) ? $this->sendEmail($reportData) : '';
+				break;
+		}
+	}
 	
 	protected function sendEmail($reportData){
 		
 	try {
-		
-				$reportData['isnewreg'] = false;
-				$reportData['emailbody'] = $reportData['dropshipstatus']. ' Status has reached '.$reportData['notificationPer']. '%';
-				$postObject = new Varien_Object();
-				$postObject->setData($reportData);
-				$mailTemplate = Mage::getModel('core/email_template');
-		
-				/* @var $mailTemplate Mage_Core_Model_Email_Template */
-				$mailTemplate->setDesignConfig(array('area' => 'frontend'));
-				$emails = explode(',',$reportData['email']);
-				
-				foreach($emails as $email)
+		if($reportData['filter']){
+			
+			$reportData['subject'] = 'dropship360 has overdue orders sitting in '.$reportData['type'].' Status';
+			$postObject = new Varien_Object();
+			$postObject->setData($reportData);
+			//$emails = explode(',',$reportData['email']);
+			$templateId = 'logicbroker_activty_report_staticstatus';
+			
+		}else{
+			$reportData['isnewreg'] = false;
+			$reportData['emailbody'] = $reportData['dropshipstatus']. ' Status has reached '.$reportData['notificationPer']. '%';
+			$reportData['subject'] = 'Activity monitor report data';
+			$postObject = new Varien_Object();
+			$postObject->setData($reportData);
+			$templateId = 'logicbroker_email_email_template';
+		}
+			$emails = explode(',',$reportData['email']);
+			foreach($emails as $email)
 				{
-				$name = explode('@',$email);	
-				$mailTemplate->sendTransactional(
-						'logicbroker_email_email_template',
-						'general',
-						$email,
-						$name[0],
-						array('templatevar' => $postObject)
-				);
+					$isMailSent = Mage::helper('dropship360')->sendMail($postObject,$email,$templateId);
+					if(!$isMailSent)
+						Mage::log('Activity report email not sent to :'.$email, null, 'logicbroker_debug.log');
 				}
-				if (!$mailTemplate->getSentSuccess()) {
-					Mage::helper('logicbroker')->genrateLog(0,'Installation notification started','Installation notification ended','Module installation notifiaction mail sending failed');
-					return false;
-					 
-				}
-		
 				return true;
 			} catch (Exception $e) {
 				return false;
 			}
-	
 	}
 	
 	protected function calculateNotificationForOtherStatus($reportData){
@@ -253,22 +262,56 @@ class Logicbroker_Dropship360_Model_Report
 		$queryInputs = $this->genrateQueryInput($reportData);
 		$orderId = $this->getOrderIds($queryInputs);
 		$statusPercent = array();
-		
+		$helper = Mage::helper('dropship360');
 		$timeStringOpenMonitor = $this->getTimePeriod($queryInputs['open_monitor']);
-		$open_monitor_from = Date('Y-m-d h:i:s', strtotime($timeStringOpenMonitor));
-		$open_monitor_to = Mage::getModel('core/date')->gmtDate();
+		$otherStatus = array($helper::LOGICBROKER_ITEM_STATUS_TRANSMITTING,$helper::LOGICBROKER_ITEM_STATUS_BACKORDER,$helper::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER);
 		
-		$otherStatus = array('Transmitting','Backorder','Sent to Supplier');
-		
-		foreach($otherStatus as $data){
-			
-			$allItemOrder = $this->getOrderItemsCollection(null,null,$orderId,null,false)->getSize();
-			$allItemWithtime = $this->getOrderItemsCollection($open_monitor_from,$open_monitor_to,$orderId,$data,true)->getSize();
-			$statusPercent[$data] =  round(($allItemWithtime / $allItemOrder) * $this->_percent);
-			
+		foreach($otherStatus as $statusType){
+			$statusPercent[$statusType] = $this->calculatePer($orderId,$statusType,$timeStringOpenMonitor);
 		}
 	
-		return $statusPercent;
+		return array('statusPercent'=>$statusPercent,'queryInput'=>$queryInputs,'orderid'=>$orderId);
+	}
+	
+	protected function calculatePer($orderId,$statusType,$openMonitorTime){
+		
+		$open_monitor_from = Date('Y-m-d h:i:s', strtotime($openMonitorTime));
+		$open_monitor_to = Mage::getModel('core/date')->gmtDate();
+		$allItemOrder = $this->getOrderItemsCollection(null,null,$orderId,null,false)->getSize();
+		$allItemWithtime = $this->getOrderItemsCollection($open_monitor_from,$open_monitor_to,$orderId,$statusType,true)->getSize();
+		return  round(($allItemWithtime / $allItemOrder) * $this->_percent);
+	}
+	
+	protected function sendStaticStatusMail($orderId,$queryInputs,$reportData)
+	{
+		$helper = Mage::helper('dropship360');
+		$this->generateMailData($reportData,$orderId,$this->getTimePeriod($queryInputs['transmitting_time']),$helper::LOGICBROKER_ITEM_STATUS_TRANSMITTING);
+		$this->generateMailData($reportData,$orderId,$this->getTimePeriod($queryInputs['sts_time']),$helper::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER);
+		
+	}
+	
+	protected function generateMailData($reportData,$orderId,$time,$statusType)
+	{
+		$open_monitor_from = Date('Y-m-d h:i:s', strtotime($time));
+		$open_monitor_to = Mage::getModel('core/date')->gmtDate();
+		$reportData['itemOject'] = $this->prepareMailGridData($this->getOrderItemsCollection($open_monitor_from,$open_monitor_to,$orderId,$statusType,true));
+		$percentage = $this->calculatePer($orderId,$statusType,$time);
+		$reportData['filter'] = true;
+		$reportData['type'] = $statusType;
+		$reportData['canshow'] = ($statusType == 'Transmitting') ? true : false;
+		$this->_selectStatus($statusType,$reportData,$percentage);
+		
+	}
+	
+	protected function prepareMailGridData($collectionLbItem){
+		$entityTypeId = Mage::getModel ( 'eav/config' )->getEntityType ( 'catalog_product' )->getEntityTypeId ();
+		$prodNameAttrId = Mage::getModel('eav/entity_attribute')->loadByCode($entityTypeId, 'name')->getAttributeId();
+		$collectionLbItem->getSelect()->joinleft(array('salesOrder'=>Mage::getSingleton('core/resource')->getTableName('sales/order')),'salesOrder.entity_id = main_table.item_order_id', array('increment_id'));
+		$collectionLbItem->getSelect()->joinleft(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('dropship360/ranking')),'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array('lb_vendor_name'));
+		$collectionLbItem->getSelect()->joinLeft(array('prod' => Mage::getSingleton('core/resource')->getTableName('catalog/product')),'prod.sku = main_table.sku',array('magento_pro_id'=>'entity_id'));
+		$collectionLbItem->getSelect()->joinLeft(array('cpev' => Mage::getSingleton('core/resource')->getTableName('catalog/product').'_varchar'),'cpev.entity_id=prod.entity_id AND cpev.attribute_id='.$prodNameAttrId.'',array('product_name' => 'value'));
+		$collectionLbItem->setOrder('updated_at', 'desc');
+		return $collectionLbItem;
 	}
 }
 	 

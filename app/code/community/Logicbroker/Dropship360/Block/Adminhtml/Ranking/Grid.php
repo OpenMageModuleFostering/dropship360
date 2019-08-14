@@ -21,7 +21,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Ranking_Grid extends Mage_Adminhtm
 
   protected function _prepareCollection()
   {
-      $collection = Mage::getModel('logicbroker/ranking')->getCollection();
+      $collection = Mage::getModel('dropship360/ranking')->getCollection();
       $this->setCollection($collection);
       return parent::_prepareCollection();
   }
@@ -30,13 +30,13 @@ class Logicbroker_Dropship360_Block_Adminhtml_Ranking_Grid extends Mage_Adminhtm
   {
       
       $this->addColumn('lb_vendor_code', array(
-          'header'    => Mage::helper('logicbroker')->__('Supplier Code'),
+          'header'    => Mage::helper('dropship360')->__('Supplier Code'),
           'align'     =>'right',
           'width'     => '50px',
           'index'     => 'lb_vendor_code',
       )); 
        $this->addColumn('ranking', array(
-          'header'    => Mage::helper('logicbroker')->__('Position'),
+          'header'    => Mage::helper('dropship360')->__('Position'),
           'align'     =>'right',
           'width'     => '50px',
           'type'  => 'input',
@@ -45,18 +45,18 @@ class Logicbroker_Dropship360_Block_Adminhtml_Ranking_Grid extends Mage_Adminhtm
       ));
 	$this->addColumn('action',
             array(
-                'header'    =>  Mage::helper('logicbroker')->__('Action'),
+                'header'    =>  Mage::helper('dropship360')->__('Action'),
                 'width'     => '100',
                 'type'      => 'textaction',
                 'getter'    => 'getId',
                 'actions'   => array(
                     array(
-                        'caption'   => Mage::helper('logicbroker')->__('edit'),
+                        'caption'   => Mage::helper('dropship360')->__('edit'),
                         'url'       => array('base'=> '*/*/edit'),
                         'field'     => 'id'
                     ),
                     array(
-                        'caption'   => Mage::helper('logicbroker')->__('delete'),
+                        'caption'   => Mage::helper('dropship360')->__('delete'),
                         'url'       => array('base'=> '*/*/delete'),
                         'field'     => 'id',
                         'confirm' =>'Are you sure to delete the Supplier?'

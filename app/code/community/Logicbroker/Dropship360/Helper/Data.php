@@ -17,6 +17,13 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	const LOGICBROKER_ITEM_STATUS_CANCELLED   = 'Cancelled';
 	const LOGICBROKER_ITEM_STATUS_NO_DROPSHIP   = 'No Dropship';
 	const LOGICBROKER_ITEM_STATUS_COMPLETED   = 'Completed';
+	const LOGICBROKER_PRODUCT_LINK_UPC   = 'UPC';
+	const LOGICBROKER_PRODUCT_LINK_MNP   = 'Manufacturer Part Number';
+	const LOGICBROKER_PRODUCT_LINK_SKU   = 'Magento Sku';
+	const LOGICBROKER_PRODUCT_LINK_NONE   = 'None';
+	const LOGICBROKER_PRODUCT_LINK_CODE_UPC   = 'lb_upc';
+	const LOGICBROKER_PRODUCT_LINK_CODE_MNP   = 'lb_mnp';
+	const LOGICBROKER_PRODUCT_LINK_CODE_SKU   = 'sku';
 	protected $_maxtime = 60; 	// time in minutes
     public function getConfigObject($nodeName = null)
     {
@@ -64,11 +71,11 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
     }
     /* End of LBN - 935 change */
 
-     protected function getDatabaseConnection() {
+     public function getDatabaseConnection() {
 	return Mage::getSingleton ( 'core/resource' );
     }
 
-    protected function getTableName($name)
+    public function getTableName($name)
     {
 	return $this->getDatabaseConnection()->getTableName ( $name );
     }
@@ -108,7 +115,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	$write = $this->getDatabaseConnection()->getConnection ( 'core_write' );
 	$updatedAt = Mage::getModel('core/date')->gmtDate();
 	$createAt = Mage::getModel('core/date')->gmtDate();
-	$tmpTableName = $this->getTableName ( 'logicbroker/tmpdata' );
+	$tmpTableName = $this->getTableName ( 'dropship360/tmpdata' );
 	$insert = 'insert into '.$tmpTableName.' (tmpdata,created_at,updated_at) values("'.$type.'","'.$createAt.'","'.$updatedAt.'")';
 	$write->beginTransaction ();
 	$write->query($insert);
@@ -125,7 +132,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 
 	$write = $this->getDatabaseConnection()->getConnection ( 'core_write' );
 	$updatedAt = Mage::getModel('core/date')->gmtDate();
-	$tmpTableName = $this->getTableName ( 'logicbroker/tmpdata' );
+	$tmpTableName = $this->getTableName ( 'dropship360/tmpdata' );
 	$update = 'update '.$tmpTableName.' set updated_at  = '.$updatedAt.' where tmpdata = "'.$type.'"' ;
 	$write->beginTransaction ();
 	$write->query($update);
@@ -140,7 +147,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
     protected function deleteTmpTableData($type){
 
 	$write = $this->getDatabaseConnection()->getConnection ( 'core_write' );
-	$tmpTableName = $this->getTableName ( 'logicbroker/tmpdata' );
+	$tmpTableName = $this->getTableName ( 'dropship360/tmpdata' );
 	$delete = 'delete from '.$tmpTableName.' where tmpdata = "'.$type.'"' ;
 	$write->beginTransaction ();
 	$write->query($delete);
@@ -155,7 +162,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
     public function selectTmpTableData($type){
 
 	$read = $this->getDatabaseConnection()->getConnection ( 'core_read' );
-	$tmpTableName = $this->getTableName ( 'logicbroker/tmpdata' );
+	$tmpTableName = $this->getTableName ( 'dropship360/tmpdata' );
 	$select = 'Select * from '.$tmpTableName.' where tmpdata = "'.$type.'" ORDER BY id DESC limit 1';
 	$result = $read->fetchAll($select);
 
@@ -212,8 +219,8 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
 	 protected function getLogCollection($params){
-		$conn = Mage::getModel('logicbroker/uploadvendor')->getDatabaseConnection();
-		$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' );
+		$conn = Mage::getModel('dropship360/uploadvendor')->getDatabaseConnection();
+		$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/vendor_import_log' );
 		$select = $conn->select()->from($tableVendorImportLog)
 								->where("created_at=?", $params['vdate']);
 		$result = $conn->query($select);
@@ -228,7 +235,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
      */
     protected function _getCsvHeaders()
     {
-	$headers = array(0 => 'Date', 1 => 'Message') ;
+	$headers = array('Supplier Code','Supplier','Magento Sku','vendor_sku','cost','inventory','Failure Reason') ;
 	return $headers;
     }
 
@@ -236,13 +243,16 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
      * Generates CSV file with error's list according to the collection in the $this->_list
      * @return array
      */
-    public function generateErrorList($params)
+    public function generateErrorList($params,$isFtp = false)
     {
-	    $this->_list = $this->getLogCollection($params);
-	$ftpError = explode('<li>', $this->_list['ftp_error_desc']);
-	if (!is_null($this->_list)) {
-	    $items = $this->_list;
-	    if (count($items) > 0) {
+	    $ftpCollection = (!$isFtp) ? $this->getLogCollection($params) : $params;
+	//$ftpError = explode('<li>', $this->_list['ftp_error_desc']);
+	if (!empty($ftpCollection)) {
+	    if (count($ftpCollection) > 0) {
+	    if($ftpCollection['failure'] > 3000){
+    		Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Data size is too big for export'));
+	    	return array('error' => true);
+	    }
 		$io = new Varien_Io_File();
 		$path = Mage::getBaseDir('var') . DS . 'export' . DS;
 		$name = md5(microtime());
@@ -252,24 +262,66 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 		$io->streamOpen($file, 'w+');
 		$io->streamLock(true);
 		$io->streamWriteCsv($this->_getCsvHeaders());
-
-				$error = array();
-				foreach( $ftpError as $ferror){
-					if(strip_tags($ferror) != "") {
-						$date = Mage::helper('core')->formatDate($this->_list['created_at'], 'medium', true);
-						$error[] = array(0=>$date, 1=>strip_tags($ferror));
+		$rowData = (!is_null($ftpCollection['ftp_error_desc'])) ? $ftpCollection['ftp_error_desc'] : $ftpCollection['error_id'];
+		$prepareValue = $this->prepareExportVaues($rowData, $ftpCollection['lb_vendor_code']); 
+			if(is_array($prepareValue)){
+			foreach($prepareValue as $value){
+				$csv[] = $ftpCollection['lb_vendor_code'];
+				$csv[] = $this->getSupplierName($ftpCollection['lb_vendor_code']);
+				$csv[] = $value['magento_sku'];
+				$csv[] = $value['vendor_sku'];
+				$csv[] = $value['cost'];
+				$csv[] = $value['qty'];
+				$csv[] = $value['reason'];
+				$io->streamWriteCsv($csv);
+				unset($csv);
 					}
+			}else
+			{
+				$csv[] = $ftpCollection['lb_vendor_code'];
+				$csv[] = $this->getSupplierName($ftpCollection['lb_vendor_code']);
+				$csv[] = '';
+				$csv[] = '';
+				$csv[] ='';
+				$csv[] = '';
+				$csv[] = $ftpCollection['ftp_error_desc'];
+				$io->streamWriteCsv($csv);
+				unset($csv);
 				}
-		foreach ($error as $e) {
-						$io->streamWriteCsv($e);
 		}
 		return array(
 		    'type'  => 'filename',
 		    'value' => $file,
-		    'rm'    => true
+		    'rm'    => true,
+		    'error'=> false	
 		);
 	    }
 	}
+    public function prepareExportVaues($description,$vendorCode){
+    	$csvData = array();
+    	$decodedata = Mage::app()->getLayout()->createBlock('dropship360/adminhtml_vendorproductuploadhistory')->prepareRowData($description);
+    	if(!is_array($decodedata) || empty($decodedata))
+    		return empty($decodedata) ? implode('',$decodedata) : $decodedata;
+    	foreach($decodedata as $data){
+    		$msgArray = Mage::app()->getLayout()->createBlock('dropship360/adminhtml_vendorproductuploadhistory')->getMessageArray();
+    		$msg = $msgArray[$data['error_type']];
+    		if(is_array($data['value']) && !empty($data['value'])){
+    			$csvData[] = array('magento_sku'=>$data['value']['magento_sku'],'vendor_sku'=>$data['value']['vendor_sku'],'cost'=>$data['value']['cost'],'qty'=>$data['value']['qty'],'reason'=> $this->genrateHtml($data['value'],$msg,$vendorCode));
+    		}else{
+    			$csvData[] = array('magento_sku'=>'','vendor_sku'=>'','cost'=>'','qty'=>'','reason'=> (strstr($msg,'row_num')) ? str_replace('row_num',$data['value'],$msg) : str_replace('empty_file',$data['value'],$msg) );
+    		}
+    	}
+    	return $csvData;
+    }
+    public function genrateHtml($value,$msg,$vendorCode){
+    	$replace = Mage::app()->getLayout()->createBlock('dropship360/adminhtml_vendorproductuploadhistory')->getReplaceValue();
+    	$string = $msg;
+    	$value['vendor_code'] = $vendorCode;
+    	foreach($replace as $val){
+    		if(strstr($string,$val))
+    			$string = str_replace($val,$value[$val],$string);
+    	}
+    	return $string;
     }
 
 	/**
@@ -300,5 +352,72 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 			$serializeData = serialize($data);
 		}
 		return $serializeData;
+	}
+	
+	public function sendMail($templateObject,$email,$templateId,$attachment = null){
+		
+		$result = false;
+		
+		if(empty($templateId) || empty($email))
+			return $result;
+		$mailTemplate = Mage::getModel('core/email_template');
+		if($attachment)
+		{
+			$content = file_get_contents($attachment);
+			//$content = str_replace('></',">\n</",$content);
+			// this is for to set the file format
+			$at = new Zend_Mime_Part($content);
+			$at->type = 'application/csv'; // if u have PDF then it would like -> 'application/pdf'
+			$at->disposition = Zend_Mime::DISPOSITION_INLINE;
+			$at->encoding = Zend_Mime::ENCODING_8BIT;
+			$at->filename = 'outdated_productlist'.date('ymdHis').'.csv';
+			$mailTemplate->getMail()->addAttachment($at);
+			//$emailTemplate->_mail->addAttachment($at);
+		}
+		/* @var $mailTemplate Mage_Core_Model_Email_Template */
+		$mailTemplate->setDesignConfig(array('area' => 'backend'));
+		if($templateObject->getBcc())
+		{
+			$mailTemplate->addBcc($templateObject->getBcc());
+		}
+		//$mailTemplate->setTemplateSubject($subject);
+		$name = explode('@',$email);
+		$mailTemplate->sendTransactional(
+					$templateId,
+					'general',
+					$email,
+					$name[0],
+					array('templatevar' => $templateObject)
+			);
+		(!$mailTemplate->getSentSuccess()) ? $result = false : $result = true;
+		return $result;
+	}
+	
+	/**
+	 * Turn on read uncommitted mode
+	 */
+	public function turnOnReadUncommittedMode()
+	{
+		$this->getDatabaseConnection()->getConnection('read')->query("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+	}
+	/**
+	 * Turn on read committed mode
+	 */
+	public function turnOnReadCommittedMode()
+	{
+		$this->getDatabaseConnection()->getConnection('read')->query("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
+	}
+	public function isJson($data){
+		$result = false;
+		$data = trim($data,'"');
+		$data = trim($data,'\'');
+		$data = stripslashes($data);
+		$decodedata = json_decode($data);
+		$result = (json_last_error() == JSON_ERROR_NONE) ? true : false;
+		return $result;
+	}
+	public function getSupplierName($vendorCode){
+		$vendorRankModel = Mage::getSingleton('dropship360/ranking')->load($vendorCode,'lb_vendor_code');
+		return $vendorRankModel->getLbVendorName();
 	}
 }

@@ -3,12 +3,12 @@
    
    <default>
    		<reference name="notifications">
-            <block type="logicbroker/adminhtml_notification" name="logicbrokernotification" as="logicbrokernotification" template="logicbroker/window.phtml" />
+            <block type="dropship360/adminhtml_notification" name="logicbrokernotification" as="logicbrokernotification" template="logicbroker/window.phtml" />
         </reference>
     </default>
     <logicbroker_adminhtml_logicbroker_index>
         <reference name="content">
-            <block type="logicbroker/adminhtml_logicbroker" name="logicbroker" />
+            <block type="dropship360/adminhtml_logicbroker" name="dropship360" />
         </reference>
        <reference name="js">
             <block type="core/template" template="logicbroker/add_help_js.phtml"/>
@@ -17,7 +17,7 @@
     
     <logicbroker_adminhtml_sourcing_sourcinggrid>
         <reference name="content">
-            <block type="logicbroker/adminhtml_sourcing" name="logicbroker" />
+            <block type="dropship360/adminhtml_sourcing" name="dropship360" />
         </reference>
       <reference name="js">
             <block type="core/template" template="logicbroker/add_help_js.phtml"/>
@@ -36,8 +36,8 @@
             <block type="core/template" template="logicbroker/add_help_js.phtml"/>
         </reference>
         <reference name="content">
-            <block type="logicbroker/adminhtml_ranking" name="ranking">
-            	 <block type="logicbroker/adminhtml_upload" name="upload" as = "supplier.upload" template = "logicbroker/upload_vendor_product.phtml">
+            <block type="dropship360/adminhtml_ranking" name="ranking">
+            	 <block type="dropship360/adminhtml_upload" name="upload" as = "supplier.upload" template = "logicbroker/upload_vendor_product.phtml">
             	 	 <action method="setHeaderText"><value>Setup Supplier Products</value></action>
             	 	 <action method="setProductSetupMode"><value>true</value></action>
             	 </block>
@@ -47,7 +47,7 @@
 	
     <logicbroker_adminhtml_inventory_index>
         <reference name="content">
-            <block type="logicbroker/adminhtml_inventory" name="inventory" />
+            <block type="dropship360/adminhtml_inventory" name="inventory" />
         </reference>
         <reference name="js">
             <block type="core/template" template="logicbroker/add_help_js.phtml"/>
@@ -57,7 +57,7 @@
     <logicbroker_adminhtml_inventory_vendors>
         <reference name="content">
             <block type="core/text_list" name="root" output="toHtml" >
-            <block type="logicbroker/adminhtml_inventory_edit_tab_lbvendor" name="vendors_product_tab" template="logicbroker/vendorproducttab.phtml"/>
+            <block type="dropship360/adminhtml_inventory_edit_tab_lbvendor" name="vendors_product_tab" template="logicbroker/vendorproducttab.phtml"/>
             </block>
         </reference>
     </logicbroker_adminhtml_inventory_vendors>
@@ -65,14 +65,14 @@
     <logicbroker_adminhtml_inventory_vendorshistory>
         <reference name="content">
             <block type="core/text_list" name="root" output="toHtml" >
-            <block type="logicbroker/adminhtml_inventory_edit_tab_vendortabhistory" name="vendors_product_tab_history" template="logicbroker/vendorproducttabhistory.phtml"/>
+            <block type="dropship360/adminhtml_inventory_edit_tab_vendortabhistory" name="vendors_product_tab_history" template="logicbroker/vendorproducttabhistory.phtml"/>
             </block>
         </reference>
     </logicbroker_adminhtml_inventory_vendorshistory>
     
     <logicbroker_adminhtml_upload_vendorsuploadhistory>
         <reference name="content">
-            <block type="logicbroker/adminhtml_Vendorproductuploadhistory" name="vendors_product_upload_history" template="logicbroker/vendor_upload_product_history.phtml"/>
+            <block type="dropship360/adminhtml_Vendorproductuploadhistory" name="vendors_product_upload_history" template="logicbroker/vendor_upload_product_history.phtml"/>
         </reference>
         <reference name="js">
             <block type="core/template" template="logicbroker/add_help_js.phtml"/>
@@ -88,7 +88,7 @@
 	
     <logicbroker_adminhtml_ranking_showhistory>
          <reference name="content">
-            <block type="logicbroker/adminhtml_showhistory" name="showhistory" template="logicbroker/result.phtml"/>
+            <block type="dropship360/adminhtml_showhistory" name="showhistory" template="logicbroker/result.phtml"/>
         </reference>
         <reference name="js">
             <block type="core/template" template="logicbroker/add_help_js.phtml"/>
@@ -97,8 +97,8 @@
 	
 	<logicbroker_adminhtml_upload_index>
         <reference name="content">
-            <block type="logicbroker/adminhtml_upload" name="upload" template = "logicbroker/upload_vendor_product.phtml">
-            	 <block type="logicbroker/adminhtml_inventory" name="inventory" />
+            <block type="dropship360/adminhtml_upload" name="upload" template = "logicbroker/upload_vendor_product.phtml">
+            	 <block type="dropship360/adminhtml_inventory" name="inventory" />
             	  <action method="setHeaderText"><value>Supplier Inventory</value></action>
             </block>
         </reference>
@@ -116,7 +116,7 @@
                 <action method="addJs"><script>mage/translate.js</script></action>
                 <action method="addJs"><script>mage/adminhtml/tools.js</script></action>
             </block>
-            <block type="logicbroker/adminhtml_upload_bulkassign" name="logicbroker_bulkassign" template="logicbroker/process-profile.phtml" output="toHtml"/>
+            <block type="dropship360/adminhtml_upload_bulkassign" name="logicbroker_bulkassign" template="logicbroker/process-profile.phtml" output="toHtml"/>
         </block>
     </logicbroker_adminhtml_upload_run>
 	
@@ -145,12 +145,12 @@
     
     <adminhtml_catalog_product_edit>
         <reference name="product_tabs">
-			<block type="logicbroker/adminhtml_inventory_edit_vendortab" name="vendor_tab"/>
+			<block type="dropship360/adminhtml_inventory_edit_vendortab" name="vendor_tab"/>
 				<action method="addTab">
 					<name>vendor_tab</name>
 					<block>vendor_tab</block>
 				</action>
-				<block type="logicbroker/adminhtml_inventory_edit_vendortabhistory" name="vendor_tab_history"/>
+				<block type="dropship360/adminhtml_inventory_edit_vendortabhistory" name="vendor_tab_history"/>
 				<action method="addTab">
 					<name>vendor_tab_history</name>
 					<block>vendor_tab_history</block>
@@ -160,8 +160,8 @@
     <logicbroker_adminhtml_report_activitymonitor>
         <update handle="report_sales"/>
         <reference name="content">
-            <block type="logicbroker/adminhtml_reports_activitymonitor" template="logicbroker/reports/grid/container.phtml" name="report.activitymonitor">
-              <block type="logicbroker/adminhtml_reports_activitymonitor_form" name="report.activitymonitor.form"/>
+            <block type="dropship360/adminhtml_reports_activitymonitor" template="logicbroker/reports/grid/container.phtml" name="report.activitymonitor">
+              <block type="dropship360/adminhtml_reports_activitymonitor_form" name="report.activitymonitor.form"/>
             </block>
         </reference>
         <reference name="js">

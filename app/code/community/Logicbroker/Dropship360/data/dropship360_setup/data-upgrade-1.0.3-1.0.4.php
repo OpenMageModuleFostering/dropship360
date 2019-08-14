@@ -28,14 +28,14 @@ catch (Exception $e) {
 
 /* update order state */
 
-$orderStatuses = array('lb_ready_to_source'=>'Ready to Source');
-Mage::getModel('logicbroker/logicbroker')->updateOrderState($orderStatuses);
+/* $orderStatuses = array('lb_ready_to_source'=>'Ready to Source');
+ Mage::getModel('dropship360/logicbroker')->updateOrderState($orderStatuses); */
 
 
 
 /* If compiler is enabled than we need to run the compilation  */
 
-if (defined('COMPILER_INCLUDE_PATH')) {
+/*if (defined('COMPILER_INCLUDE_PATH')) {
 	try {
 		Mage::getModel('compiler/process')->run();
 		Mage::getSingleton('adminhtml/session')->addSuccess(
@@ -49,7 +49,7 @@ if (defined('COMPILER_INCLUDE_PATH')) {
 		);
 	}
 }
-
+*/
 /* Load default values of Sourcing Schedule Cron Jobs*/
 $coreConfigData = array(
     array(
@@ -77,7 +77,7 @@ $coreConfigData = array(
         'scope'     => 'default',
         'scope_id'  => '0',
         'path'      => 'crontab/jobs/logicbroker_dropship360/run/model',
-		'value'     => 'logicbroker/observer::logicbrokerSourcing', 
+		'value'     => 'dropship360/observer::logicbrokerSourcing', 
     ),
 	array(
         'scope'      => 'default',
@@ -89,7 +89,7 @@ $coreConfigData = array(
         'scope'      => 'default',
         'scope_id'   => '0',
         'path'       => 'crontab/jobs/logicbroker_backorder/run/model',
-		'value'    => 'logicbroker/observer::logicbrokerBackorder',  
+		'value'    => 'dropship360/observer::logicbrokerBackorder',  
     )
 	
 	

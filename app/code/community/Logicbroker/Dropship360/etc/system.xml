@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <config>
   <tabs>
-    <logicbroker translate="label" module="logicbroker">
+    <dropship360 translate="label" module="dropship360">
       <label>dropship360</label>
       <sort_order>500</sort_order>
-    </logicbroker>
+    </dropship360>
   </tabs>
   <sections>
-  <logicbroker_integration  translate="label" module="logicbroker">
+  <logicbroker_integration  translate="label" module="dropship360">
       <label>General Setup</label>
-      <tab>logicbroker</tab>
+      <tab>dropship360</tab>
       <frontend_type>text</frontend_type>
       <sort_order>40</sort_order>
       <show_in_default>1</show_in_default>
@@ -33,7 +33,7 @@
             <getstarted translate="label">
                
                 <frontend_type>text</frontend_type>
-	               <frontend_model>logicbroker/adminhtml_system_config_fieldset_hint</frontend_model>
+	               <frontend_model>dropship360/adminhtml_system_config_fieldset_hint</frontend_model>
 	                <sort_order>6</sort_order>
                 <show_in_default>1</show_in_default>
                 <show_in_website>0</show_in_website>
@@ -47,9 +47,9 @@
       </groups>
     </logicbroker_integration>
     
-    <logicbroker_sourcing  translate="label" module="logicbroker">
+    <logicbroker_sourcing  translate="label" module="dropship360">
       <label>Configuration/Setup</label>
-      <tab>logicbroker</tab>
+      <tab>dropship360</tab>
       <frontend_type>text</frontend_type>
       <sort_order>42</sort_order>
       <show_in_default>1</show_in_default>
@@ -70,7 +70,7 @@
            <ranktype translate="label">
                 <label>Sourcing Rule</label>
                 <frontend_type>select</frontend_type>
-                <source_model>logicbroker/system_config_source_ranktype</source_model>
+                <source_model>dropship360/system_config_source_ranktype</source_model>
                 <sort_order>0</sort_order>
                 <show_in_default>1</show_in_default>
                 <show_in_website>0</show_in_website>
@@ -80,7 +80,7 @@
             <defaultbackorder translate="label">
                 <label>Default Supplier</label>
                 <frontend_type>select</frontend_type>
-                <source_model>logicbroker/system_config_source_vendorlist</source_model>
+                <source_model>dropship360/system_config_source_vendorlist</source_model>
                 <comment>Selected Supplier will override the backorder logic.</comment>
                 <sort_order>1</sort_order>
                 <show_in_default>1</show_in_default>
@@ -98,6 +98,16 @@
                 <show_in_website>0</show_in_website>
                 <show_in_store>0</show_in_store>              
             </email_shipment>
+            <sourcing_type>
+            	<label>Event Driven Sourcing</label>
+                <frontend_type>select</frontend_type>
+                <source_model>adminhtml/system_config_source_yesno</source_model>
+                <comment>Select "Yes" to trigger sourcing logic in the sales_order_place_after event.</comment>
+                <sort_order>3</sort_order>
+                <show_in_default>1</show_in_default>
+                <show_in_website>0</show_in_website>
+                <show_in_store>0</show_in_store>
+            </sourcing_type>
 			   
             </fields>
   
@@ -143,8 +153,8 @@
 			  <fields>
 					<sourcing_time translate="label">
                             <label>Reprocessing Schedule Frequency</label>
-                            <frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
-							<backend_model>logicbroker/system_config_backend_sourcing_cronsourcing</backend_model>
+                            <frontend_model>dropship360/adminhtml_system_config_crontime</frontend_model>
+							<backend_model>dropship360/system_config_backend_sourcing_cronsourcing</backend_model>
                             <sort_order>0</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
@@ -153,8 +163,8 @@
 	              </sourcing_time>
 	              <backorder_time translate="label">
                             <label>Backorder Schedule Frequency</label>
-                             <frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
-							  <backend_model>logicbroker/system_config_backend_sourcing_cronbackorder</backend_model>
+                             <frontend_model>dropship360/adminhtml_system_config_crontime</frontend_model>
+							  <backend_model>dropship360/system_config_backend_sourcing_cronbackorder</backend_model>
                             <sort_order>2</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
@@ -164,7 +174,7 @@
 					<dispaly_sourcing_updated_time translate="label">
 					<label>Reprocessing Last Run Date</label>
 						<frontend_type>text</frontend_type>
-						 <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
+						 <frontend_model>dropship360/adminhtml_system_config_submitbutton</frontend_model>
 						<sort_order>7</sort_order>
 						<show_in_default>1</show_in_default>
 						<show_in_website>0</show_in_website>
@@ -173,7 +183,7 @@
 					<display_backorder_updated_time translate="label">
 					<label>Backorder Last Run Date</label>
 						<frontend_type>text</frontend_type>
-						 <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
+						 <frontend_model>dropship360/adminhtml_system_config_submitbutton</frontend_model>
 						<sort_order>8</sort_order>
 						<show_in_default>1</show_in_default>
 						<show_in_website>0</show_in_website>
@@ -245,7 +255,7 @@
               <ftp_type>
 					<label>Ftp Type</label>
 					<frontend_type>select</frontend_type>
-					<source_model>logicbroker/system_config_source_ftptype</source_model>
+					<source_model>dropship360/system_config_source_ftptype</source_model>
 					<validate>required-entry</validate>
 					<sort_order>14</sort_order>
 					<show_in_default>1</show_in_default>
@@ -255,7 +265,7 @@
               </ftp_type>
               <ftp_testconnection>
 					<frontend_type>button</frontend_type>
-					<frontend_model>logicbroker/adminhtml_system_config_ftpconnectionbutton</frontend_model>
+					<frontend_model>dropship360/adminhtml_system_config_ftpconnectionbutton</frontend_model>
 					<sort_order>15</sort_order>
 					<show_in_default>1</show_in_default>
 					<show_in_website>0</show_in_website>
@@ -264,8 +274,8 @@
               </ftp_testconnection>
 			  <time translate="label">
 					<label>Frequency</label>
-					<frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
-					<backend_model>logicbroker/system_config_backend_uploadvendor_cron</backend_model>
+					<frontend_model>dropship360/adminhtml_system_config_crontime</frontend_model>
+					<backend_model>dropship360/system_config_backend_uploadvendor_cron</backend_model>
 					<sort_order>30</sort_order>
 					<show_in_default>1</show_in_default>
 					<show_in_website>0</show_in_website>
@@ -297,8 +307,8 @@
               </enabled>
               <time translate="label">
 					<label>Frequency</label>
-					<frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
-					<backend_model>logicbroker/system_config_backend_report_email</backend_model>
+					<frontend_model>dropship360/adminhtml_system_config_crontime</frontend_model>
+					<backend_model>dropship360/system_config_backend_report_email</backend_model>
 					<sort_order>30</sort_order>
 					<show_in_default>1</show_in_default>
 					<show_in_website>0</show_in_website>
@@ -307,8 +317,8 @@
               </time>
 			  </fields>
 			  </cron_settings_report> 
-		<integration translate="label">
-	          <label>Help</label>
+		<inventory_notification translate="label">
+	          <label>Inventory Notification</label>
 	          <page_heading>Help</page_heading>
 	          <expanded>1</expanded>
 	          <frontend_type>text</frontend_type>
@@ -316,11 +326,63 @@
 	          <show_in_default>1</show_in_default>
 	          <show_in_website>0</show_in_website>
 	          <show_in_store>0</show_in_store>
+		      <fields>
+				<enabled translate="label">
+					<label>Enable</label>
+					<frontend_type>select</frontend_type>
+					<source_model>adminhtml/system_config_source_yesno</source_model>
+					<sort_order>9</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+              	</enabled>
+              	<cron_setting translate="label">
+                     <label>Oudated Product Notification Cron Frequency</label>
+                     <frontend_model>dropship360/adminhtml_system_config_crontime</frontend_model>
+		     <backend_model>dropship360/system_config_backend_oudatedinventory_email</backend_model>
+                     <sort_order>10</sort_order>
+                     <show_in_default>1</show_in_default>
+                     <show_in_website>0</show_in_website>
+                     <show_in_store>0</show_in_store>
+                     <depends><enabled>1</enabled></depends>
+                </cron_setting>
+              	<email>
+					<label>Email Address</label>
+					<frontend_type>text</frontend_type>
+					<validate>required-entry validate-email	</validate>
+					<sort_order>11</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
+              </email>
+              <days>
+					<label>Notify me when inventory isnt't updated for all products in</label>
+					<frontend_type>text</frontend_type>
+					<validate>required-entry validate-digits validate-digits-range digits-range-1-100</validate>
+					<comment>days range from 1 to 100</comment>
+					<sort_order>12</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
+              </days>
+			 </fields>
+ 	 	</inventory_notification>
+		<integration translate="label">
+	          <label>Help</label>
+	          <page_heading>Help</page_heading>
+	          <expanded>1</expanded>
+	          <frontend_type>text</frontend_type>
+	          <sort_order>7</sort_order>
+	          <show_in_default>1</show_in_default>
+	          <show_in_website>0</show_in_website>
+	          <show_in_store>0</show_in_store>
 		          <fields>
 					   <need_help>
 						  <label>Need Help?</label>	
 				          <frontend_type>link</frontend_type>
-				          <frontend_model>logicbroker/adminhtml_system_config_helplink</frontend_model>
+				          <frontend_model>dropship360/adminhtml_system_config_helplink</frontend_model>
 				          <href>http://help.logicbroker.com/dropship360</href>
 				          <sort_order>31</sort_order>
 				          <show_in_default>1</show_in_default>

@@ -10,7 +10,7 @@
 class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 {
     protected function _construct(){
-       $this->_init("logicbroker/orderitems");
+       $this->_init("dropship360/orderitems");
     }
 	
 	public function prepareOrderItemData($item){		
@@ -23,8 +23,8 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 		else
 			$orderBy = 'cost ASC';
 		
-		$collectionVendor = Mage::getModel ( 'logicbroker/inventory' )->getCollection ()->addFieldToFilter ( 'product_sku', $productSku );
-		$collectionVendor->getSelect ()->joinleft ( array ('lbRanking' => Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/ranking' )), 'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array ('*') )->where('lbRanking.is_dropship = "yes" and lbRanking.is_active = "yes"');
+		$collectionVendor = Mage::getModel ( 'dropship360/inventory' )->getCollection ()->addFieldToFilter ( 'product_sku', $productSku );
+		$collectionVendor->getSelect ()->joinleft ( array ('lbRanking' => Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/ranking' )), 'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array ('*') )->where('lbRanking.is_dropship = "yes" and lbRanking.is_active = "yes"');
 		$collectionVendor->getSelect ()->order ( $orderBy );
 		return $collectionVendor;
 	}
@@ -32,7 +32,7 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 	
 	public function isVendorCollectionAvailable()
 	{	
-		if (Mage::getModel ( 'logicbroker/inventory' )->getCollection ()->count() > 0 ) 
+		if (Mage::getModel ( 'dropship360/inventory' )->getCollection ()->count() > 0 ) 
 			return true;
 		else 
 			return false;
@@ -56,13 +56,13 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 		try {
 			$orderItemInstance->save ();
 		} catch ( Exception $e ) {
-			Mage::helper('logicbroker')->genrateLog(0,null,null,'Section :Error In Setting order item data: '.$e->getMessage().' sku : '.$item->getSku().','.$item->getOrderId ());
+			Mage::helper('dropship360')->genrateLog(0,null,null,'Section :Error In Setting order item data: '.$e->getMessage().' sku : '.$item->getSku().','.$item->getOrderId ());
 			echo $e->getMessage ();
 		}	
 	}
 	public function updateLbVendorInvenory($vendorCode,$productSku,$qtyInvoiced) 
 	{
-		$inventory = Mage::getModel ( 'logicbroker/inventory' )->getCollection()
+		$inventory = Mage::getModel ( 'dropship360/inventory' )->getCollection()
 					->addFieldToFilter('lb_vendor_code',$vendorCode)->addFieldToFilter('product_sku',$productSku);		
 		$filedData = $inventory->getFirstItem()->getData();
 		$LbInventoryStock = $filedData['stock'];
@@ -70,7 +70,7 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 		$inventory->getFirstItem()->setStock ( ($finalStock > 0) ? $finalStock : 0 );	
 		try {
 			$inventory->getFirstItem()->save ();
-			Mage::getModel('logicbroker/inventory')->_saveInventoryLog('update',array('lb_vendor_name'=>$filedData['lb_vendor_name'],'updated_by'=>'system','product_sku'=>$productSku,'lb_vendor_code'=>$vendorCode,'cost'=>$filedData['cost'],'stock'=>($finalStock > 0) ? $finalStock : 0));
+			Mage::getModel('dropship360/inventory')->_saveInventoryLog('update',array('lb_vendor_name'=>$filedData['lb_vendor_name'],'updated_by'=>'system','product_sku'=>$productSku,'lb_vendor_code'=>$vendorCode,'cost'=>$filedData['cost'],'stock'=>($finalStock > 0) ? $finalStock : 0));
 		} catch ( Exception $e ) {
 			echo $e->getMessage ();
 		}
@@ -79,7 +79,7 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 	public function updateSourcingByUser($request)
 	{		
 		$arrData = array();
-		$inventoryModel = Mage::getModel('logicbroker/inventory')->getCollection()->addFieldToFilter('lb_vendor_code',$request['lb_vendor_code'])->addFieldToFilter('product_sku',$request['product_sku']);
+		$inventoryModel = Mage::getModel('dropship360/inventory')->getCollection()->addFieldToFilter('lb_vendor_code',$request['lb_vendor_code'])->addFieldToFilter('product_sku',$request['product_sku']);
 		$arrData['lb_vendor_code'] = $request['lb_vendor_code'];
 		$arrData['lb_item_status'] = Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_TRANSMITTING;
 		$arrData['updated_by'] = 'User';

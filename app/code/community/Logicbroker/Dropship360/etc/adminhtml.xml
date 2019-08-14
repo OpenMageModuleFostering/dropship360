@@ -8,15 +8,15 @@
 							<children>
 								<config>
 									<children>
-										<logicbroker_integration translate="title" module="logicbroker">
+										<logicbroker_integration translate="title" module="dropship360">
 											<title>General Information</title>
 											<sort_order>1</sort_order>
 										</logicbroker_integration>
-										<logicbroker_sourcing translate="title" module="logicbroker">
+										<logicbroker_sourcing translate="title" module="dropship360">
 											<title>Sourcing Section</title>
 											<sort_order>2</sort_order>
 										</logicbroker_sourcing>
-										<logicbroker_cron translate="title" module="logicbroker">
+										<logicbroker_cron translate="title" module="dropship360">
 											<title>Cron Settings</title>
 											<sort_order>2</sort_order>
 										</logicbroker_cron>
@@ -24,7 +24,7 @@
 								</config>
 							</children>
 						</system>
-						<logicbroker translate="title" module="logicbroker">
+						<dropship360 translate="title" module="dropship360">
                         <title>logicbroker</title>
                         <sort_order>91</sort_order>
                         <children>
@@ -47,14 +47,14 @@
                                 <title>Supplier Information</title>
                             </integration>
                         </children>
-                    </logicbroker>
+                    </dropship360>
 					</children>
 				</admin>
 			</resources>
 		</acl>
                 
                 <menu>
-                    <logicbroker translate="title" module="logicbroker">
+                    <dropship360 translate="title" module="dropship360">
                         <title>dropship360</title>
                         <sort_order>91</sort_order>
                         <children>
@@ -90,10 +90,10 @@
                             </lb_sourcing>
                             <!-- <upload_vendor_product translate="title">
                                 <title>Upload Supplier Product</title>
-                                <action>logicbroker/adminhtml_upload/index</action>
+                                <action>dropship360/adminhtml_upload/index</action>
                                 <sort_order>17</sort_order>
                             </upload_vendor_product> -->
                         </children>
-                    </logicbroker>
+                    </dropship360>
                 </menu>
 	</config>

@@ -9,7 +9,7 @@
 class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml_Controller_Action {
 
 	protected function _initAction() {
-		$this->loadLayout ()->_setActiveMenu ( 'logicbroker/vendor_ranking' )->_addBreadcrumb ( Mage::helper ( 'adminhtml' )->__ ( 'Supplier Management' ), Mage::helper ( 'adminhtml' )->__ ( 'Supplier Management' ) );		
+		$this->loadLayout ()->_setActiveMenu ( 'dropship360/vendor_ranking' )->_addBreadcrumb ( Mage::helper ( 'adminhtml' )->__ ( 'Supplier Management' ), Mage::helper ( 'adminhtml' )->__ ( 'Supplier Management' ) );		
 		return $this;
 	}
 	
@@ -29,7 +29,7 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 	 * Ranking grid
 	 */
 	public function gridAction() {
-		$this->getResponse ()->setBody ( $this->getLayout ()->createBlock ( 'logicbroker/adminhtml_ranking_grid' )->toHtml () );
+		$this->getResponse ()->setBody ( $this->getLayout ()->createBlock ( 'dropship360/adminhtml_ranking_grid' )->toHtml () );
 	}
 		
 	public function showhistoryAction() {
@@ -41,7 +41,7 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 		$isSuccess = false;
 		$data = $this->getRequest ()->getPost ();
 		$arrVendor = array();
-		$vendorRankCollection =  Mage::getModel ( 'logicbroker/ranking' );
+		$vendorRankCollection =  Mage::getModel ( 'dropship360/ranking' );
 		$genrateVendorCode = $vendorRankCollection->getCollection()->addFieldToFilter('lb_vendor_code',array('like'=>'%MagVendID%'));
 		
 		foreach($genrateVendorCode as $vendorCode)
@@ -81,9 +81,10 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 		$dropShip = json_decode((urldecode($data['dropship_data'])),true); 
 		$nonDropShip = json_decode((urldecode($data['nondropship_data'])),true);
 		$vendorName = json_decode((urldecode($data['vendorname_data'])),true);
-		$modelRanking = Mage::getModel ( 'logicbroker/rankinglog' )->load($tableName,'label');		
+		$vendorProductLink = json_decode((urldecode($data['vendorproductlink_data'])),true);
+		$modelRanking = Mage::getModel ( 'dropship360/rankinglog' )->load($tableName,'label');		
 		if (!$tableName || $modelRanking->getId()) {
-			Mage::getSingleton ( 'adminhtml/session' )->addError ( Mage::helper ( 'logicbroker' )->__ ( 'Ranking Table Name Is Empty Or Already Exists' ) );
+			Mage::getSingleton ( 'adminhtml/session' )->addError ( Mage::helper ( 'dropship360' )->__ ( 'Ranking Table Name Is Empty Or Already Exists' ) );
 			$this->_redirect ( '*/*/' );
 			return;
 		}
@@ -103,15 +104,18 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 				$this->_updateVendorName($val);
 			}
 		}
+		foreach ($vendorProductLink as $value) {
+			$this->saveProductLinking($value);
+		}
 		$result = $this->_saveTableRanking(trim($tableName));
 		
-		Mage::getSingleton ( 'adminhtml/session' )->addSuccess ( Mage::helper ( 'logicbroker' )->__ ( 'Supplier ranking saved successfully' ) );
+		Mage::getSingleton ( 'adminhtml/session' )->addSuccess ( Mage::helper ( 'dropship360' )->__ ( 'Supplier ranking saved successfully' ) );
 		$this->_redirect ( '*/*/' );
 		return;
 	}
 	protected function _saveVendorRanking($key, $val, $rank = false) {
 		try {
-			$model = Mage::getModel ( 'logicbroker/ranking' )->load ( $val['code'], 'lb_vendor_code' );
+			$model = Mage::getModel ( 'dropship360/ranking' )->load ( $val['code'], 'lb_vendor_code' );
 			$model->setUpdatedAt(now());
 			
 			if($rank)
@@ -128,15 +132,10 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 	
 	protected function _updateVendorName($val) {
 		try {
-			$model = Mage::getModel ( 'logicbroker/ranking' )->load ( $val['code'], 'lb_vendor_code' );
+			$model = Mage::getModel ( 'dropship360/ranking' )->load ( $val['code'], 'lb_vendor_code' );
 			if($model->getLbVendorCode())
 			$model->setLbVendorName ($val['name'])->save();
-            $modelInventoryCollection = Mage::getModel ( 'logicbroker/inventory' )->getCollection();            
-            $modelInventoryCollection->addFieldToFilter('lb_vendor_code',$val['code']);           
-            foreach($modelInventoryCollection as $modelInventory){
-                $inventoryModel = Mage::getModel ( 'logicbroker/inventory' )->load($modelInventory->getId());
-                $inventoryModel->setLbVendorName($val['name'])->save();                 
-            }	
+			Mage::getModel ( 'dropship360/inventory' )->upDateVendorName($val);
 		} catch ( Exception $e ) {
 			Mage::getSingleton ( 'adminhtml/session' )->addError ( $e->getMessage () );
 		}	
@@ -144,8 +143,8 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 	
 	protected function _saveTableRanking($tableName) {	
 		$serializedArray = array ();
-		$model = Mage::getModel ( 'logicbroker/ranking' );
-		$modelRanking = Mage::getModel ( 'logicbroker/rankinglog' );
+		$model = Mage::getModel ( 'dropship360/ranking' );
+		$modelRanking = Mage::getModel ( 'dropship360/rankinglog' );
 		$collection = $model->getCollection ();
 		$collection->getSelect()->order('ranking asc');
 		if($collection->count() > 0){
@@ -153,9 +152,9 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 				$serializedArray [] = array (
 						$value->getLbVendorName (),
 						$value->getLbVendorCode (),
+						$this->getAttributeCode($value->getLinkingAttribute()),
 						$value->getRanking (),
 						$value->getIsDropship()
-												 
 				);
 			}
 			$modelRanking->setRankingData ( serialize ( $serializedArray ) );
@@ -168,5 +167,45 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 			}
 		}
 		return;
+	}
+	protected function getAttributeCode($code)
+	{
+		$helper = Mage::helper('dropship360');
+		switch ($code) {
+			case $helper::LOGICBROKER_PRODUCT_LINK_CODE_UPC:
+				return $helper::LOGICBROKER_PRODUCT_LINK_UPC;
+			break;
+			case $helper::LOGICBROKER_PRODUCT_LINK_CODE_MNP:
+				return $helper::LOGICBROKER_PRODUCT_LINK_MNP;
+				break;
+			case $helper::LOGICBROKER_PRODUCT_LINK_CODE_SKU:
+				return $helper::LOGICBROKER_PRODUCT_LINK_SKU;
+				break;
+			default:
+				return $helper::LOGICBROKER_PRODUCT_LINK_NONE;
+		}
+	}
+	protected function saveProductLinking($data)
+	{
+		if(empty($data))
+			return ;
+		try {
+			$model = Mage::getModel ( 'dropship360/ranking' )->load ( $data['code'], 'lb_vendor_code' );
+			$model->setUpdatedAt(now());
+			$model->setLinkingAttribute($data['attr']);
+			$model->save ();
+		} catch ( Exception $e ) {
+			Mage::getSingleton ( 'adminhtml/session' )->addError ( $e->getMessage () );
+		}
+	}
+	
+	/**
+	 * Acl check for admin
+	 *
+	 * @return bool
+	 */
+	protected function _isAllowed()
+	{
+		return (Mage::getSingleton('admin/session')->isAllowed('dropship360/suppliers') || Mage::getSingleton('admin/session')->isAllowed('dropship360/vendor_ranking'));
 	}
 }

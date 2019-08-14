@@ -20,7 +20,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Tab_Lbvendor extend
         $this->setChild('vendor_add_button',
             $this->getLayout()->createBlock('adminhtml/widget_button')
                 ->setData(array(
-                    'label' => Mage::helper('logicbroker')->__('Add New Supplier'),
+                    'label' => Mage::helper('dropship360')->__('Add New Supplier'),
                     'class' => 'add',
                     'id'    => 'add_new_defined_option_vendor'
                 ))
@@ -29,13 +29,13 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Tab_Lbvendor extend
         $this->setChild('update_delete_button_vendor',
         		$this->getLayout()->createBlock('adminhtml/widget_button')
         		->setData(array(
-        				'label' => Mage::helper('logicbroker')->__('Delete Option'),
+        				'label' => Mage::helper('dropship360')->__('Delete Option'),
         				'class' => 'delete delete-product-option-vendor '
         		))
         );
 
         $this->setChild('vendor_options_box',
-            $this->getLayout()->createBlock('logicbroker/adminhtml_inventory_edit_tab_addvendorfield')
+            $this->getLayout()->createBlock('dropship360/adminhtml_inventory_edit_tab_addvendorfield')
         );
 
         return parent::_prepareLayout();
@@ -53,8 +53,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Tab_Lbvendor extend
     
     public function getAssignedData(){
     	
-    	$rankingTableName = Mage::getSingleton('core/resource')->getTableName('logicbroker/ranking');
-        $collection = Mage::getModel('logicbroker/inventory')->getCollection()
+    	$rankingTableName = Mage::getSingleton('core/resource')->getTableName('dropship360/ranking');
+        $collection = Mage::getModel('dropship360/inventory')->getCollection()
     	->addFieldToFilter('product_sku',Mage::getModel('catalog/product')->load($this->getProductId())->getSku());
     	$collection->getSelect()->joinLeft(array('ranking' => $rankingTableName), 'main_table.lb_vendor_code=ranking.lb_vendor_code', array('vendor_name' => 'lb_vendor_name'));
         return $collection;

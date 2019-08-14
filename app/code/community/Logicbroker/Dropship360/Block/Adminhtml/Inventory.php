@@ -11,8 +11,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory extends Mage_Adminhtml_B
   public function __construct()
   {
     $this->_controller = 'adminhtml_inventory';
-    $this->_blockGroup = 'logicbroker';
-    $this->_headerText = Mage::helper('logicbroker')->__('');
+    $this->_blockGroup = 'dropship360';
+    $this->_headerText = Mage::helper('dropship360')->__('');
     parent::__construct();
     $this->removeButton('add');
   }

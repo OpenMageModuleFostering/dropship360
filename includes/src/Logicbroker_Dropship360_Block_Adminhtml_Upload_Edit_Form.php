@@ -24,7 +24,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload_Edit_Form extends Mage_Admi
         ));
         $legend = ($isProductSetupMode) ? $this->getLegendtext() : 'Import Settings';
         $fieldset = $form->addFieldset('base_fieldset', array('legend' => Mage::helper('importexport')->__($legend)));
-        $isProcessContinue = Mage::helper('logicbroker')->isProcessRunning('bulk_assign');
+        $isProcessContinue = Mage::helper('dropship360')->isProcessRunning('bulk_assign');
         $fieldset->addField('productsetupmode', 'hidden', array(
         		'name'     => 'productsetupmode',
         		'value'   => $isProductSetupMode
@@ -35,7 +35,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload_Edit_Form extends Mage_Admi
             'title'    => Mage::helper('importexport')->__('Supplier'),
             'label'    => Mage::helper('importexport')->__('Supplier'),
             'required' => true,
-            'values'   => Mage::getModel('logicbroker/system_config_source_vendorlist')->getAllVendor()
+            'values'   => Mage::getModel('dropship360/system_config_source_vendorlist')->getAllVendor()
         ));
         if($isProductSetupMode){
         $fieldset->addType('custombutton', 'Logicbroker_Dropship360_Block_Adminhtml_Upload_Edit_Button');

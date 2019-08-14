@@ -49,19 +49,47 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
         
         $htmlIdPrefix = 'sales_report_';
         $form->setHtmlIdPrefix($htmlIdPrefix);
+        $fieldsetfilter = $form->addFieldset('base_fieldset_filter', array('legend'=>Mage::helper('reports')->__('Filter')));
         $fieldset = $form->addFieldset('base_fieldset', array('legend'=>Mage::helper('reports')->__('Filter')));
         $this->_addElementTypes($fieldset);
+        $this->_addElementTypes($fieldsetfilter);
 		$fieldset->addField('store_ids', 'hidden', array(
             'name'  => 'store_ids'
         ));
         
        Mage::getSingleton('adminhtml/session')->getFormData();
         
+       $fieldsetfilter->addField('select_transmitting_filter', 'timestatus', array(
+       		'name'     => 'select_transmitting_filter',
+       		'options' => array(
+       				'day'   => Mage::helper('dropship360')->__('Days'),
+       				'hour' => Mage::helper('dropship360')->__('Hours')
+       		),
+       		'label' => Mage::helper('dropship360')->__('Time in Transmitting Status'),
+       		'title' => Mage::helper('dropship360')->__('Time in Transmitting Status'),
+       		'inputname' => 'input_transmitting_filter',
+       		'selectvalue' => isset($formData['select_transmitting_filter']) ? $formData['select_transmitting_filter'] : '' ,
+       		'inputvalue' => isset($formData['input_transmitting_filter']) ? $formData['input_transmitting_filter'] : '',
+       ));
+       
+       $fieldsetfilter->addField('select_sentosup_filter', 'timestatus', array(
+       		'name'     => 'select_sentosup_filter',
+       		'options' => array(
+       				'day'   => Mage::helper('dropship360')->__('Days'),
+       				'hour' => Mage::helper('dropship360')->__('Hours')
+       				 
+       		),
+       		'label' => Mage::helper('dropship360')->__('Time in Sent to Supplier Status'),
+       		'title' => Mage::helper('dropship360')->__('Time in Sent to Supplier Status'),
+       		'inputname' => 'input_sentosup_filter',
+       		'selectvalue' => isset($formData['select_sentosup_filter']) ? $formData['select_sentosup_filter'] : '' ,
+       		'inputvalue' => isset($formData['input_sentosup_filter']) ? $formData['input_sentosup_filter'] : '',
+       ));
        $fieldset->addField('notification_transmitting', 'text', array(
        		'name'     => 'notification_transmitting',
-       		'label' => Mage::helper('logicbroker')->__('Percentage to Trigger Notification For Transmitting (%)'),
+       		'label' => Mage::helper('dropship360')->__('Percentage to Trigger Notification For Transmitting (%)'),
        		'required'  => true,
-       		'title' => Mage::helper('logicbroker')->__('Percentage to Trigger Notification For Transmitting'),
+       		'title' => Mage::helper('dropship360')->__('Percentage to Trigger Notification For Transmitting'),
        		'value'    => isset($formData['notification_transmitting']) ? $formData['notification_transmitting'] : '',
        		'class' => ' validate-digits validate-number-range number-range-1-99'
        
@@ -69,18 +97,18 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
        
        $fieldset->addField('notification_backorder', 'text', array(
        		'name'     => 'notification_backorder',
-       		'label' => Mage::helper('logicbroker')->__('Percentage to Trigger Notification For Backorder(%)'),
+       		'label' => Mage::helper('dropship360')->__('Percentage to Trigger Notification For Backorder(%)'),
        		'required'  => true,
-       		'title' => Mage::helper('logicbroker')->__('Percentage to Trigger Notification For Backorder'),
+       		'title' => Mage::helper('dropship360')->__('Percentage to Trigger Notification For Backorder'),
        		'value'    => isset($formData['notification_backorder']) ? $formData['notification_backorder'] : '',
        		'class' => ' validate-digits validate-number-range number-range-1-99'
        
        ));
         $fieldset->addField('notification_sent_to_supplier', 'text', array(
         		'name'     => 'notification_sent_to_supplier',
-        		'label' => Mage::helper('logicbroker')->__('Percentage to Trigger Notification For Sent To Supplier (%)'),
+        		'label' => Mage::helper('dropship360')->__('Percentage to Trigger Notification For Sent To Supplier (%)'),
 				'required'  => true,
-        		'title' => Mage::helper('logicbroker')->__('Percentage to Trigger Notification For Sent To Supplier'),
+        		'title' => Mage::helper('dropship360')->__('Percentage to Trigger Notification For Sent To Supplier'),
         		'value'    => isset($formData['notification_sent_to_supplier']) ? $formData['notification_sent_to_supplier'] : '',
         		'class' => ' validate-digits validate-number-range number-range-1-99'
         
@@ -97,8 +125,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
         ));
         $fieldset->addField('email_adress', 'text', array(
         		'name'     => 'email',
-        		'label' => Mage::helper('logicbroker')->__('Email Address'),
-        		'title' => Mage::helper('logicbroker')->__('Email Address'),
+        		'label' => Mage::helper('dropship360')->__('Email Address'),
+        		'title' => Mage::helper('dropship360')->__('Email Address'),
         		'required'=> true,
         		'value'    => isset($formData['email']) ? $formData['email'] : '',
         		'class' => 'email-adress'
@@ -115,8 +143,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
         $fieldset->addField('dropshipstatus', 'select', array(
         		'name'     => 'dropshipstatus',
         		'options' => $this->prepareOptionValue(),
-        		'label' => Mage::helper('logicbroker')->__('Dropship Status'),
-        		'title' => Mage::helper('logicbroker')->__('Dropship Status'),
+        		'label' => Mage::helper('dropship360')->__('Dropship Status'),
+        		'title' => Mage::helper('dropship360')->__('Dropship Status'),
         		'value'    => isset($formData['dropshipstatus']) ? $formData['dropshipstatus'] : '',
         		'required'=> true
         
@@ -125,12 +153,12 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
         $fieldset->addField('select_monitor_order', 'timestatus', array(
         		'name'     => 'select_monitor_order',
         		'options' => array(
-                'day'   => Mage::helper('logicbroker')->__('Days'),
-                'hour' => Mage::helper('logicbroker')->__('Hours')
+                'day'   => Mage::helper('dropship360')->__('Days'),
+                'hour' => Mage::helper('dropship360')->__('Hours')
                 
             	),
-        		'label' => Mage::helper('logicbroker')->__('Period to Monitor All Orders'),
-        		'title' => Mage::helper('logicbroker')->__('Period to Monitor All Orders'),
+        		'label' => Mage::helper('dropship360')->__('Period to Monitor All Orders'),
+        		'title' => Mage::helper('dropship360')->__('Period to Monitor All Orders'),
         		'inputname' => 'input_monitor_order',
         		'selectvalue' => isset($formData['select_monitor_order']) ? $formData['select_monitor_order'] : '',
         		'inputvalue' => isset($formData['input_monitor_order']) ? $formData['input_monitor_order'] : '',
@@ -140,12 +168,12 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
         $fieldset->addField('select_open_monitor', 'timestatus', array(
         		'name'     => 'select_open_monitor',
         		'options' => array(
-        				'day'   => Mage::helper('logicbroker')->__('Days'),
-        				'hour' => Mage::helper('logicbroker')->__('Hours')
+        				'day'   => Mage::helper('dropship360')->__('Days'),
+        				'hour' => Mage::helper('dropship360')->__('Hours')
         
         		),
-        		'label' => Mage::helper('logicbroker')->__('Period Open to Monitor'),
-        		'title' => Mage::helper('logicbroker')->__('Period Open to Monitor'),
+        		'label' => Mage::helper('dropship360')->__('Period Open to Monitor'),
+        		'title' => Mage::helper('dropship360')->__('Period Open to Monitor'),
         		'inputname' => 'input_open_monitor',
         		'selectvalue' => isset($formData['select_open_monitor']) ? $formData['select_open_monitor'] : '' ,
         		'inputvalue' => isset($formData['input_open_monitor']) ? $formData['input_open_monitor'] : '',
@@ -161,13 +189,13 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
     
     protected function prepareOptionValue(){
     	 
-    	$itemStatus = Mage::helper('logicbroker')->getItemStatuses();
+    	$itemStatus = Mage::helper('dropship360')->getItemStatuses();
     	$options = array();
-    	$options[' '] = Mage::helper('logicbroker')->__('--Please Select--');
+    	$options[' '] = Mage::helper('dropship360')->__('--Please Select--');
     	foreach($itemStatus as $status )
     	{
     		if(in_array($status,array('Transmitting','Backorder','Sent to Supplier')))
-    		$options[$status] = Mage::helper('logicbroker')->__($status);
+    		$options[$status] = Mage::helper('dropship360')->__($status);
     	}
     	return $options;
     }
@@ -176,8 +204,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Form exten
     protected function _getAdditionalElementTypes()
     {
     	return array(
-    			'timestatus' => Mage::getConfig()->getBlockClassName('logicbroker/adminhtml_reports_form_timestatus'),
-    			'getemailaddress' => Mage::getConfig()->getBlockClassName('logicbroker/adminhtml_upload_edit_button')
+    			'timestatus' => Mage::getConfig()->getBlockClassName('dropship360/adminhtml_reports_form_timestatus'),
+    			'getemailaddress' => Mage::getConfig()->getBlockClassName('dropship360/adminhtml_upload_edit_button')
     	);
     }
     

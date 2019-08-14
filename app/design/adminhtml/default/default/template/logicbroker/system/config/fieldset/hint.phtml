@@ -17,19 +17,19 @@
     if($$('.form-buttons a#page-help-link').length <= 0 ){
 	if($$('.form-buttons button').length > 0){
 		 $$('.form-buttons button')[0].insert({
-  before: "<a style='color:black;padding-right:20px' target='_blank' id='page-help-link' href='<?php echo Mage::helper('logicbroker')->getConfigObject('apiconfig/helpurl/link'); ?>' target='magento_page_help'>Need help from logicbroker?</a>"
+  before: "<a style='color:black;padding-right:20px' target='_blank' id='page-help-link' href='<?php echo Mage::helper('dropship360')->getConfigObject('apiconfig/helpurl/link'); ?>' target='magento_page_help'>Need help from logicbroker?</a>"
 });
 		 }else
 		{
 			 $$('.form-buttons')[0].insert({
-				  top: "<a style='color:black;padding-right:20px' target='_blank' id='page-help-link' href='<?php echo Mage::helper('logicbroker')->getConfigObject('apiconfig/helpurl/link'); ?>' target='magento_page_help'>Need help from logicbroker?</a>"
+				  top: "<a style='color:black;padding-right:20px' target='_blank' id='page-help-link' href='<?php echo Mage::helper('dropship360')->getConfigObject('apiconfig/helpurl/link'); ?>' target='magento_page_help'>Need help from logicbroker?</a>"
 				});
 			}
 		}    
 //]]>
 </script>
 
-<div class="logicbroker">
+<div class="dropship360">
 	<div class="logicbroker-notice"></div>
 	<div class="title" style="border-bottom: 1px double #000000;">
 		<h4 style="">Getting Started</h4>

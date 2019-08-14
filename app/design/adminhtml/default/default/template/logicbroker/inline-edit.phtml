@@ -18,16 +18,18 @@
 	 var arrDropshipParameter = $H({});
 	 var arrNonDropshipParameter = $H({});
 	 var arrVendorNameParameter = $H({});
+	 var arrVendorProductLinkParameter = $H({});
 	 arrDropshipParameter.set(JSON.stringify(arrDropship));
 	 arrNonDropshipParameter.set(JSON.stringify(arrNonDropship));
 	 arrVendorNameParameter.set(JSON.stringify(arrVendorName));
+	 arrVendorProductLinkParameter.set(JSON.stringify(arrVendorProductLink));
 	 
      
     
     
     var actionUrl = '<?php echo Mage::getSingleton('adminhtml/url')->getUrl('*/*/saveranking') ?>'
     var formdataStart = "<form id='edit_form_ranking' action='"+actionUrl+"' method='post'></form>";
-    var formDataEnd = "<div><input name='partent_save_table_input' id='partent_save_table_input' type='hidden' value=''><input name='dropship_data' id='dropship_data' type='hidden' value=''><input name='nondropship_data' id='nondropship_data' type='hidden' value=''><input name='vendorname_data' id='vendorname_data' type='hidden' value=''> <input name='form_key' type='hidden' value='<?php echo Mage::getSingleton('core/session')->getFormKey() ?>' /></div>";
+    var formDataEnd = "<div><input name='partent_save_table_input' id='partent_save_table_input' type='hidden' value=''><input name='dropship_data' id='dropship_data' type='hidden' value=''><input name='nondropship_data' id='nondropship_data' type='hidden' value=''><input name='vendorname_data' id='vendorname_data' type='hidden' value=''><input name='vendorproductlink_data' id='vendorproductlink_data' type='hidden' value=''> <input name='form_key' type='hidden' value='<?php echo Mage::getSingleton('core/session')->getFormKey() ?>' /></div>";
     
     if(!$('edit_form_ranking'))
         {
@@ -40,6 +42,7 @@
     $('dropship_data').value = arrDropshipParameter.toQueryString();
 	$('nondropship_data').value = arrNonDropshipParameter.toQueryString();
 	$('vendorname_data').value = arrVendorNameParameter.toQueryString();
+	$('vendorproductlink_data').value = arrVendorProductLinkParameter.toQueryString();
 }
 function setTableName(name){
 

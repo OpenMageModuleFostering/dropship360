@@ -27,13 +27,13 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_Grid extends Mage_Adminht
   	$collection->getSelect()->columns('if(`main_table`.`row_total` <> 0, `main_table`.`row_total`,(SELECT config.`row_total` FROM '.$tableName.' as simple INNER JOIN '.$tableName.' as config 
 ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`item_id`)) as row_total');
   	
-  	$collection->getSelect()->join(array('lbItems'=>Mage::getSingleton('core/resource')->getTableName('logicbroker/orderitems')),
+  	$collection->getSelect()->join(array('lbItems'=>Mage::getSingleton('core/resource')->getTableName('dropship360/orderitems')),
   			'lbItems.item_id = main_table.item_id', array('item_order_id','lb_item_id'=>'id','lb_item_status','magento_sku'=>'sku','lb_vendor_code','lb_vendor_sku','vendor_cost','updated_by','updated_at'));
   	
   	$collection->getSelect()->join(array('salesOrder'=>Mage::getSingleton('core/resource')->getTableName('sales/order')),
   			'salesOrder.entity_id = main_table.order_id', array('increment_id','status','created_at'));
   	
-  	$collection->getSelect()->joinleft(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('logicbroker/ranking')),
+  	$collection->getSelect()->joinleft(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('dropship360/ranking')),
   			'lbRanking.lb_vendor_code = lbItems.lb_vendor_code', array('lb_vendor_name'));
   	$this->setCollection($collection);
       return parent::_prepareCollection();
@@ -47,10 +47,10 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
   
   protected function prepareOptionValue(){
   	
-  	$itemStatus = array_merge(Mage::helper('logicbroker')->getItemStatuses(), array('Sent to Vendor'));
+  	$itemStatus = array_merge(Mage::helper('dropship360')->getItemStatuses(), array('Sent to Vendor'));
   	foreach($itemStatus as $status )
   	{
-  		$options[$status] = Mage::helper('logicbroker')->__($status);
+  		$options[$status] = Mage::helper('dropship360')->__($status);
   	}
   	return $options;
   }
@@ -58,13 +58,13 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
   protected function _prepareColumns()
   {
       $this->addColumn('increment_id', array(
-          'header'    => Mage::helper('logicbroker')->__('Order #'),
+          'header'    => Mage::helper('dropship360')->__('Order #'),
           'align'     =>'right',
           'width'     => '50px',
           'index'     => 'increment_id',	
       ));
 	  $this->addColumn('created_at', array(
-          'header'    => Mage::helper('logicbroker')->__('Order Date'),
+          'header'    => Mage::helper('dropship360')->__('Order Date'),
           'align'     =>'right',
           'width'     => '50px',
 	  		'type' => 'datetime',
@@ -72,7 +72,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
           'index'     => 'created_at',
       ));
 	  $this->addColumn('magento_sku', array(
-          'header'    => Mage::helper('logicbroker')->__('Product Sku'),
+          'header'    => Mage::helper('dropship360')->__('Product Sku'),
           'align'     =>'right',
           'width'     => '50px',
 	  		"filter_index" => "lbItems.sku",
@@ -80,7 +80,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
       ));
 	  
 	 $this->addColumn('lb_vendor_name', array(
-          'header'    => Mage::helper('logicbroker')->__('Supplier'),
+          'header'    => Mage::helper('dropship360')->__('Supplier'),
           'align'     =>'left',
           'width'     => '80px',
           'index'     => 'lb_vendor_name',
@@ -88,14 +88,14 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  
 	  
 	  $this->addColumn('lb_vendor_sku', array(
-	  		'header'    => Mage::helper('logicbroker')->__('Supplier Sku'),
+	  		'header'    => Mage::helper('dropship360')->__('Supplier Sku'),
 	  		'align'     =>'left',
 	  		'width'     => '80px',
 	  		'index'     => 'lb_vendor_sku',
 	  ));
 	  $store = $this->_getStore();
       $this->addColumn('vendor_cost', array(
-          'header'    => Mage::helper('logicbroker')->__('Supplier Cost'),
+          'header'    => Mage::helper('dropship360')->__('Supplier Cost'),
           'align'     =>'left',
           'width'     => '80px',
           'index'     => 'vendor_cost',
@@ -104,7 +104,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
       ));
 	  
       $this->addColumn('row_total', array(
-          'header'    => Mage::helper('logicbroker')->__('Price'),
+          'header'    => Mage::helper('dropship360')->__('Price'),
           'align'     =>'left',
           'width'     => '80px',
           'index'     => 'row_total',
@@ -112,7 +112,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
       		'currency_code' => $store->getBaseCurrency()->getCode(),
       ));
 	  $this->addColumn('qty_ordered', array(
-          'header'    => Mage::helper('logicbroker')->__('Qty'),
+          'header'    => Mage::helper('dropship360')->__('Qty'),
           'align'     =>'left',
           'width'     => '80px',
           'index'     => 'qty_ordered',
@@ -120,7 +120,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  
 	  
 	  $this->addColumn('lb_item_status', array(
-	  		'header'    => Mage::helper('logicbroker')->__('Drop Ship Status'),
+	  		'header'    => Mage::helper('dropship360')->__('Drop Ship Status'),
 	  		'align'     =>'left',
 	  		'width'     => '80px',
 	  		'index'     => 'lb_item_status',
@@ -129,7 +129,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  ));
  
 	  $this->addColumn('status', array(
-	  		'header'    => Mage::helper('logicbroker')->__('Order Status'),
+	  		'header'    => Mage::helper('dropship360')->__('Order Status'),
 	  		'align'     =>'left',
 	  		'width'     => '80px',
 	  		'index'     => 'status',
@@ -138,7 +138,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  	  ));
 
 	  $this->addColumn('updated_by', array(
-	  		'header'    => Mage::helper('logicbroker')->__('Last Updated By'),
+	  		'header'    => Mage::helper('dropship360')->__('Last Updated By'),
 	  		'align'     =>'left',
 	  		'width'     => '80px',
 	  		'index'     => 'updated_by',
@@ -151,7 +151,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
         	)
 	  ));
 	  $this->addColumn('updated_at', array(
-	  		'header'    => Mage::helper('logicbroker')->__('Updated On'),
+	  		'header'    => Mage::helper('dropship360')->__('Updated On'),
 	  		'align'     =>'right',
 	  		'width'     => '50px',
 	  		'type' => 'datetime',
@@ -165,7 +165,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  				'header'    => Mage::helper('sales')->__('Action'),
 	  				'width'     => '50px',
 	  				'type'      => 'action',
-	  				'renderer'   => 'logicbroker/adminhtml_sourcing_history_renderer_action',
+	  				'renderer'   => 'dropship360/adminhtml_sourcing_history_renderer_action',
 	  				'filter'    => false,
 	  				'sortable'  => false,
 	  				'index'     => 'stores',
@@ -174,7 +174,7 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  
 	  $this->addColumn('action',
 	  		array(
-	  				'header'    =>  Mage::helper('logicbroker')->__('Edit'),
+	  				'header'    =>  Mage::helper('dropship360')->__('Edit'),
 	  				'width'     => '100px',
 	  				'type'      => 'textaction',
 	  				'filter'    => false,
@@ -185,8 +185,8 @@ ON (simple.parent_item_id = config.item_id) where simple.item_id= `main_table`.`
 	  		));
 	   
      
-	  $this->addExportType('*/*/exportCsv', Mage::helper('logicbroker')->__('CSV'));
-	  $this->addExportType('*/*/exportXml', Mage::helper('logicbroker')->__('XML'));
+	  $this->addExportType('*/*/exportCsv', Mage::helper('dropship360')->__('CSV'));
+	  $this->addExportType('*/*/exportXml', Mage::helper('dropship360')->__('XML'));
       return parent::_prepareColumns();
   }
 

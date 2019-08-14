@@ -12,7 +12,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 
 	protected function _initAction() {
 		$this->loadLayout()
-			->_setActiveMenu('logicbroker/suppliers')
+			->_setActiveMenu('dropship360/suppliers')
 			->_addBreadcrumb(Mage::helper('adminhtml')->__('Supplier Manager'), Mage::helper('adminhtml')->__('Supplier Manager'));
 		
 		return $this;
@@ -31,6 +31,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 						'value'     => '0',
 				));
 		Mage::app()->getCacheInstance()->cleanType('config');		
+		Mage::getSingleton('adminhtml/session')->setNotification(false);
 		$this->_redirectReferer();
 	}
 	/**
@@ -39,18 +40,18 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
     
 	public function sourcinggridAction() {
 		
-		$this->getLayout()->createBlock('logicbroker/adminhtml_sourcing_grid')->toHtml();
+		$this->getLayout()->createBlock('dropship360/adminhtml_sourcing_grid')->toHtml();
 		$this->loadLayout()->renderLayout();
 		
 	}
 	
     public function gridAction() {
         $this->getResponse()->setBody(
-		$this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_grid')->toHtml());
+		$this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_grid')->toHtml());
     }    
 	public function editAction() {
 		$id     = $this->getRequest()->getParam('vendor_id');
-		$model  = Mage::getModel('logicbroker/supplier')->load($id);
+		$model  = Mage::getModel('dropship360/supplier')->load($id);
 
 		if ($model->getVendorId() || $id == 0) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
@@ -61,17 +62,17 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 			Mage::register('logicbroker_data', $model);
 
 			$this->loadLayout();
-			$this->_setActiveMenu('logicbroker/suppliers');
+			$this->_setActiveMenu('dropship360/suppliers');
 
 			$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Supplier Manager'), Mage::helper('adminhtml')->__('Supplier Manager'));
 			$this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
-			$this->_addContent($this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_edit'))
-				->_addLeft($this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_edit_tabs'));
+			$this->_addContent($this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_edit'))
+				->_addLeft($this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_edit_tabs'));
 
 			$this->renderLayout();
 		} else {
-			Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Supplier does not exist'));
+			Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Supplier does not exist'));
 			$this->_redirect('*/*/');
 		}
 	}
@@ -79,9 +80,9 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 	public function newAction()
 	{
 		$this->loadLayout();
-		$this->_setActiveMenu('logicbroker/suppliers');
-		$this->_addContent($this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_edit'))
-				->_addLeft($this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_edit_tabs'));
+		$this->_setActiveMenu('dropship360/suppliers');
+		$this->_addContent($this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_edit'))
+				->_addLeft($this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_edit_tabs'));
 		$this->renderLayout();
 
 	}
@@ -89,7 +90,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
     public function saveAction() 
 	{
 		if ($data = $this->getRequest()->getPost()) {		
-	  		$model = Mage::getModel('logicbroker/supplier');		
+	  		$model = Mage::getModel('dropship360/supplier');		
 			if ($id = $this->getRequest()->getParam('vendor_id')) {//the parameter name may be different
 				$model->load($id);
 			}
@@ -114,7 +115,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 				}
 				//validate compny id as unique
 				if($validate == 1){
-					Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Duplicate Company ID'));
+					Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Duplicate Company ID'));
 					Mage::getSingleton('adminhtml/session')->setFormData($data);
 				    $this->_redirect('*/*/edit', array('vendor_id' => $model->getVendorId()));
 					return;
@@ -122,10 +123,10 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 				$model->save();
 				
 				if(!empty($data['addnewoption'])){
-					Mage::getModel('logicbroker/logicbroker')->createOptionValueOnSave($model->getMagentoVendorCode());
+					Mage::getModel('dropship360/logicbroker')->createOptionValueOnSave($model->getMagentoVendorCode());
 				}
 				Mage::getSingleton('adminhtml/session')->setFormData(false);
-				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__($message));		
+				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__($message));		
 
 				if ($this->getRequest()->getParam('back')) {
 					$this->_redirect('*/*/edit', array('vendor_id' => $model->getVendorId()));
@@ -140,7 +141,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
                 return;
             }
         }
-        Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Unable to find Supplier to save'));
+        Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Unable to find Supplier to save'));
         $this->_redirect('*/*/');
 	}
         
@@ -148,18 +149,18 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 	{
         if ($id = $this->getRequest()->getParam('vendor_id')) {
             try {
-                $model = Mage::getModel('logicbroker/supplier');
+                $model = Mage::getModel('dropship360/supplier');
                 $model->load($id);
        			$model->setData('status','deleted');
                 $model->save();
-				$collection = Mage::getModel('logicbroker/ranking')->getCollection()->addFieldToFilter('is_dropship','yes');
+				$collection = Mage::getModel('dropship360/ranking')->getCollection()->addFieldToFilter('is_dropship','yes');
 				$collection->getSelect()->order('ranking asc');
-				$rank = Mage::getModel('logicbroker/ranking')->load($id)->getRanking(); 
+				$rank = Mage::getModel('dropship360/ranking')->load($id)->getRanking(); 
 				foreach($collection as $value){
-					Mage::getModel('logicbroker/ranking')->rearrangeRank($value, $rank);
+					Mage::getModel('dropship360/ranking')->rearrangeRank($value, $rank);
 				}
-                Mage::getModel('logicbroker/ranking')->load($id,'lb_vendor_id')->setRanking('')->setIsDropship('no')->setIsActive('no')->save();
-                Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__('The Supplier has been deleted.'));
+                Mage::getModel('dropship360/ranking')->load($id,'lb_vendor_id')->setRanking('')->setIsDropship('no')->setIsActive('no')->save();
+                Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__('The Supplier has been deleted.'));
                 $this->_redirect('*/*/');
                 return;
 
@@ -172,7 +173,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
             }
         }
         
-        Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Unable to find a Supplier to delete.'));
+        Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Unable to find a Supplier to delete.'));
 	
         $this->_redirect('*/*/');
     }
@@ -184,7 +185,7 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
     public function exportCsvAction()
     {
         $fileName   = 'supplier.csv';
-        $content    = $this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_grid')->getCsvFile();
+        $content    = $this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_grid')->getCsvFile();
         $this->_prepareDownloadResponse($fileName, $content);
     }
 
@@ -194,14 +195,14 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
     public function exportXmlAction()
     {
         $fileName   = 'supplier.xml';
-        $content    = $this->getLayout()->createBlock('logicbroker/adminhtml_logicbroker_grid')->getExcelFile($fileName);
+        $content    = $this->getLayout()->createBlock('dropship360/adminhtml_logicbroker_grid')->getExcelFile($fileName);
         $this->_prepareDownloadResponse($fileName, $content);
     }
         
 	public function validateajaxrequestAction()
 	{
 		$paramsArray = $this->getRequest()->getParams();
-		$validation = Mage::getModel('logicbroker/logicbroker');
+		$validation = Mage::getModel('dropship360/logicbroker');
 		$result = $validation->validation($paramsArray['groups']['integration']['fields']);
 		$result = Mage::helper('core')->jsonEncode($result);
 		Mage::app()->getResponse()->setBody($result);		
@@ -217,11 +218,11 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 			if($data['lb_item_status']!=""){
 				$order = Mage::getModel('sales/order')->load($data['order_id']);
 				$orderStatus = $order->getStatus();
-				$lbOrderItemInstance = Mage::getModel('logicbroker/orderitems')->getCollection()->addFieldToFilter('item_id', $data['lb_item_id']);
+				$lbOrderItemInstance = Mage::getModel('dropship360/orderitems')->getCollection()->addFieldToFilter('item_id', $data['lb_item_id']);
 				try{
 					if($lbOrderItemInstance->count() > 0){			
 						foreach($lbOrderItemInstance as $item){
-							$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($item, $data['lb_item_status'], $orderStatus);
+							$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($item, $data['lb_item_status'], $orderStatus);
 							$item->setLbItemStatus($data['lb_item_status']);
 							$item->setItemStatusHistory($itemStatusHistory);
 							$item->setUpdatedBy('User');
@@ -229,12 +230,15 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 							$item->save();	
 							if($data['lb_item_status']==$item->getLbItemStatus()){
 								$data['msg'] = $item->getSku().' status successfully changed to '.$data['lb_item_status'];
-								Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__($data['msg']));
+								Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__($data['msg']));
 							}else{
 								$data['msg'] = $item->getSku().' status unable to change to '.$data['lb_item_status'];
-								Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__($data['msg']));
+								Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__($data['msg']));
 							}	
 						}
+					}			
+					if($data['lb_item_status'] == 'Transmitting'){
+						Mage::getModel('dropship360/logicbroker')->setupNotification();
 					}			
 					$result = Mage::helper('core')->jsonEncode($data);
 					Mage::app()->getResponse()->setBody($result);
@@ -245,6 +249,16 @@ class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Admin
 		}else{
 			$data['msg'] = 'Unable to perform the required operation';
 		}	
+	}
+	
+	/**
+	 * Acl check for admin
+	 *
+	 * @return bool
+	 */
+	protected function _isAllowed()
+	{
+		return Mage::getSingleton('admin/session')->isAllowed('dropship360/inventory');
 	}
 	
 }

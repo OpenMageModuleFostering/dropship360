@@ -19,7 +19,7 @@ class Logicbroker_Dropship360_Model_Resource_Vendorimportlog
     
 	public function insertLog($lb_vendor_code = null,$updated_by = null,$success = 0,$failure = 0,$ftp_error =null,$ftp_error_desc = null)
 	{
-	$this->_tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' );
+	$this->_tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/vendor_import_log' );
 	 $this->conn = $this->getDatabaseConnection();	
      $this->conn->beginTransaction ();
 	 $created_at = now();

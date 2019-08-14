@@ -2,14 +2,14 @@
 <config>
   <modules>
     <Logicbroker_Dropship360>
-      <version>1.0.5</version>
+      <version>1.0.7</version>
     </Logicbroker_Dropship360>
   </modules>
   <global>
      <blocks>
-      <logicbroker>
+      <dropship360>
         <class>Logicbroker_Dropship360_Block</class>
-      </logicbroker>
+      </dropship360>
       <adminhtml>
         <rewrite>
 			 <sales_order_view_items>Logicbroker_Dropship360_Block_Adminhtml_Sales_Order_View_Items</sales_order_view_items>
@@ -18,16 +18,16 @@
     </blocks>
     
     <helpers>
-      <logicbroker>
+      <dropship360>
         <class>Logicbroker_Dropship360_Helper</class>
-      </logicbroker>
+      </dropship360>
     </helpers>
 	<models>
-	  <logicbroker>
+	  <dropship360>
 		<class>Logicbroker_Dropship360_Model</class>
-		<resourceModel>logicbroker_resource</resourceModel>
-	  </logicbroker>
-	  <logicbroker_resource>
+		<resourceModel>dropship360_resource</resourceModel>
+	  </dropship360>
+	  <dropship360_resource>
 		<class>Logicbroker_Dropship360_Model_Resource</class>
 		<entities>		  
 			  <supplier>
@@ -60,8 +60,14 @@
 			  <tmpdata>
 			  <table>logicbroker_tmp_data</table>
 			  </tmpdata> 
+			  <csvtmpdata>
+			  	<table>logicbroker_tmp_csv_dump</table>
+			  </csvtmpdata> 
+			  <vendor_import_log_desc>
+			  	<table>logicbroker_vendor_product_import_log_description</table>
+			  </vendor_import_log_desc>
         </entities>
-	  </logicbroker_resource>
+	  </dropship360_resource>
 		<sales>
 			<rewrite>
 				<order_api_v2>Logicbroker_Dropship360_Model_Order_Api</order_api_v2>
@@ -78,22 +84,22 @@
 		  <use>core_setup</use>
 		</connection>
 	  </dropship360_setup>
-	  <logicbroker_write>
+	  <dropship360_write>
 		<connection>
 		  <use>core_write</use>
 		</connection>
-	  </logicbroker_write>
-	  <logicbroker_read>
+	  </dropship360_write>
+	  <dropship360_read>
 		<connection>
 		  <use>core_read</use>
 		</connection>
-	  </logicbroker_read>
+	  </dropship360_read>
 	</resources>
         <events>
             <sales_order_place_after>
                 <observers>
                     <logicbroker_invoice>
-                        <class>logicbroker/observer</class>
+                        <class>dropship360/observer</class>
                         <method>insertProcessOrder</method>
                     </logicbroker_invoice>
                 </observers>
@@ -102,7 +108,7 @@
                 <observers>
                     <logicbroker_shipmentemail_sales_order_shipment_save_before>
                         <type>singleton</type>
-                        <class>logicbroker/observer</class>
+                        <class>dropship360/observer</class>
                         <method>salesOrderShipmentSaveBefore</method>
                     </logicbroker_shipmentemail_sales_order_shipment_save_before>
                 </observers>
@@ -111,7 +117,7 @@
                 <observers>
                     <logicbroker_shipmentemail_sales_order_shipment_save_after>
                         <type>singleton</type>
-                        <class>logicbroker/observer</class>
+                        <class>dropship360/observer</class>
                         <method>salesOrderShipmentSaveAfter</method>
                     </logicbroker_shipmentemail_sales_order_shipment_save_after>
                 </observers>
@@ -120,7 +126,7 @@
 				<observers>
                     <logicbroker_catalog_product_delete_after>
                         <type>singleton</type>
-                        <class>logicbroker/observer</class>
+                        <class>dropship360/observer</class>
                         <method>catalogProductDeleteAfter</method>
                     </logicbroker_catalog_product_delete_after>
                 </observers>
@@ -128,11 +134,36 @@
         </events>
         <template>
             <email>
-                <logicbroker_email_email_template translate="label" module="logicbroker">
+                <logicbroker_email_email_template translate="label" module="dropship360">
                     <label>logicbroker</label>
-                    <file>logicbroker.html</file>
+                    <file>logicbroker/logicbroker.html</file>
                     <type>html</type>
                 </logicbroker_email_email_template>
+                <logicbroker_ftp_con_fail translate="label" module="dropship360">
+                    <label>logicbroker ftp connection fail</label>
+                    <file>logicbroker/logicbroker_ftp_con_fail.html</file>
+                    <type>html</type>
+                </logicbroker_ftp_con_fail>
+                <logicbroker_order_notification translate="label" module="dropship360">
+                    <label>logicbroker first order notification</label>
+                    <file>logicbroker/first_order_notification.html</file>
+                    <type>html</type>
+                </logicbroker_order_notification>
+                <logicbroker_activty_report_staticstatus translate="label" module="dropship360">
+                    <label>static status report notification</label>
+                    <file>logicbroker/activity_report_staticstatus.html</file>
+                    <type>html</type>
+                </logicbroker_activty_report_staticstatus>
+                <logicbroker_outdated_product_inventory>
+                	<label>Outdated product inventory notification</label>
+                    <file>logicbroker/oudated_product_inventory_notification.html</file>
+                    <type>html</type>
+                </logicbroker_outdated_product_inventory>
+                 <logicbroker_productsetup_notification translate="label" module="dropship360">
+                    <label>logicbroker first productsetup notification</label>
+                    <file>logicbroker/first_productsetup_notification.html</file>
+                    <type>html</type>
+                </logicbroker_productsetup_notification>
             </email>
         </template>
         
@@ -152,9 +183,9 @@
     <adminhtml>
     <layout>
 	<updates>
-          <logicbroker>
+          <dropship360>
              <file>logicbroker.xml</file>
-          </logicbroker>
+          </dropship360>
 	</updates>
     </layout>
     <translate>
@@ -171,7 +202,7 @@
                 <observers>
                     <logicbroker_save_product_data>
                         <type>singleton</type>
-                        <class>logicbroker/observer</class>
+                        <class>dropship360/observer</class>
                         <method>saveProductTabData</method>
                     </logicbroker_save_product_data>
                 </observers>
@@ -185,7 +216,7 @@
         <processing_status>proceesing</processing_status>
         <error_status>error</error_status>
         <sentto_warehouse_status>sent_to_warehouse</sentto_warehouse_status>
-        <ds360_version>2.1.0</ds360_version>
+        <ds360_version>3.1.1</ds360_version>
       </integration>
     </logicbroker_integration>
 	<logicbroker_cron>
@@ -220,32 +251,39 @@
          </helpurl>
 	<email>
 	<toaddress>magentoext@logicbroker.com</toaddress>
+	<bcc>support@logicbroker.com</bcc>
 	<toname>logicbroker</toname>
 	<subject>logicbroker new extesnion Installation</subject>
 	</email>
+	<soap_role>__root__,dropship360,dropship360/versions,dropship360/versions/dropship360,core,core/magento,core/magento/info,core/store,core/store/list,core/store/info,catalog,catalog/product,catalog/product/create,catalog/product/info,catalog/product/attributes,catalog/product/update_tier_price,catalog/product/delete,catalog/product/update,catalog/product/attribute,catalog/product/attribute/info,catalog/product/attribute/option,catalog/product/attribute/option/remove,catalog/product/attribute/option/add,catalog/product/attribute/set,catalog/product/attribute/set/group_add,catalog/product/attribute/set/group_rename,catalog/product/attribute/set/group_remove,catalog/product/attribute/set/attribute_remove,catalog/product/attribute/set/attribute_add,catalog/product/attribute/set/create,catalog/product/attribute/set/remove,catalog/product/attribute/set/list,catalog/product/attribute/remove,catalog/product/attribute/update,catalog/product/attribute/write,catalog/product/attribute/types,catalog/product/attribute/create,catalog/product/attribute/read,catalog/product/link,catalog/product/link/remove,catalog/product/link/update,catalog/product/link/assign,catalog/product/media,catalog/product/media/remove,catalog/product/media/update,catalog/product/media/create,catalog/product/tag,catalog/product/tag/remove,catalog/product/tag/update,catalog/product/tag/add,catalog/product/tag/info,catalog/product/tag/list,catalog/product/option,catalog/product/option/list,catalog/product/option/remove,catalog/product/option/add,catalog/product/option/info,catalog/product/option/types,catalog/product/option/update,catalog/product/option/value,catalog/product/option/value/remove,catalog/product/option/value/update,catalog/product/option/value/add,catalog/product/option/value/info,catalog/product/option/value/list,sales,sales/order,sales/order/updateitemstatus,sales/order/getlborderbyitemstatus,sales/order/setlborderitemstatus,sales/order/creditmemo,sales/order/creditmemo/list,sales/order/creditmemo/info,sales/order/creditmemo/cancel,sales/order/creditmemo/comment,sales/order/creditmemo/create,sales/order/invoice,sales/order/invoice/cancel,sales/order/invoice/info,sales/order/invoice/void,sales/order/invoice/capture,sales/order/invoice/comment,sales/order/invoice/create,sales/order/info,sales/order/shipment,sales/order/shipment/send,sales/order/shipment/info,sales/order/shipment/track,sales/order/shipment/comment,sales/order/shipment/create,sales/order/change</soap_role>
     </apiconfig>
     <crontab>
         <jobs>
             <logicbroker_dropship360>
                <run>
-                    <model>logicbroker/observer::logicbrokerSourcing</model>
+                    <model>dropship360/observer::logicbrokerSourcing</model>
                 </run>
             </logicbroker_dropship360>
             <logicbroker_backorder>
                <run>
-                    <model>logicbroker/observer::logicbrokerBackorder</model>
+                    <model>dropship360/observer::logicbrokerBackorder</model>
                 </run>
             </logicbroker_backorder>
            <logicbroker_uploadvendor>
                <run>
-                    <model>logicbroker/uploadvendor::ftpParseCsv</model>
+                    <model>dropship360/uploadvendor::ftpParseCsv</model>
                 </run>
             </logicbroker_uploadvendor> 
             <logicbroker_report_email>
                <run>
-                    <model>logicbroker/report::sendNotification</model>
+                    <model>dropship360/report::sendNotification</model>
                 </run>
             </logicbroker_report_email>  
+             <logicbroker_oudated_product_inventory_cron>
+               <run>
+                    <model>dropship360/observer::notifyForProductUpdateInventory</model>
+                </run>
+            </logicbroker_oudated_product_inventory_cron> 
         </jobs>
     </crontab>   
 </config> 

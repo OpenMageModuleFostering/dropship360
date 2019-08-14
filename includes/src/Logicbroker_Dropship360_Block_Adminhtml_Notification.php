@@ -25,16 +25,17 @@ class Logicbroker_Dropship360_Block_Adminhtml_Notification extends Mage_Adminhtm
 		$result = array();
 		//soap Details
 		$result['username'] = 'logicbroker';
-		$apiResult = Mage::getModel('logicbroker/logicbroker')->createApiRoleAndUser(array('api_user_name'=>'logicbroker','email'=>'noreply@logicbroker.com'));
+		$apiResult = Mage::getModel('dropship360/logicbroker')->createApiRoleAndUser(array('api_user_name'=>'logicbroker','email'=>'noreply@logicbroker.com'));
 		$result['api_password'] = $apiResult['password'];
 		$result['user_id'] = $apiResult['user_id'];
 		
 		//rest deatils
-		$arrRest = Mage::getModel('logicbroker/api2_createroleandrule')->initiliazeRest();
+		//code comment as Rest may be a part of future release refer lbn-1351
+		/* $arrRest = Mage::getModel('dropship360/api2_createroleandrule')->initiliazeRest();
 		$result['consumer_key'] = $arrRest['consumer_key'];
 		$result['consumer_secret'] = $arrRest['consumer_secret'];
 		$result['token'] = $arrRest['token'];
-		$result['secret'] =$arrRest['secret'];
+		$result['secret'] =$arrRest['secret']; */
 		$coreConfigData = array(
 					
 				array(
@@ -43,7 +44,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Notification extends Mage_Adminhtm
 						'path'       => 'logicbroker_integration/integration/soapuser',
 						'value'     => $result['username'],
 							
-				),
+				)
+				/*,
 				
 				array(
 					'scope'         => 'default',
@@ -51,7 +53,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Notification extends Mage_Adminhtm
 					'path'       => 'logicbroker_integration/integration/cunsumer_key',
 					'value'     => $result['consumer_key'],
 			
-						),
+						)
+				 ,
 					array(
 							'scope'         => 'default',
 							'scope_id'    => '0',
@@ -71,7 +74,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Notification extends Mage_Adminhtm
 			        'path'       => 'logicbroker_integration/integration/access_secret',
 			        'value'     => $result['secret'],
 			        
-			    ));
+			    ) */
+		);
 		
 		foreach ($coreConfigData as $data) {
 			$this->setConfigValue($data);	

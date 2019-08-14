@@ -87,25 +87,44 @@
     var htmlsuffixid = 'sales_report_'
 	var counter = Math.floor((Math.random() * 100) + 1);
 	var inputboxname = <?php echo Mage::helper('core')->jsonEncode($this->getHtmlElementName()); ?>;
+	var labelorder = ['label[for ="'+htmlsuffixid+'select_monitor_order"]','label[for ="'+htmlsuffixid+'select_open_monitor"]','label[for ="'+htmlsuffixid+'select_transmitting_filter"]','label[for ="'+htmlsuffixid+'select_sentosup_filter"]'];
+	var selectbox = ['select_monitor_order','select_open_monitor','select_transmitting_filter','select_sentosup_filter'];
+	createAstrick();
+	assignAstrick();
     function showinputbox(inputboxid,obj){
 	
        if(obj.value){
 	   $(inputboxid).show();
-	   //$(inputboxid).addClassName('required-entry validate-digits validate-number-range number-range-1-999');
+	   $(inputboxid).addClassName('required-entry validate-digits validate-number-range number-range-1-999');
+	   $$('label[for ="'+htmlsuffixid+obj.id+'"] span')[0].show();
 	  }else
 	   {
 	   $(inputboxid).value = '';
 	   $(inputboxid).removeClassName('required-entry validate-digits validate-number-range number-range-1-999');
-		
+		$$('label[for ="'+htmlsuffixid+obj.id+'"] span')[0].hide();
 	    if($$('.validation-advice')){
 			$$('.validation-advice').each(function (e,v){e.setStyle({'display':'none'})})
 		}
-		
 		$(inputboxid).hide();
-		
 		}
+		}
+	function createAstrick(){
+		labelorder.each(function (value){
+				var astrik = $$(value)[0].innerHTML;
+				$$(value)[0].innerHTML.empty()
+				var replace = astrik.indexOf('span') == -1 ? ' <span style="display:none" class="required">*</span>' : '';
+				$$(value)[0].innerHTML =  astrik+replace 
+			})
 	} 
 	
+	function assignAstrick(){
+		selectbox.each(function(value){
+		if($(value).value){
+			$$('label[for ="'+htmlsuffixid+$(value).id+'"] span')[0].show();
+		}
+		})
+		
+	}
 	//get email address : start
 		$('choose-email').observe('click', function(event) {
 		   if ($('email-list').style.display == "block") {

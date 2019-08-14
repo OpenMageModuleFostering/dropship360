@@ -13,9 +13,12 @@ class Logicbroker_Dropship360_Model_Observer {
 	const XML_PATH_LOGICBROKER_ORDER_BEGIN_SOURCING_STATUS   = 'Reprocess';
 	const XML_PATH_LOGICBROKER_ORDER_BACKORDERED   = 'Backorder';
 	const XML_PATH_LOGICBROKER_EMAIL_SHIPMENT   = 'logicbroker_sourcing/rank/email_shipment';
-	const STATUS_RUNNING = 'running';
-	const STATUS_SUCCESS = 'success';
+	const XML_PATH_INVENTORY_NOTIFICATION_EMAIL  = 'logicbroker_sourcing/inventory_notification/email';
+	const XML_PATH_INVENTORY_NOTIFICATION_EMAIL_ENABLED  = 'logicbroker_sourcing/inventory_notification/enabled';
+	const XML_PATH_INVENTORY_NOTIFICATION_DAYS  = 'logicbroker_sourcing/inventory_notification/days';
+	const XML_PATH_LOGICSOURCING_SOURCING_TYPE  = 'logicbroker_sourcing/rank/sourcing_type';
 	protected $_orderStatus;
+	protected $_itemData = array();
 	
 	public static function getWorkingDir()
 	{
@@ -31,18 +34,19 @@ class Logicbroker_Dropship360_Model_Observer {
 				if(in_array($item->getProductType(),array('simple','grouped')) ){
 					$started = 0;
 					$ended = 1;
-					$logMsg = 'Item inserted @'.Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/orderitems' ). ' sku : '.$item->getSku().','.$object->getOrder()->getIncrementId();
-					Mage::helper('logicbroker')->genrateLog(++$started,'Order Item Inserted Started',null,$logMsg);
+					$logMsg = 'Item inserted @'.Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/orderitems' ). ' sku : '.$item->getSku().','.$object->getOrder()->getIncrementId();
+					Mage::helper('dropship360')->genrateLog(++$started,'Order Item Inserted Started',null,$logMsg);
 						$this->getOrderSourcing($item, $object);
-					Mage::helper('logicbroker')->genrateLog(++$ended,null,'Order Item Inserted Ended',null);
+					Mage::helper('dropship360')->genrateLog(++$ended,null,'Order Item Inserted Ended',null);
 				}
 			}
 		}
 	
 	protected function getOrderSourcing($item, $object){
-		$orderSourcingInstance = Mage::getModel ( 'logicbroker/orderitems' );
+		$orderSourcingInstance = Mage::getModel ( 'dropship360/orderitems' );
+		Mage::getModel('dropship360/logicbroker')->prepareNotification($orderSourcingInstance,$object->getOrder()->getEntityId());
 		$orderStatus = $object->getOrder()->getStatus();
-    	$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($orderSourcingInstance, 'Sourcing', $orderStatus);
+    	$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($orderSourcingInstance, 'Sourcing', $orderStatus);
 		$orderSourcingInstance->setSku ( $item->getSku() );
 		$orderSourcingInstance->setItemId ( $item->getItemId() );
 		$orderSourcingInstance->setItemOrderId ( $object->getOrder()->getEntityId() );
@@ -53,37 +57,55 @@ class Logicbroker_Dropship360_Model_Observer {
 		try {
 			$orderSourcingInstance->save ();
 		} catch ( Execption $e ) {
-			Mage::helper('logicbroker')->genrateLog(0,null,null,'Section : order item inserted Error: '.$e->getMessage().' sku : '.$item->getSku());
+			Mage::helper('dropship360')->genrateLog(0,null,null,'Section : order item inserted Error: '.$e->getMessage().' sku : '.$item->getSku());
 			echo $e->getMessage();
 		}
 		
-		//As item get saved in logicbroker_sales_orders_items we run our sourcing logic
-		$assigned = $this->assignToVendor($item);
-		
+		//As item get saved in logicbroker_sales_orders_items we run our sourcing logic 
+		if(Mage::getStoreConfigFlag(self::XML_PATH_LOGICSOURCING_SOURCING_TYPE)){
+			$this->assignToVendor($item);
+			Mage::getResourceModel('dropship360/orderitems')->saveOrderItems($this->_itemData,$object->getOrder());
+			$this->_itemData = array();
+		}
 	}
 
 	public function logicbrokerSourcing() {
+		$sourcingObj = Mage::getModel('dropship360/ordersourcing');
 		if(!Mage::getStoreConfig(self::CRON_STRING_PATH_SOURCING)) {
-			Mage::helper('logicbroker')->genrateLog(0,'Sourcing started','Sourcing started','Sourcing can not be started as cron time not set');
+			Mage::helper('dropship360')->genrateLog(0,'Sourcing started','Sourcing started','Sourcing can not be started as cron time not set');
 			return;
 		}
-		Mage::helper('logicbroker')->genrateLog(1,'Sourcing Started for '.Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS.' Item status',null,null);
-		$this->setLbVendorRanking (Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS);
+		if($sourcingObj->checkRunningStatus('sourcing')){
+			
+			Mage::helper('dropship360')->genrateLog(0,'Sourcing started','Sourcing started','Sourcing can not be started as process already running');
+			return;
+		}
+		Mage::helper('dropship360')->genrateLog(1,'Sourcing Started for '.Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS.' Item status',null,null);
+		$sourcingObj->sourcingStarted(Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_SOURCING);
+		$this->setLbVendorRanking (Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS,true);
 		$this->addCronStatus('logicbroker_sourcing/cron_settings/dispaly_sourcing_updated_time', Mage::helper('core')->formatDate(now(), 'medium', true));
-		Mage::helper('logicbroker')->genrateLog(2,null,'Sourcing Ended for ' .Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS.' Item status',null);
+		$sourcingObj->sourcingCompleted(Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_SOURCING);
+		Mage::helper('dropship360')->genrateLog(2,null,'Sourcing Ended for ' .Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS.' Item status',null);
 		return; 
 	}
 	
 	public function logicbrokerBackorder()
 	{
+		$sourcingObj = Mage::getModel('dropship360/ordersourcing');
 		if(!Mage::getStoreConfig(self::CRON_STRING_PATH_BACKORDER)) {
-			Mage::helper('logicbroker')->genrateLog(0,'Backorder sourcing started','Backorder sourcing ended','Backorder Sourcing can not be started as cron time not set');
+			Mage::helper('dropship360')->genrateLog(0,'Backorder sourcing started','Backorder sourcing ended','Backorder Sourcing can not be started as cron time not set');
 			return;
         }
-        Mage::helper('logicbroker')->genrateLog(1,'Backorder Sourcing Started for '.Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER . ' item status',null,null);
-		$this->setLbVendorRanking (Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER,true);
+        if($sourcingObj->checkRunningStatus(Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER)){
+        	Mage::helper('dropship360')->genrateLog(0,'Backorder sourcing started','Backorder sourcing ended','Backorder Sourcing can not be started process already running');
+        	return;
+        }
+        Mage::helper('dropship360')->genrateLog(1,'Backorder Sourcing Started for '.Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER . ' item status',null,null);
+        $sourcingObj->sourcingStarted(Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER);
+		$this->setLbVendorRanking (Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER);
 		$this->addCronStatus('logicbroker_sourcing/cron_settings/display_backorder_updated_time', Mage::helper('core')->formatDate(now(), 'medium', true));
-		Mage::helper('logicbroker')->genrateLog(1,'Backorder Sourcing Ended for '.Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER .' item status',null,null);
+		$sourcingObj->sourcingCompleted(Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER);
+		Mage::helper('dropship360')->genrateLog(1,'Backorder Sourcing Ended for '.Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_BACKORDER .' item status',null,null);
 		return;
 	}
 		
@@ -99,45 +121,38 @@ class Logicbroker_Dropship360_Model_Observer {
 		return;
 	}
 	
-	protected function setLbVendorRanking($crontype,$isBackorderedCron = false)
+	protected function setLbVendorRanking($crontype,$isCronSourcing = false)
 	{
 		$reprocess = Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS;
-		$lbOrderInstances = Mage::getModel('logicbroker/ordersourcing');
-		$collection = $lbOrderInstances->prepareItemCollection($crontype);
-		if($collection->count() > 0 ){
-		foreach ( $collection as $orderData ) {
-		$orderCollection = Mage::getModel('sales/order')->Load($orderData->getItemOrderId());
-		
-		Mage::helper('logicbroker')->genrateLog(0,null,null,'<---->Item Processing Started : '.$orderData->getSku());
-				
-			if ($crontype == Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS) {
-					
-				//Patch : skip sourcing process if order is deleted	
-				if (! $orderCollection->getEntityId ()) {
-						Mage::helper ( 'logicbroker' )->genrateLog ( 0, null, null, 'Order not exists for => order_id: ' . $orderData->getItemOrderId () . ' hence cannot continue' );
-						continue;
-					}
-				$this->_orderStatus = $orderCollection->getStatus();
-				$assigned = $this->assignToVendor(Mage::getModel('sales/order_item')->Load($orderData->getItemId()));
-				$orderCollection->addStatusHistoryComment($orderData->getSku().': Item status changed to '.$assigned);
-				
-			}else
-			{
-				$orderItems = Mage::getModel ( 'logicbroker/orderitems' )->load($orderData->getItemId(),'item_id');	
-				$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($orderItems, $reprocess, $orderCollection->getStatus());
-				$orderItems->setLbItemStatus ($reprocess)
-				->setitemStatusHistory($itemStatusHistory)
-				->save();
-				$orderCollection->addStatusHistoryComment($orderData->getSku().': Item status changed to '.$reprocess);
-				
+		$lbOrderInstances = Mage::getModel('dropship360/ordersourcing');
+		$collection = $lbOrderInstances->prepareItemCollection($crontype,$isCronSourcing);
+		if(count($collection) > 0 ){
+		foreach ( $collection as $orderID => $orderCollectionData ) {
+			$orderCollection = Mage::getModel('sales/order')->Load($orderID);
+			//Patch : skip sourcing process if order is deleted
+			if (! $orderCollection->getEntityId ()) {
+				Mage::helper ( 'dropship360' )->genrateLog ( 0, null, null, 'Order not exists for => order_id: ' . $orderID . ' hence cannot continue' );
+				continue;
 			}
-			$orderCollection->save();
-			Mage::helper('logicbroker')->genrateLog(0,null,null,'####### Item Processing ended : '.$orderData->getSku());
+			$this->_orderStatus = $orderCollection->getStatus();
+			foreach ($orderCollectionData as $orderData ){
+			Mage::helper('dropship360')->genrateLog(0,null,null,'<---->Item Processing Started : '.$orderData->getSku());
+			if ($crontype == Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_REPROCESS) {
+				$assigned = $this->assignToVendor(Mage::getModel('sales/order_item')->Load($orderData->getItemId()));
+			}else
+			{	
+				$orderItems = Mage::getModel( 'dropship360/orderitems' )->load($orderData->getItemId(), 'item_id');
+				$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($orderItems, $reprocess, $this->_orderStatus);
+				$this->_itemData[$orderData->getItemId()] = array('lb_item_status'=>$reprocess,'item_status_history'=>$itemStatusHistory);
+			}
+			Mage::helper('dropship360')->genrateLog(0,null,null,'####### Item Processing ended : '.$orderData->getSku());
 			 			 	
-			
+			}	
+			Mage::getResourceModel('dropship360/orderitems')->saveOrderItems($this->_itemData,$orderCollection,$crontype);
+			$this->_itemData = array();
 		}
 		}else {
-		Mage::helper('logicbroker')->genrateLog(0,null,null,'Order collection is empty for => Cron_type: '.$crontype.' hence cannot continue');
+		Mage::helper('dropship360')->genrateLog(0,null,null,'Order collection is empty for => Cron_type: '.$crontype.' hence cannot continue');
 			return;
 		}
 	}
@@ -152,10 +167,11 @@ class Logicbroker_Dropship360_Model_Observer {
 		$vendorCode = '';
 		$inventoryStock = '';
 		$defaultVendor = (Mage::getStoreConfig('logicbroker_sourcing/rank/defaultbackorder') == 'none') ? '' : Mage::getStoreConfig('logicbroker_sourcing/rank/defaultbackorder');
-		$orderItemInstance = Mage::getModel ( 'logicbroker/orderitems' );
+		$orderItemInstance = Mage::getModel ( 'dropship360/orderitems' );
 		$orderItemInstance->load ( $itemId, 'item_id' );
 		$collectionVendor = $orderItemInstance->prepareOrderItemData($item);
 		$arrDefaultVendorDetails = array();
+		$vendorCost = 0;
 		
 		if ($collectionVendor->count () > 0) {			
 			if($collectionVendor->count () >= 1){			
@@ -205,31 +221,69 @@ class Logicbroker_Dropship360_Model_Observer {
 		
 		if(!empty($vendorCode)){
 			if ($vendorCode && $inventoryStock >= $qtyInvoiced) {		
-								
-				$itemStatus = 'Transmitting';
-				$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($orderItemInstance, $itemStatus, $this->_orderStatus);
-				$orderItemInstance->setItemData($orderItemInstance,$itemStatusComplete,$item,$vendorCode,$vendorCost*$qtyInvoiced,$vendorSku,$itemStatusHistory);
-					$orderItemInstance->updateLbVendorInvenory ( $vendorCode, $productSku,$qtyInvoiced );
-				Mage::helper('logicbroker')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details==> stock('.$inventoryStock.') >= qtyinvoiced('.$qtyInvoiced.'),vendor_code ->'.$vendorCode.', item-status->'.$itemStatus);
+				$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($orderItemInstance, $itemStatusComplete, $this->_orderStatus);
+				Mage::helper('dropship360')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details==> stock('.$inventoryStock.') >= qtyinvoiced('.$qtyInvoiced.'),vendor_code ->'.$vendorCode.', item-status->'.$itemStatusComplete);
+				Mage::getModel('dropship360/logicbroker')->setupNotification();
+				$this->_itemData [$item->getItemId ()] = array (
+						'updateInventory' => true,
+						'qtyInvoiced' =>$qtyInvoiced,
+						'updated_at' => now (),
+						'sku' => $item->getSku (),
+						'updated_by' => 'Cron',
+						'lb_item_status' => $itemStatusComplete,
+						'lb_vendor_code' => $vendorCode,
+						'vendor_cost' => $vendorCost * $qtyInvoiced,
+						'lb_vendor_sku' => $vendorSku,
+						'item_status_history' => $itemStatusHistory 
+				);
 				return $itemStatusComplete;
 			}
 			if ($isDefaultVendor && $inventoryStock <= $qtyInvoiced && !empty($defaultVendor) && in_array($defaultVendor,$arrVendorAvailable)) {	
-				$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($orderItemInstance, 'Transmitting', $this->_orderStatus);		
-				$orderItemInstance->setItemData($orderItemInstance,$itemStatusComplete,$item,$defaultVendor,$arrDefaultVendorDetails['cost']*$qtyInvoiced,$arrDefaultVendorDetails['lb_vendor_sku'],$itemStatusHistory);
-				Mage::helper('logicbroker')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details Default vendor set ==>stock('.$inventoryStock.') >= qtyinvoiced('.$qtyInvoiced.'),vendor_code ->'.$vendorCode.', item-status->Transmitting');
+				$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($orderItemInstance, $itemStatusComplete, $this->_orderStatus);		
+				Mage::helper('dropship360')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details Default vendor set ==>stock('.$inventoryStock.') >= qtyinvoiced('.$qtyInvoiced.'),vendor_code ->'.$vendorCode.', item-status->Transmitting');
+				$this->_itemData [$item->getItemId ()] = array (
+						'updateInventory' => false,
+						'updated_at' => now (),
+						'sku' => $item->getSku (),
+						'updated_by' => 'Cron',
+						'lb_item_status' => $itemStatusComplete,
+						'lb_vendor_code' => $defaultVendor,
+						'vendor_cost' => $arrDefaultVendorDetails ['cost'] * $qtyInvoiced,
+						'lb_vendor_sku' => $arrDefaultVendorDetails ['lb_vendor_sku'],
+						'item_status_history' => $itemStatusHistory 
+				);
 				return $itemStatusComplete;			
 			}
 			if ($vendorCode && $inventoryStock <= $qtyInvoiced) {				
-				$itemStatus = 'Backorder';
-				$itemStatusHistory =Mage::helper('logicbroker')->getSerialisedData($orderItemInstance, $itemStatus, $this->_orderStatus);
-				$orderItemInstance->setItemData($orderItemInstance,$itemStatusBackorder,$item,$vendorCode,$vendorCost*$qtyInvoiced,$vendorSku,$itemStatusHistory);
-				Mage::helper('logicbroker')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details==>stock('.$inventoryStock.') <= qtyinvoiced('.$qtyInvoiced.'),vendor_code ->'.$vendorCode.', item-status->'.$itemStatus);
+				$itemStatusHistory =Mage::helper('dropship360')->getSerialisedData($orderItemInstance, $itemStatusBackorder, $this->_orderStatus);
+				Mage::helper('dropship360')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details==>stock('.$inventoryStock.') <= qtyinvoiced('.$qtyInvoiced.'),vendor_code ->'.$vendorCode.', item-status->'.$itemStatusBackorder);
+				$this->_itemData [$item->getItemId ()] = array (
+						'updateInventory' => false,
+						'updated_at' => now (),
+						'sku' => $item->getSku (),
+						'updated_by' => 'Cron',
+						'lb_item_status' => $itemStatusBackorder,
+						'lb_vendor_code' => $vendorCode,
+						'vendor_cost' => $vendorCost * $qtyInvoiced,
+						'lb_vendor_sku' => $vendorSku,
+						'item_status_history' => $itemStatusHistory 
+				);
 				return $itemStatusBackorder;				
 			}		
 		}else{
-			$itemStatusHistory = Mage::helper('logicbroker')->getSerialisedData($orderItemInstance,'No Dropship', $this->_orderStatus);	
-			$orderItemInstance->setItemData($orderItemInstance,'No Dropship',$item,$vendorCode,$qtyInvoiced,"",$itemStatusHistory);
-			Mage::helper('logicbroker')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details==> No vendor Set ,vendor_code ->'.$vendorCode.', item-status->No Dropship');
+			$itemStatusHistory = Mage::helper('dropship360')->getSerialisedData($orderItemInstance,$itemStatusNoDropShip, $this->_orderStatus);	
+			Mage::helper('dropship360')->genrateLog(0,null,null,'@@@@@@@@ Sourcing Details==> No vendor Set ,vendor_code ->'.$vendorCode.', item-status->No Dropship');
+			$this->_itemData [$item->getItemId ()] = array (
+					'updateInventory' => false,
+					'updated_at' => now (),
+					'sku' => $item->getSku (),
+					'updated_by' => 'Cron',
+					'lb_item_status' => $itemStatusNoDropShip,
+					'lb_vendor_code' => $vendorCode,
+					'vendor_cost' => $vendorCost * $qtyInvoiced,
+					'lb_vendor_sku' => '',
+					'item_status_history' => $itemStatusHistory 
+			);
 			return $itemStatusNoDropShip;			
 		}		
 	}
@@ -259,14 +313,14 @@ class Logicbroker_Dropship360_Model_Observer {
                  *
                  */
                 $customFieldValue =  $this->_getRequest()->getPost('product');
-                $result = Mage::getModel('logicbroker/inventory')->saveTabVendorData($customFieldValue);
+                $result = Mage::getModel('dropship360/inventory')->saveTabVendorData($customFieldValue);
                 
                 /**
                  * Uncomment the line below to save the product
                  *
                  */
                 //if(!$result)
-                	//Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Vendor Data Cannot be saved'));
+                	//Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Vendor Data Cannot be saved'));
                 
                 //$product->save();
                 
@@ -287,7 +341,7 @@ class Logicbroker_Dropship360_Model_Observer {
    		}
    			
    		$finalStock = $result['inventory'];
-        $finalStock = Mage::helper('logicbroker')->getIsQtyDecimal($sku, $finalStock);
+        $finalStock = Mage::helper('dropship360')->getIsQtyDecimal($sku, $finalStock);
    		$conn = Mage::getSingleton ( 'core/resource' )->getConnection ( 'core_write' );
    		 
    		$tableNameStatus = Mage::getSingleton ( 'core/resource' )->getTableName ( 'cataloginventory/stock_status' );
@@ -405,16 +459,42 @@ class Logicbroker_Dropship360_Model_Observer {
 	public function catalogProductDeleteAfter(Varien_Event_Observer $observer)
 	{
 		$deletedProductSku = $observer->getEvent()->getProduct()->getSku();
-		$orderItem = Mage::getModel ('logicbroker/inventory')->getCollection()->addFieldToFilter('product_sku', $deletedProductSku);
+		$orderItem = Mage::getModel ('dropship360/inventory')->getCollection()->addFieldToFilter('product_sku', $deletedProductSku);
 		if($orderItem->getSize() > 0){
 			foreach($orderItem as $data){
 				try {
-					Mage::getModel ('logicbroker/inventory')->load($data->getId())->delete();
+					Mage::getModel ('dropship360/inventory')->load($data->getId())->delete();
 				} catch (Exception $e) {    
 					Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
 				}		
 			}
 		}
 		return 	$this;		
+	}
+	//@function : notify cutomer for oudated product inventory through email,initiated by cron
+	public function notifyForProductUpdateInventory(){
+		if (!Mage::getStoreConfigFlag (self::XML_PATH_INVENTORY_NOTIFICATION_EMAIL_ENABLED) || !Mage::getStoreConfigFlag (self::XML_PATH_INVENTORY_NOTIFICATION_DAYS) || !Mage::getStoreConfigFlag (self::XML_PATH_INVENTORY_NOTIFICATION_EMAIL)) {
+			return $this;
+		}
+		$itemObject;
+		$fileInfo = array();
+		$ioAdapter = new Varien_Io_File();
+		$open_monitor_from = Date('Y-m-d h:i:s', strtotime('-'.Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_DAYS).' day'));
+		$open_monitor_to = Mage::getModel('core/date')->gmtDate();
+		$itemObject = Mage::getModel('dropship360/inventory')->getCollection()->addFieldTofilter('updated_at', array('from' => $open_monitor_from,'to' => $open_monitor_to));
+		if($itemObject->getSize() <= 0){
+			Mage::log('cannot send outdated product inventory email collection is empty for form :'.$open_monitor_from.' to :'.$open_monitor_to, null, 'notification_error.log');
+			return $this;
+		}
+		$fileInfo = Mage::getModel('dropship360/csvparser')->getCsvFile($itemObject);
+		$mailData['days'] = Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_DAYS);
+		$mailData['subject'] = 'dropship360 list of outdated product inventory';
+		$postObject = new Varien_Object();
+		$postObject->setData($mailData);
+		$email = trim(Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_EMAIL));
+		$templateId = 'logicbroker_outdated_product_inventory';
+		$isMailSent = Mage::helper('dropship360')->sendMail($postObject,$email,$templateId,$fileInfo['value']);
+		$ioAdapter->rm($fileInfo['value']);
+		return $this;
 	}
 }

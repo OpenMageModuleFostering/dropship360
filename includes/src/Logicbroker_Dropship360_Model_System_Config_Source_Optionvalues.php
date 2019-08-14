@@ -15,13 +15,13 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Optionvalues {
         
         $optionsArray = $this->getOptionValue();
         if(is_array($optionsArray)){
-        array_unshift($optionsArray,array('value' => '', 'label' => Mage::helper('logicbroker')->__('--Please Select--')));
-        array_push($optionsArray,array('value' => 'addnew', 'label' => Mage::helper('logicbroker')->__('Add new code')));
+        array_unshift($optionsArray,array('value' => '', 'label' => Mage::helper('dropship360')->__('--Please Select--')));
+        array_push($optionsArray,array('value' => 'addnew', 'label' => Mage::helper('dropship360')->__('Add new code')));
         }
         else
         {
-           $optionsArray = array(array('value' => '', 'label' => Mage::helper('logicbroker')->__('--Please Select--')),
-               array('value' => 'addnew', 'label' => Mage::helper('logicbroker')->__('Add new code'))); 
+           $optionsArray = array(array('value' => '', 'label' => Mage::helper('dropship360')->__('--Please Select--')),
+               array('value' => 'addnew', 'label' => Mage::helper('dropship360')->__('Add new code'))); 
         }
 //        echo '<pre>';
 //        print_r($optionsArray);
@@ -33,7 +33,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Optionvalues {
     public function getOptionValue()
     {
         $integration = Mage::getStoreConfig('logicbroker_integration/integration/supplier_attribute');
-        $logicbrokerCollection = Mage::getModel('logicbroker/supplier')->getCollection();
+        $logicbrokerCollection = Mage::getModel('dropship360/supplier')->getCollection();
         $attributeArray = array();
         if($integration != null && $integration)
         {
@@ -41,7 +41,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Optionvalues {
         $options = $attributeDetails->getSource()->getAllOptions(false);
         foreach ($options as $option) {
             
-            $attributeArray[] = array('value'=>$option["label"],'label' => Mage::helper('logicbroker')->__(strtolower($option["label"])));
+            $attributeArray[] = array('value'=>$option["label"],'label' => Mage::helper('dropship360')->__(strtolower($option["label"])));
         }
         }else
         {
@@ -50,7 +50,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Optionvalues {
           $comapnyIds = $logicbrokerCollection->getData();
         if (count($comapnyIds) > 0) {
             foreach ($comapnyIds as $key=>$value) {
-                $attributeArray[] = array('value'=>$value['magento_vendor_code'],'label' => Mage::helper('logicbroker')->__(strtolower($value['magento_vendor_code'])));
+                $attributeArray[] = array('value'=>$value['magento_vendor_code'],'label' => Mage::helper('dropship360')->__(strtolower($value['magento_vendor_code'])));
             }
         }
         }

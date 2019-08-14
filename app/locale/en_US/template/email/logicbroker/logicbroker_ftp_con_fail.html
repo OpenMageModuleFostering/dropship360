@@ -1,0 +1,20 @@
+<!--@subject {{var templatevar.subject}}@-->
+<!--@vars
+{"var data.name":"Sender Name",
+"var data.email":"Sender Email",
+"var data.telephone":"Sender Telephone",
+"var data.comment":"Comment"}
+@-->
+
+FTP Address: {{config path='logicbroker_sourcing/cron_settings_upload/ftp_site'}}<br>
+Account Number: {{config path='logicbroker_sourcing/cron_settings_upload/ftp_accnumber'}}<br>
+FTP Username: {{config path='logicbroker_sourcing/cron_settings_upload/ftp_username'}}<br>
+Time Failed: {{var templatevar.datetime}}<br>
+Store URL: {{store url=""}}<br>
+{{if templatevar.isfailed}}
+Supplier: {{var templatevar.vendor_code}} <br>
+{{/if}}
+	
+Reason:   {{var templatevar.message}}<br>
+
+

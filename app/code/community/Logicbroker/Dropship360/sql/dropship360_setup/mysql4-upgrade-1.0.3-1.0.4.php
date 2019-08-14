@@ -11,7 +11,7 @@ $installer->startSetup();
 
 $installer->run("
 
-CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/inventorylog')} (
+CREATE TABLE IF NOT EXISTS {$installer->getTable('dropship360/inventorylog')} (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lb_vendor_code` varchar(50) NOT NULL,
   `lb_vendor_name` varchar(50) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/inventorylog')} (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
 
-CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/uploadvendor')} (
+CREATE TABLE IF NOT EXISTS {$installer->getTable('dropship360/uploadvendor')} (
   `file_id` int(11) NOT NULL AUTO_INCREMENT,
   `file_name` varchar(50) NOT NULL,
   `import_status` enum('pending','done','processing') NOT NULL DEFAULT 'pending',
@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/uploadvendor')} (
   KEY `import_status` (`import_status`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
 
-DROP TABLE IF EXISTS {$installer->getTable('logicbroker/vendor_import_log')};
-CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/vendor_import_log')} (
+-- DROP TABLE IF EXISTS {$installer->getTable('dropship360/vendor_import_log')};
+CREATE TABLE IF NOT EXISTS {$installer->getTable('dropship360/vendor_import_log')} (
   `lb_vendor_code` varchar(50) NOT NULL,
   `updated_by` text NOT NULL,
   `success` int(11) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/vendor_import_log'
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=0 ;
 ");
 
-$installer->getConnection()->modifyColumn($installer->getTable('logicbroker/inventorylog'),'cost', 'VARCHAR( 50 ) DEFAULT NULL');
-$installer->getConnection()->modifyColumn($installer->getTable('logicbroker/inventorylog'),'stock', 'VARCHAR( 50 ) DEFAULT NULL');
-$installer->getConnection()->modifyColumn($installer->getTable('logicbroker/inventorylog'),'activity', 'VARCHAR( 255 ) DEFAULT NULL');
+$installer->getConnection()->modifyColumn($installer->getTable('dropship360/inventorylog'),'cost', 'VARCHAR( 50 ) DEFAULT NULL');
+$installer->getConnection()->modifyColumn($installer->getTable('dropship360/inventorylog'),'stock', 'VARCHAR( 50 ) DEFAULT NULL');
+$installer->getConnection()->modifyColumn($installer->getTable('dropship360/inventorylog'),'activity', 'VARCHAR( 255 ) DEFAULT NULL');
 $installer->endSetup();

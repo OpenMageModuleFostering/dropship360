@@ -29,7 +29,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_System_Config_Fieldset_Hint
     
     public function getStoreList(){
 
-    	return Mage::getModel('logicbroker/system_config_source_store')->toOptionArray();
+    	return Mage::getModel('dropship360/system_config_source_store')->toOptionArray();
       
     }
 

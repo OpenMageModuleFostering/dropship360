@@ -60,21 +60,21 @@ class Logicbroker_Dropship360_Block_Adminhtml_Reports_Activitymonitor_Email exte
             'use_index' => true,
 		));
 		$this->addColumn('role_name', array(
-            'header'    => Mage::helper('logicbroker')->__('Role'),
+            'header'    => Mage::helper('dropship360')->__('Role'),
             'align'     => 'right',
             'width'     => '50px',
             'index'     => 'role_name',
         ));
 		
        $this->addColumn('firstname', array(
-            'header'    => Mage::helper('logicbroker')->__('Name'),
+            'header'    => Mage::helper('dropship360')->__('Name'),
             'align'     => 'right',
             'width'     => '50px',
             'index'     => 'firstname',
         ));
 		
 		$this->addColumn('email', array(
-            'header'    => Mage::helper('logicbroker')->__('Email Address'),
+            'header'    => Mage::helper('dropship360')->__('Email Address'),
             'align'     => 'right',
             'width'     => '50px',
             'index'     => 'email',

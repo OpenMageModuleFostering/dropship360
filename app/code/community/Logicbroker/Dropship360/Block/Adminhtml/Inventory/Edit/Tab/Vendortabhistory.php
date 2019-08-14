@@ -22,7 +22,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Tab_Vendortabhistor
 
     public function getInventoryLog(){
     	
-    	$collection =  Mage::getModel('logicbroker/inventorylog')->getCollection()->addFieldToFilter('product_sku',Mage::getModel('catalog/product')->load($this->getProductId())->getSku());
+    	$collection =  Mage::getModel('dropship360/inventorylog')->getCollection()->addFieldToFilter('product_sku',Mage::getModel('catalog/product')->load($this->getProductId())->getSku());
     	$collection->getSelect()->order('updated_at desc');
     	
     	return $collection;

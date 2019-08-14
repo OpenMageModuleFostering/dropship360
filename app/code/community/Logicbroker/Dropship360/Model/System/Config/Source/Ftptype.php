@@ -12,8 +12,8 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Ftptype
     {
         
  		return array(
-            array('value' => '', 'label' => Mage::helper('logicbroker')->__('--Please Select--')),
- 			array('value' => 'ftp', 'label' => Mage::helper('logicbroker')->__('FTP'))
+            array('value' => '', 'label' => Mage::helper('dropship360')->__('--Please Select--')),
+ 			array('value' => 'ftp', 'label' => Mage::helper('dropship360')->__('FTP'))
  		);
     }
 }

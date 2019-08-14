@@ -13,14 +13,14 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_History_View_Tabs extends
       parent::__construct();
       $this->setId('adminhtml_sourcing_history_view');
       $this->setDestElementId('history_view');
-      $this->setTitle(Mage::helper('logicbroker')->__('Order Item History'));
+      $this->setTitle(Mage::helper('dropship360')->__('Order Item History'));
    }
 
   protected function _beforeToHtml()
   {
       $this->addTab('form_section', array(
-          'label'     => Mage::helper('logicbroker')->__('Order Item History'),
-          'title'     => Mage::helper('logicbroker')->__('Order Item History'),
+          'label'     => Mage::helper('dropship360')->__('Order Item History'),
+          'title'     => Mage::helper('dropship360')->__('Order Item History'),
       ));
      
       return parent::_beforeToHtml();

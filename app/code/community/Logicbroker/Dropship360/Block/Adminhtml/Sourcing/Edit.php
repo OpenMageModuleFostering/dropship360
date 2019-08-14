@@ -14,12 +14,12 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_Edit extends Mage_Adminht
         
                  
         $this->_objectId = 'lb_item_id';
-        $this->_blockGroup = 'logicbroker';
+        $this->_blockGroup = 'dropship360';
         $this->_controller = 'adminhtml_sourcing';
         parent::__construct();
         
-        $this->_updateButton('save', 'label', Mage::helper('logicbroker')->__('Save Sourcing'));
-       	$this->_updateButton('delete', 'label', Mage::helper('logicbroker')->__('Delete Supplier'));
+        $this->_updateButton('save', 'label', Mage::helper('dropship360')->__('Save Sourcing'));
+       	$this->_updateButton('delete', 'label', Mage::helper('dropship360')->__('Delete Supplier'));
 		
         $this->_addButton('saveandcontinue', array(
             'label'     => Mage::helper('adminhtml')->__('Save And Continue Edit'),
@@ -58,9 +58,9 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_Edit extends Mage_Adminht
     public function getHeaderText()
     {
         if( Mage::registry('sourcing_data') && Mage::registry('sourcing_data')->getLbItemId() ) {
-            return Mage::helper('logicbroker')->__("Edit Item Sourcing Supplier", $this->htmlEscape(Mage::registry('sourcing_data')->getTitle()));
+            return Mage::helper('dropship360')->__("Edit Item Sourcing Supplier", $this->htmlEscape(Mage::registry('sourcing_data')->getTitle()));
         } else {
-            return Mage::helper('logicbroker')->__('Select Sourcing Supplier');
+            return Mage::helper('dropship360')->__('Select Sourcing Supplier');
         }
     }
 

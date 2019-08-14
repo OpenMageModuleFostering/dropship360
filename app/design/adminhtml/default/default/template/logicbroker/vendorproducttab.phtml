@@ -25,12 +25,12 @@
         <input type="hidden" id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>_lb_vendor_code" name="<?php echo $this->getFieldName() ?>[<?php echo $vendor->getId() ?>][lb_vendor_code]" value="<?php echo $vendor->getLbVendorCode() ?>" />
 		<thead>
         <tr>
-           <th class="opt-title" style="width:150px;"><?php echo Mage::helper('logicbroker')->__('Supplier Code') ?></th>
-           <th class="opt-type" style="width:150px;"><?php echo Mage::helper('logicbroker')->__('Supplier Name') ?></th>
-           <th class="opt-req" style="width:75px;"><?php echo $this->jsQuoteEscape(Mage::helper('logicbroker')->__('Cost')) ?><span class="required">*</span></th>
-           <th class="opt-order" style="width:75px;"><?php echo Mage::helper('logicbroker')->__('Inventory') ?><span class="required">*</span></th>
-           <th class="opt-order" style="width:75px;"><?php echo Mage::helper('logicbroker')->__('Supplier Sku') ?><span class="required">*</span></th>
-           <th class="opt-order" style="width:150px;"><?php echo Mage::helper('logicbroker')->__('Last Sync') ?><span class="required">*</span></th>
+           <th class="opt-title" style="width:150px;"><?php echo Mage::helper('dropship360')->__('Supplier Code') ?></th>
+           <th class="opt-type" style="width:150px;"><?php echo Mage::helper('dropship360')->__('Supplier Name') ?></th>
+           <th class="opt-req" style="width:75px;"><?php echo $this->jsQuoteEscape(Mage::helper('dropship360')->__('Cost')) ?><span class="required">*</span></th>
+           <th class="opt-order" style="width:75px;"><?php echo Mage::helper('dropship360')->__('Inventory') ?><span class="required">*</span></th>
+           <th class="opt-order" style="width:75px;"><?php echo Mage::helper('dropship360')->__('Supplier Sku') ?><span class="required">*</span></th>
+           <th class="opt-order" style="width:150px;"><?php echo Mage::helper('dropship360')->__('Last Sync') ?><span class="required">*</span></th>
            <th class="a-right"><?php echo $this->jsQuoteEscape($this->getUpdateDeleteButtonHtml()) ?></th>
            </tr>
            </thead>

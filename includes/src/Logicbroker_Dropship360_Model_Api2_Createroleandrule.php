@@ -4,6 +4,7 @@
  *
  * @category    Community
  * @package     Logicbroker_Dropship360
+ * No use of this class currently as Rest may be a part of future release refer lbn-1351
  */
 class Logicbroker_Dropship360_Model_Api2_Createroleandrule 
 {
@@ -172,12 +173,12 @@ class Logicbroker_Dropship360_Model_Api2_Createroleandrule
 	
 	protected function createAdminUserAndRole(){
 		
-		$resource = '__root__,admin/logicbroker,admin/logicbroker/integration,admin/logicbroker/order_sourcing,admin/logicbroker/vendor_ranking,admin/logicbroker/inventory,admin/logicbroker/suppliers';
+		$resource = '__root__,admin/logicbroker,admin/dropship360/integration,admin/dropship360/order_sourcing,admin/dropship360/vendor_ranking,admin/dropship360/inventory,admin/dropship360/suppliers';
 		$roleName = 'logicbrokerds360';
 
 		$role =  Mage::getModel('admin/roles');
 		$username = 'logicbrokerds360';
-		$email = Mage::helper('logicbroker')->getConfigObject('apiconfig/email/toaddress');
+		$email = Mage::helper('dropship360')->getConfigObject('apiconfig/email/toaddress');
 		$user = Mage::getModel('admin/user');
 		$user->loadByUsername($username);
 		if(!$user->getId()){

@@ -13,6 +13,16 @@
 </style>
 <script type="text/javascript">
     var FORM_KEY = "<?php echo $this->getFormKey();?>";
+	if (typeof auto_scroll=='undefined') {
+    var auto_scroll = window.setInterval(console_scroll, 10);
+}
+function console_scroll()
+{
+    if (typeof top.$ != 'function') {
+        return;
+    }
+    document.body.scrollTop+=100;
+}
 </script>
    <?php if($this->isManualUploadRunning()){ ?> 
     	<ul>

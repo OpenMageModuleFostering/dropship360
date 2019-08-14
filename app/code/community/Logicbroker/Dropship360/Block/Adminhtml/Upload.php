@@ -64,7 +64,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload extends Mage_Adminhtml_Bloc
     protected function _construct()
     {
         parent::_construct();
-        $this->_blockGroup = 'logicbroker';
+        $this->_blockGroup = 'dropship360';
         $this->_controller = 'adminhtml_upload';
     }
 
@@ -95,7 +95,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload extends Mage_Adminhtml_Bloc
     protected function getActiveRankers()
     {
     	$rankersArray = array();
-    	$collection = Mage::getModel('logicbroker/ranking')->getCollection()->addFieldToFilter('is_dropship','yes');
+    	$collection = Mage::getModel('dropship360/ranking')->getCollection()->addFieldToFilter('is_dropship','yes');
     	if($collection->count() > 0){
     	foreach($collection as $data){
     		$rankersArray[] = $data->getLbVendorCode();

@@ -11,9 +11,9 @@ class Logicbroker_Dropship360_Block_Adminhtml_Showhistory extends Mage_Adminhtml
   public function __construct()
   {
     $this->_controller = 'adminhtml_ranking';
-    $this->_blockGroup = 'logicbroker';
-    $this->_headerText = Mage::helper('logicbroker')->__('Supplier Ranking Log');
-    $this->__addBackButton = Mage::helper('logicbroker')->__('Back');
+    $this->_blockGroup = 'dropship360';
+    $this->_headerText = Mage::helper('dropship360')->__('Supplier Ranking Log');
+    $this->__addBackButton = Mage::helper('dropship360')->__('Back');
     $this->addButton('back',array(
             'label'     => 'Back',
             'onclick'   => 'setLocation(\'' . $this->getUrl('*/*/') .'\')',
@@ -26,7 +26,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Showhistory extends Mage_Adminhtml
   }
  
   public function getLogCollection(){ 	
-  	$collection = Mage::getModel('logicbroker/rankinglog')->getCollection();
+  	$collection = Mage::getModel('dropship360/rankinglog')->getCollection();
   	$collection->getSelect()->order('created_at desc');
   	$logtable = array();
   	foreach($collection as $value){

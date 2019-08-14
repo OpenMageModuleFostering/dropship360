@@ -11,11 +11,11 @@ class Logicbroker_Dropship360_Model_Ranking extends Mage_Core_Model_Abstract
 {
     protected function _construct(){
 
-       $this->_init("logicbroker/ranking");
+       $this->_init("dropship360/ranking");
     }
     public function rearrangeRank($value, $rank){		
 		if($rank > 0 && $rank < $value->getRanking() ){
-			$rankData = Mage::getModel('logicbroker/ranking')->load($value->getId());
+			$rankData = Mage::getModel('dropship360/ranking')->load($value->getId());
 			$rankData->setRanking($rank);
 			$rankData->save();
 			$rank++;	
@@ -29,7 +29,7 @@ class Logicbroker_Dropship360_Model_Ranking extends Mage_Core_Model_Abstract
     	$arrVendor = array();
     	if($vendorCollection->count() > 0 ){
     		foreach ($vendorCollection as $vendor) {
-    			$arrVendor[] = array('name'=>$vendor->getLbVendorName(),'code'=>$vendor->getLbVendorCode());   			
+    			$arrVendor[] = array('name'=>$vendor->getLbVendorName(),'code'=>$vendor->getLbVendorCode(),'link'=>is_null($vendor->getLinkingAttribute()) ? '' : $vendor->getLinkingAttribute());   			
     		}
     	}
     	return $arrVendor;   	
@@ -49,7 +49,7 @@ class Logicbroker_Dropship360_Model_Ranking extends Mage_Core_Model_Abstract
     }
 	
 	protected function saveVendorDetails($value){
-		$vendorDetail = Mage::getModel('logicbroker/ranking')->load($value['lb_vendor_code'],'lb_vendor_code');    		
+		$vendorDetail = Mage::getModel('dropship360/ranking')->load($value['lb_vendor_code'],'lb_vendor_code');    		
 		if(!$vendorDetail->getId()){
 			$vendorDetail->setLbVendorCode($value['lb_vendor_code']);
 			$vendorDetail->setLbVendorName($value['lb_vendor_name']);

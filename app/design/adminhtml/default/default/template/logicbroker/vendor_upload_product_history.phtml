@@ -34,7 +34,9 @@
             <strong><?php echo $_item['failure'] ?> failed updates</strong>
             <?php if(!empty($_item['ftp_error'])): ?>
             <a href="<?php echo $this->getUrl('*/*/exportErrorCsv',array('vcode'=>$_item['lb_vendor_code'], 'vdate'=>$_item['created_at']))?>" onmouseout = " setTimeout(function(){$('simplediv<?php echo $i ?>').hide();return false;},200); " onmouseover="$('simplediv<?php echo $i ?>').show();return false;"><strong><?php echo $_item['ftp_error'] ?> </strong></a>
-            <div id="simplediv<?php echo $i ?>" style="background-color:none;border:1px solid black;display:none;width:500px;height:auto;word-wrap: break-word;padding:3px"><?php echo $_item['ftp_error_desc'] ?></div>
+            <div id="simplediv<?php echo $i ?>" style="background-color:none;border:1px solid black;display:none;width:500px;height:auto;word-wrap: break-word;padding:3px"><?php 
+			$rowData = (!is_null($_item['ftp_error_desc'])) ? $_item['ftp_error_desc'] : $_item['error_id'];
+			echo  $this->parseDescription($rowData,$_item['lb_vendor_code']); ?></div>
             <?php endif; ?>
             <span class="separator">|</span>
 			<strong> <?php echo $this->formatDate($_item['created_at'], 'medium', true); ?></strong>

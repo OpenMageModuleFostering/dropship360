@@ -13,14 +13,14 @@ class Logicbroker_Dropship360_Adminhtml_InventoryController extends Mage_Adminht
 	protected function _initAction() 
 	{
 		$this->loadLayout()
-			->_setActiveMenu('logicbroker/inventory')
+			->_setActiveMenu('dropship360/inventory')
 			->_addBreadcrumb(Mage::helper('adminhtml')->__('Inventory Manager'), Mage::helper('adminhtml')->__('Inventory Manager'));	
 		return $this;
 	}   
  
 	public function indexAction() 
 	{
-		$this->_redirect('logicbroker/adminhtml_upload/index');
+		$this->_redirect('dropship360/adminhtml_upload/index');
 		$this->_initAction()->renderLayout();
 	}
 
@@ -44,7 +44,7 @@ class Logicbroker_Dropship360_Adminhtml_InventoryController extends Mage_Adminht
     public function gridAction() 
 	{
         $this->getResponse()->setBody(
-	    $this->getLayout()->createBlock('logicbroker/adminhtml_inventory_grid')->toHtml()
+	    $this->getLayout()->createBlock('dropship360/adminhtml_inventory_grid')->toHtml()
         );
     } 
 
@@ -54,7 +54,7 @@ class Logicbroker_Dropship360_Adminhtml_InventoryController extends Mage_Adminht
     public function exportCsvAction()
     {
     	$fileName   = 'vendor_inventory.csv';
-    	$content    = $this->getLayout()->createBlock('logicbroker/adminhtml_inventory_grid')->getCsvFile();  
+    	$content    = $this->getLayout()->createBlock('dropship360/adminhtml_inventory_grid')->getCsvFile();  
     	$this->_prepareDownloadResponse($fileName, $content);
     }
     
@@ -64,8 +64,18 @@ class Logicbroker_Dropship360_Adminhtml_InventoryController extends Mage_Adminht
     public function exportXmlAction()
     {
     	$fileName   = 'vendor_inventory.xml';
-    	$content    = $this->getLayout()->createBlock('logicbroker/adminhtml_inventory_grid')->getExcelFile($fileName);
+    	$content    = $this->getLayout()->createBlock('dropship360/adminhtml_inventory_grid')->getExcelFile($fileName);
     	$this->_prepareDownloadResponse($fileName, $content);
+    }
+    
+    /**
+     * Acl check for admin
+     *
+     * @return bool
+     */
+ protected function _isAllowed()
+    {
+        return Mage::getSingleton('admin/session')->isAllowed('dropship360/inventory');
     }
          
 }

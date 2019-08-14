@@ -11,6 +11,6 @@ class Logicbroker_Dropship360_Model_Resource_Uploadvendor extends Mage_Core_Mode
 {
     protected function _construct()
     {
-        $this->_init("logicbroker/uploadvendor", "file_id");
+        $this->_init("dropship360/uploadvendor", "file_id");
     }
 }

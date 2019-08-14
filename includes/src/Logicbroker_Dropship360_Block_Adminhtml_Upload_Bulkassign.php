@@ -36,7 +36,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload_Bulkassign extends Mage_Adm
             return $this;
         }
         $this->setShowFinished(true);
-        $batchModel = Mage::getModel('logicbroker/uploadvendor')->prepareBulkassignmentCollection($this->getBulkVendorCode());
+        $batchModel = Mage::getModel('dropship360/uploadvendor')->prepareBulkassignmentCollection($this->getBulkVendorCode());
         if (count($batchModel) > 0) {
             
                 $numberOfRecords = 100;
@@ -174,7 +174,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload_Bulkassign extends Mage_Adm
     protected function isManualUploadRunning(){
     	 
     	$result = false;
-    	if(Mage::helper('logicbroker')->isProcessRunning('manual_upload')){
+    	if(Mage::helper('dropship360')->isProcessRunning('manual_upload')){
     		$result = true;
     	}
     	return $result;

@@ -10,7 +10,7 @@ class Logicbroker_Dropship360_Model_Api2_Inventory_Rest_Admin_V1 extends Logicbr
 {
 	protected function _create(array $data)
 	{
-		if(Mage::helper('logicbroker')->isProcessRunning('bulk_assign')){
+		if(Mage::helper('dropship360')->isProcessRunning('bulk_assign')){
 			$message = 'Bulk product setup is currently running hence cannot run REST import';
 			echo $message;
 			//Mage::log($message, null, 'logicbroker_log_report.log');
@@ -21,7 +21,7 @@ class Logicbroker_Dropship360_Model_Api2_Inventory_Rest_Admin_V1 extends Logicbr
 			foreach($requestData as $chunkData)
 			{
 				$processedData['vendordata'] = $chunkData;
-				$result[] = Mage::getModel('logicbroker/inventory')->prepareInventoryTable($processedData);
+				$result[] = Mage::getModel('dropship360/inventory')->prepareInventoryTable($processedData);
 			}
 			 
 			foreach($result as $row){

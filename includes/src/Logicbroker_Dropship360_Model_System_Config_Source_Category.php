@@ -24,7 +24,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Category
             );
         }
        
-        	array_unshift($options,array('value' => '', 'label' => Mage::helper('logicbroker')->__('--Please Select--'))
+        	array_unshift($options,array('value' => '', 'label' => Mage::helper('dropship360')->__('--Please Select--'))
         	);
         
         return $options;

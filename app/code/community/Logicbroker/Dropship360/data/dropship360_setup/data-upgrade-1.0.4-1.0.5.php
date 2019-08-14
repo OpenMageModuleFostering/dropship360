@@ -36,7 +36,7 @@
         'scope'      => 'default',
         'scope_id'   => '0',
         'path'       => 'crontab/jobs/logicbroker_uploadvendor/run/model',
-		'value'    => 'logicbroker/observer::ftpParseCsv',  
+		'value'    => 'dropship360/observer::ftpParseCsv',  
     )
 
 );

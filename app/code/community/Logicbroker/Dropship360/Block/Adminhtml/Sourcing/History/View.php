@@ -13,7 +13,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_History_View extends Mage
     public function __construct()
     {
         $this->_objectId    = 'lb_item_id';
-		$this->_blockGroup  = 'logicbroker';
+		$this->_blockGroup  = 'dropship360';
         $this->_controller  = 'adminhtml_sourcing_history';
         $this->_mode        = 'view';
         parent::__construct();
@@ -38,7 +38,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_History_View extends Mage
     public function getHeaderText()
     {
 		$itemId = $this->getRequest()->getParam('lb_item_id');
-		$orderItems = Mage::getModel('logicbroker/orderitems')->load($itemId, 'item_id');
+		$orderItems = Mage::getModel('dropship360/orderitems')->load($itemId, 'item_id');
 		$orderId    = Mage::getModel('sales/order')->load($orderItems->getItemOrderId())->getIncrementId();
 		$createdDate =  Mage::helper('core')->formatDate($orderItems->getCreatedAt(), 'medium', true);
         return Mage::helper('sales')->__('Item Sku %s | Order # %s | %s', $orderItems->getSku(), $orderId, $createdDate);

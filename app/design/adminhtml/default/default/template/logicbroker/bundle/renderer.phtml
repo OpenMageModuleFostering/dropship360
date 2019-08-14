@@ -68,7 +68,7 @@
 			<span id="change_status-<?php echo $_item->getItemId() ?>" style="display:none;">
 				<select name="status" id="status-<?php echo $_item->getItemId() ?>" onchange="respondToChange(this)">
 					<option value=""><?php echo $this->__('Please select') ?></option>	
-					<?php foreach(Mage::helper('logicbroker')->getLbOrderItemStatus() as $status):?>
+					<?php foreach(Mage::helper('dropship360')->getLbOrderItemStatus() as $status):?>
 						<?php if($lbItemStatus!=$status): ?>
 							<option value="<?php echo $status ?>"><?php echo $status ?></option>
 						<?php endif; ?>	

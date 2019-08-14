@@ -11,7 +11,7 @@
     {
 
 		public function _construct(){
-			$this->_init("logicbroker/uploadvendor");
+			$this->_init("dropship360/uploadvendor");
 		}
 
 		

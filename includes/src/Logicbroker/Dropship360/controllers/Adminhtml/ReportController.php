@@ -12,7 +12,7 @@ class Logicbroker_Dropship360_Adminhtml_ReportController extends Mage_Adminhtml_
 
 	protected function _initAction() {
 		$this->loadLayout()
-			->_setActiveMenu('logicbroker/bar_report')
+			->_setActiveMenu('dropship360/bar_report')
 			->_addBreadcrumb(Mage::helper('adminhtml')->__('Report'), Mage::helper('adminhtml')->__('Report'));
 		
 		return $this;
@@ -54,7 +54,8 @@ class Logicbroker_Dropship360_Adminhtml_ReportController extends Mage_Adminhtml_
 			$formData = Mage::helper('adminhtml')->prepareFilterString($this->getRequest()->getParam('refresh'));
 			$this->_prepareReportData($formData);
 			Mage::getSingleton('adminhtml/session')->setFormData($formData);
-			Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__('Report Refreshed Successfully '));
+			Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__('Report Refreshed Successfully '));
+			Mage::app()->getCacheInstance()->cleanType('config');
 			$this->renderLayout();
 			return $this;
 		}
@@ -64,21 +65,21 @@ class Logicbroker_Dropship360_Adminhtml_ReportController extends Mage_Adminhtml_
 		//print_r($data);
 		//die();
 		$formData['email'] = rtrim($formData['email'],','); 
-		Mage::getModel('logicbroker/report')->saveReportData('business_activity_monitor', $formData);
+		Mage::getModel('dropship360/report')->saveReportData('business_activity_monitor', $formData);
 		$this->_prepareReportData($formData);
 		Mage::getSingleton('adminhtml/session')->setFormData($formData);
-		Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__('Report Data Save Successfully '));
+		Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__('Report Data Save Successfully '));
 		$this->_redirect('*/*/activitymonitor');
 		}else
 		{
-			$formData = Mage::getModel('logicbroker/report')->getActivityReportData();
+			$formData = Mage::getModel('dropship360/report')->getActivityReportData();
 			if(is_array($formData) && !empty($formData)){
 				$this->_prepareReportData($formData);
 				Mage::getSingleton('adminhtml/session')->setFormData($formData);
 			}
 			
 		}
-		
+		Mage::app()->getCacheInstance()->cleanType('config');
 		$this->renderLayout();
 		return $this;
 	}
@@ -86,7 +87,7 @@ class Logicbroker_Dropship360_Adminhtml_ReportController extends Mage_Adminhtml_
 	
 	protected function _prepareReportData($data = array()){
 		
-		$collection = Mage::getModel('logicbroker/report')->activityReportCollection($data)->getBlockGraphData();
+		$collection = Mage::getModel('dropship360/report')->activityReportCollection($data)->getBlockGraphData();
 		Mage::register('activity_report_collection', $collection['collection']);
 		$this->getLayout()->getBlock('report.activitymonitor')->setData(array('totalDropshipOrder'=>$collection['totalDropshipOrder'],'dropshipStatus'=> $collection['dropshipStatus']));
 	}
@@ -98,12 +99,22 @@ class Logicbroker_Dropship360_Adminhtml_ReportController extends Mage_Adminhtml_
 	 */
 	public function chooserAction()
 	{
-		$block = $this->getLayout()->createBlock('logicbroker/adminhtml_reports_activitymonitor_email', 'adminhtml_chooser_email');
+		$block = $this->getLayout()->createBlock('dropship360/adminhtml_reports_activitymonitor_email', 'adminhtml_chooser_email');
 	
 		if ($block) {
 			$this->getResponse()->setBody($block->toHtml());
 		}
 	
+	}
+	
+	/**
+	 * Acl check for admin
+	 *
+	 * @return bool
+	 */
+	protected function _isAllowed()
+	{
+		return Mage::getSingleton('admin/session')->isAllowed('dropship360/bar_report');
 	}
 	
 	

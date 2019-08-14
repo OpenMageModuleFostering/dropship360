@@ -10,7 +10,7 @@
 <config>
     <api2>
         <resource_groups>
-            <logicbroker translate="title" module="api2">
+            <dropship360 translate="title" module="api2">
                 <title>Logicbroker</title>
                 <sort_order>30</sort_order>
                 <children>
@@ -23,12 +23,12 @@
                         <sort_order>51</sort_order>
                     </inventory_import>
                 </children>
-            </logicbroker>
+            </dropship360>
         </resource_groups>
         <resources>
             <import translate="title" module="api2">
                 <group>product_import</group>
-                <model>logicbroker/api2_product</model>
+                <model>dropship360/api2_product</model>
                 <working_model>catalog/product</working_model>
                 <title>Catalog Import</title>
                 <sort_order>10</sort_order>
@@ -96,8 +96,8 @@
             </import>
             <inventory_import translate="title" module="api2">
                 <group>inventory_import</group>
-                <model>logicbroker/api2_inventory</model>
-                <working_model>logicbroker/inventory</working_model>
+                <model>dropship360/api2_inventory</model>
+                <working_model>dropship360/inventory</working_model>
                 <title>Inventory Import</title>
                 <sort_order>10</sort_order>
                 <privileges>

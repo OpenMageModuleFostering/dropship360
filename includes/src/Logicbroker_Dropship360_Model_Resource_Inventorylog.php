@@ -11,6 +11,6 @@ class Logicbroker_Dropship360_Model_Resource_Inventorylog extends Mage_Core_Mode
 {
     protected function _construct()
     {
-        $this->_init("logicbroker/inventorylog", "id");
+        $this->_init("dropship360/inventorylog", "id");
     }
 }

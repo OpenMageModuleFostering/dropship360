@@ -13,8 +13,8 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	protected function _initAction()
 	{
 		$this->loadLayout()
-			->_setActiveMenu('logicbroker/upload_vendor_product')
-			->_addBreadcrumb(Mage::helper('adminhtml')->__('logicbroker'), Mage::helper('adminhtml')->__('Supplier Inventory'));
+			->_setActiveMenu('dropship360/upload_vendor_product')
+			->_addBreadcrumb(Mage::helper('adminhtml')->__('dropship360'), Mage::helper('adminhtml')->__('Supplier Inventory'));
 		return $this;
 	}   
  
@@ -35,7 +35,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
     public function gridAction()
     {
     	$this->getResponse()->setBody(
-    			$this->getLayout()->createBlock('logicbroker/adminhtml_inventory_grid')->toHtml()
+    			$this->getLayout()->createBlock('dropship360/adminhtml_inventory_grid')->toHtml()
     	);
     }
 	public function uploadFileAction()
@@ -50,22 +50,22 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 		{
 			$redirectUrl = '*/*/index';
 		}
-		if(Mage::helper('logicbroker')->isProcessRunning('bulk_assign')){
+		if(Mage::helper('dropship360')->isProcessRunning('bulk_assign')){
 			$this->_getSession()->addError($this->__('Bulk product setup is currently running please try again later'));
 			$this->_redirect($redirectUrl);
 			return;
 		}
 		if ($data) {
 			try {
-				$import = Mage::getModel('logicbroker/uploadvendor');
+				$import = Mage::getModel('dropship360/uploadvendor');
 				$validationResult = $import->setData($data)->uploadSource();
 				if(!$validationResult){
 					$this->initialize();
 					$import->parseCsv(Mage::registry('file_name'),$data['vendor']);
-					$this->_getSession()->addSuccess(Mage::helper('logicbroker')->__('File upload successfully '));
+					$this->_getSession()->addSuccess(Mage::helper('dropship360')->__('File upload successfully '));
 					$this->finalize();
 				}else{
-					$this->_getSession()->addError(Mage::helper('logicbroker')->__('File cannot be uploaded '));
+					$this->_getSession()->addError(Mage::helper('dropship360')->__('File cannot be uploaded '));
 				}
 			} catch (Exception $e) {
 				$this->_getSession()->addError($e->getMessage());
@@ -80,11 +80,11 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	}
 	
 	protected function initialize(){
-		Mage::helper('logicbroker')->startProcess('manual_upload');
+		Mage::helper('dropship360')->startProcess('manual_upload');
 	}
 	
 	protected function finalize(){
-		Mage::helper('logicbroker')->finishProcess('manual_upload');
+		Mage::helper('dropship360')->finishProcess('manual_upload');
 	}
 	
 	public function vendorsuploadhistoryAction()
@@ -98,7 +98,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	public function editAction() 
 	{
 		$id     = $this->getRequest()->getParam('lb_item_id');
-		$model  = Mage::getModel('logicbroker/orderitems')->load($id);
+		$model  = Mage::getModel('dropship360/orderitems')->load($id);
 		if ($model->getId()) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
 			if (!empty($data)) {
@@ -106,13 +106,13 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 			}
             Mage::register('sourcing_data', $model);
 			$this->loadLayout();
-			$this->_setActiveMenu('logicbroker/order_sourcing');
+			$this->_setActiveMenu('dropship360/order_sourcing');
 			$this->_addBreadcrumb(Mage::helper('adminhtml')->__('Order Sourcing'), Mage::helper('adminhtml')->__('Order Sourcing'));
-			$this->_addContent($this->getLayout()->createBlock('logicbroker/adminhtml_sourcing_edit'))
-				->_addLeft($this->getLayout()->createBlock('logicbroker/adminhtml_sourcing_edit_tabs'));
+			$this->_addContent($this->getLayout()->createBlock('dropship360/adminhtml_sourcing_edit'))
+				->_addLeft($this->getLayout()->createBlock('dropship360/adminhtml_sourcing_edit_tabs'));
 			$this->renderLayout();
 		} else {
-			Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Sourcing does not exist'));
+			Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Sourcing does not exist'));
 			$this->_redirect('*/*/sourcinggrid');
 		}
 	}
@@ -121,7 +121,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	public function validateftpconnectionAction()
 	{
 		$paramsArray = $this->getRequest()->getParams();
-		$validateConnection = Mage::getModel('logicbroker/uploadvendor');
+		$validateConnection = Mage::getModel('dropship360/uploadvendor');
 		$result = $validateConnection->testFtpConnection($paramsArray['groups']['cron_settings_upload']['fields']);
 		$result = Mage::helper('core')->jsonEncode($result);
 		Mage::app()->getResponse()->setBody($result);
@@ -133,14 +133,14 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 		if ($data = $this->getRequest()->getPost()) {
 			$vendorCode = $data['lb_vendor_code'];
 			$sku = $data['sku'];
-	  		$model = Mage::getModel('logicbroker/orderitems');		
+	  		$model = Mage::getModel('dropship360/orderitems');		
 			
 			if($this->getRequest()->getParam('cancel') == 'item'){
 				$model->load($this->getRequest()->getParam('lb_item_id'));
 				$model->setLbItemStatus('Cancelled');
 				try{
 					$model->save();
-					Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__('Item %s Cancelled Successfully ',$model->getSku()));
+					Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__('Item %s Cancelled Successfully ',$model->getSku()));
 					
 				}catch(Exception $e){
 					Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
@@ -153,7 +153,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 			}
 			
 			if(!$data['lb_vendor_code']){
-				Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Under Processing By Logicbroker Can Not Update %s Sku',$model->getSku()));
+				Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Under Processing By Logicbroker Can Not Update %s Sku',$model->getSku()));
 				$this->_redirect('*/*/sourcinggrid');
 				return;
 			}
@@ -163,7 +163,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 				$model->save();
                 $model->updateOrderStatus($model->getItemOrderId(),$model->getItemId());
                	Mage::getSingleton('adminhtml/session')->setFormData(false);
-				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('logicbroker')->__('Sourcing Updated For %s',$model->getSku()));		
+				Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('dropship360')->__('Sourcing Updated For %s',$model->getSku()));		
 				if ($this->getRequest()->getParam('back')) {
 					$this->_redirect('*/*/edit', array('lb_item_id' => $model->getId()));
 					return;
@@ -177,7 +177,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
                 return;
             }
         }
-        Mage::getSingleton('adminhtml/session')->addError(Mage::helper('logicbroker')->__('Unable to save sourcing'));
+        Mage::getSingleton('adminhtml/session')->addError(Mage::helper('dropship360')->__('Unable to save sourcing'));
         $this->_redirect('*/*/sourcinggrid');
 	}
 	
@@ -214,7 +214,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 		$isProductSetupMode = (isset($paramsArray['isproductsetupmode']) && $paramsArray['isproductsetupmode']) ? true : false;
 		$type = ($isProductSetupMode) ? 'setup' : 'upload';
 		$fileName   = 'logicbroker_supplier_product_'.$type.'.csv';
-		$content = Mage::getModel('logicbroker/uploadvendor')->getCsvFile($isProductSetupMode);
+		$content = Mage::getModel('dropship360/uploadvendor')->getCsvFile($isProductSetupMode);
 		$this->_prepareDownloadResponse($fileName, $content);
 		$this->_redirect('*/*/index');
 		
@@ -224,7 +224,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 
 	protected function _initSystem()
 	{
-		$this->_title($this->__('logicbroker'))
+		$this->_title($this->__('dropship360'))
 		->_title($this->__('Bulk vendor assignment'));
 		$vendorCode = $this->getRequest()->getParam('lb_vendor_code');
 		if (!$vendorCode) {
@@ -250,23 +250,23 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 			if (!is_array($rowIds) || count($rowIds) < 1) {
 				return;
 			}
-			$vendorName = Mage::getModel('logicbroker/ranking')->load($vendorCode,'lb_vendor_code');
+			$vendorName = Mage::getModel('dropship360/ranking')->load($vendorCode,'lb_vendor_code');
 			$errors = array();
 			$saved  = 0;
 			$skuError = array();
 			$skuSuccuess = array();
 			if(!Mage::getSingleton('adminhtml/session')->getTerminateExecution()){
-			Mage::helper('logicbroker')->startProcess('bulk_assign');
+			Mage::helper('dropship360')->startProcess('bulk_assign');
 			}else
 			{
 				return;
 			}
 				foreach($rowIds as $sku){
-				$collection = Mage::getModel('logicbroker/inventory')->getCollection()->addFieldToFilter('product_sku',$sku)->addFieldToFilter('lb_vendor_code',$vendorCode);
+				$collection = Mage::getModel('dropship360/inventory')->getCollection()->addFieldToFilter('product_sku',$sku)->addFieldToFilter('lb_vendor_code',$vendorCode);
 				$inventoryId = ($collection->getSize() > 0) ? $collection->getFirstItem()->getId() : '';
 				if(!$inventoryId)
 				{
-				$inventoryCollection = Mage::getModel('logicbroker/inventory');
+				$inventoryCollection = Mage::getModel('dropship360/inventory');
 				$inventoryCollection->setLbVendorCode($vendorCode);
 				$inventoryCollection->setLbVendorName(($vendorName) ? $vendorName->getLbVendorName() : '');
 				$inventoryCollection->setProductSku($sku);
@@ -277,7 +277,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 				$inventoryCollection->setCreatedAt(now());
 				try {
 					$inventoryCollection->save();
-					Mage::getModel('logicbroker/inventory')->_saveInventoryLog('add',array('lb_vendor_code'=>$vendorCode,'lb_vendor_name'=>($vendorName) ? $vendorName->getLbVendorName() : '','product_sku'=>$sku,'cost'=>0,'stock'=>0,'updated_by'=>'bulk_setup'));
+					Mage::getModel('dropship360/inventory')->_saveInventoryLog('add',array('lb_vendor_code'=>$vendorCode,'lb_vendor_name'=>($vendorName) ? $vendorName->getLbVendorName() : '','product_sku'=>$sku,'cost'=>0,'stock'=>0,'updated_by'=>'bulk_setup'));
 					$saved ++;
 					$skuSuccuess[] = $sku;
 				} catch (Exception $e) {
@@ -287,7 +287,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 				}
 				}else
 				{
-					$errors[] = Mage::helper('logicbroker')->__('Skip %s as supplier %s already assigned.',$sku,$vendorCode);
+					$errors[] = Mage::helper('dropship360')->__('Skip %s as supplier %s already assigned.',$sku,$vendorCode);
 					$skuError[] = $sku;
 					continue;
 				}
@@ -306,21 +306,21 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 		$exeuctionTerminated = $this->getRequest()->getParam('exeuctionTerminated');
 		if($exeuctionTerminated){
 			Mage::getSingleton('adminhtml/session')->setTerminateExecution(true);
-			Mage::helper('logicbroker')->finishProcess('bulk_assign');
+			Mage::helper('dropship360')->finishProcess('bulk_assign');
 		}else
 		{
-			Mage::helper('logicbroker')->finishProcess('bulk_assign');
+			Mage::helper('dropship360')->finishProcess('bulk_assign');
 		}
 		$result = array();
 		$data = $this->getRequest()->getPost();
-		Mage::getResourceModel('logicbroker/vendorimportlog')->insertlog($data['lb_vendor_code'],'Bulk-product-setup',$data['sucees_sku'],$data['errorSkuCount']);
+		Mage::getResourceModel('dropship360/vendorimportlog')->insertlog($data['lb_vendor_code'],'Bulk-product-setup',$data['sucees_sku'],$data['errorSkuCount']);
 		$this->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
 	}
 	
 	
 	public function terminateAction(){
 		
-		Mage::helper('logicbroker')->finishProcess('manual_upload');
+		Mage::helper('dropship360')->finishProcess('manual_upload');
 		$result = array();
 		$this->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
 	}
@@ -331,7 +331,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	public function exportCsvAction()
 	{
 		$fileName   = 'inventory.csv';
-		$content    = $this->getLayout()->createBlock('logicbroker/adminhtml_inventory_grid')->getCsvFile();
+		$content    = $this->getLayout()->createBlock('dropship360/adminhtml_inventory_grid')->getCsvFile();
 		$this->_prepareDownloadResponse($fileName, $content);
 	}
 	
@@ -341,7 +341,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	public function exportXmlAction()
 	{
 		$fileName   = 'inventory.xml';
-		$content    = $this->getLayout()->createBlock('logicbroker/adminhtml_inventory_grid')->getExcelFile($fileName);
+		$content    = $this->getLayout()->createBlock('dropship360/adminhtml_inventory_grid')->getExcelFile($fileName);
 		$this->_prepareDownloadResponse($fileName, $content);
 	}
 	
@@ -349,10 +349,41 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	{
 		$params = $this->getRequest()->getParams();
 		$filename = 'upload_error.csv';
-        $content = Mage::helper('logicbroker')->generateErrorList($params);
- 
+        $content = Mage::helper('dropship360')->generateErrorList($params);
+        if($content['error'])
+        	return $this->getResponse()->setRedirect($this->getUrl('*/*/vendorsuploadhistory'));
         $this->_prepareDownloadResponse($filename, $content);
 	}
 	
+	/**
+	 * Delete log action
+	 */
+	public function deleteAction()
+	{
+		if ($id = $this->getRequest()->getParam('id')) {
+			$tableName = Mage::getSingleton ( 'core/resource' )->getTableName ('dropship360/vendor_import_log');
+			$connection = Mage::getSingleton ('core/resource')->getConnection ('core_read');
+			$select = $connection->select()->from($tableName)->where('error_id=?', $id);
+			$connection->fetchRow($select);
+			try {
+				$connection->delete($tableName,array('error_id'=>$id));
+				$this->_getSession()->addSuccess($this->__('The log has been deleted.'));
+			} catch (Exception $e) {
+				$this->_getSession()->addError($e->getMessage());
+			}
+		}
+		$this->getResponse()
+		->setRedirect($this->getUrl('*/*/vendorsuploadhistory', array('store'=>$this->getRequest()->getParam('store'))));
+	}
+	
+	/**
+	 * Acl check for admin
+	 *
+	 * @return bool
+	 */
+	protected function _isAllowed()
+	{
+		return Mage::getSingleton('admin/session')->isAllowed('dropship360/inventory');
+	}
 	
 }

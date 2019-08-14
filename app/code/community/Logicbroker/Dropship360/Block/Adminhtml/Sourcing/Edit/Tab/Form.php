@@ -22,21 +22,21 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_Edit_Tab_Form extends Mag
       $form = new Varien_Data_Form();
       $sku = Mage::registry('sourcing_data')->getData('sku');
       $this->setForm($form);
-      $fieldset = $form->addFieldset('logicbroker_form', array('legend'=>Mage::helper('logicbroker')->__('Item Sourcing Information')));
+      $fieldset = $form->addFieldset('logicbroker_form', array('legend'=>Mage::helper('dropship360')->__('Item Sourcing Information')));
       
     if(in_array(Mage::registry('sourcing_data')->getData('lb_item_status'),$this->_statusArray)){	     
       $fieldset->addField('lb_vendor_code', 'select', array(
-      		'label'     => Mage::helper('logicbroker')->__('Supplier'),
+      		'label'     => Mage::helper('dropship360')->__('Supplier'),
       		'class'     => 'required-entry validate-select',
       		'required'  => true,
       		'name'      => 'lb_vendor_code',
-      		'values'    => Mage::getModel('logicbroker/system_config_source_vendorlist')->vendorListSourcing(true,$sku),
+      		'values'    => Mage::getModel('dropship360/system_config_source_vendorlist')->vendorListSourcing(true,$sku),
       		'default' => '',
       		'note' => 'Select your Dropship Supplier to source this item and bypass the dropship360 sourcing rule.'
       ));
 	}
      $fieldset->addField('lb_item_status', 'text', array(
-     		'label'     => Mage::helper('logicbroker')->__('Logicbroker Item Status'),
+     		'label'     => Mage::helper('dropship360')->__('Logicbroker Item Status'),
      		'name'      => 'lb_item_status',
      		'note'=>'Read only filed',
      		'readonly'=> true
@@ -44,7 +44,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing_Edit_Tab_Form extends Mag
        
       
      $fieldset->addField('sku', 'text', array(
-          'label'     => Mage::helper('logicbroker')->__('Sku'),
+          'label'     => Mage::helper('dropship360')->__('Sku'),
           'name'      => 'sku',
      		'note'=>'Read only filed',
      		'readonly'=> true

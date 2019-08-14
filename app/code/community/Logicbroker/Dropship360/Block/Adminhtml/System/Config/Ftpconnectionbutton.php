@@ -91,11 +91,11 @@ class Logicbroker_Dropship360_Block_Adminhtml_System_Config_Ftpconnectionbutton
     
     public function getTermsAndConditionsUrl()
     {
-        return Mage::helper('logicbroker')->getConfigObject('apiconfig/termsandconditions/link');
+        return Mage::helper('dropship360')->getConfigObject('apiconfig/termsandconditions/link');
     }
 
     public function getHelpUrl()
     {
-        return Mage::helper('logicbroker')->getConfigObject('apiconfig/helpurl/link');
+        return Mage::helper('dropship360')->getConfigObject('apiconfig/helpurl/link');
     }
 }

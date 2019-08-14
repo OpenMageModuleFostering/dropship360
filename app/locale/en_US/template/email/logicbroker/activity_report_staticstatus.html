@@ -1,0 +1,20 @@
+<!--@subject {{var templatevar.subject}}@-->
+<!--@vars
+{"var data.name":"Sender Name",
+"var data.email":"Sender Email",
+"var data.telephone":"Sender Telephone",
+"var data.comment":"Comment",
+"block type='dropship360/adminhtml_reports_test' area='adminhtml' template='logicbroker/reports/email/grid.phtml' templatevar=$templatevar":"Shipment Track Details",
+}@-->
+<body style="background:#F6F6F6; margin:0; padding:0;">
+ <p style="font-size:12px; line-height:16px; margin:0;">Please see attched report for all order that have been sitting in this status for over x days and x hours</p>
+{{if templatevar.canshow}}
+ <p style="font-size:12px; line-height:16px; margin:0;">when your order is sitting in Transmitting status, this typically indicates that there is connection issue with logicbroker
+and picking up your orders. Please go to the portal.logicbroker.com to check your system connection or enter a support ticket
+here; <a href= "https://portal.logicbroker.com/create-case/">create-case</a></p> 
+{{else}}
+ <p style="font-size:12px; line-height:16px; margin:0;">For orders sitting in ""Sent To Supplier" typically indicates that your supplier has yet to ship your order. It is best practice
+to contact your supplier for an update</p>
+{{/if}}
+{{block type='dropship360/adminhtml_reports_staticemailgrid' area='adminhtml' template='logicbroker/reports/email/grid.phtml' templatevar=$templatevar}}
+</body>

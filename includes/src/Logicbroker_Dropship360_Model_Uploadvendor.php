@@ -12,12 +12,14 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 	
 	const FIELD_NAME_SOURCE_FILE = 'import_file';
 	protected $_isProductSetupMode = false;
+	protected $sendBadFileAlert = false;
 	protected $_haderError = array();
 	protected $_FtpErrors = array();
 	protected $_UploadCsvErrors = array();
 	protected $_inventoryModel; 
     protected $_vendorSkuFlag = array();
 	protected $conn;
+	protected $ftpRequestPram = array();
 	protected $_errors = array();
 	const XML_PATH_UPLOAD_ENABLED          = 'logicbroker_sourcing/cron_settings_upload/enabled';
 	const XML_PATH_UPLOAD_FTP_SITE   = 'logicbroker_sourcing/cron_settings_upload/ftp_site';
@@ -25,13 +27,24 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 	const XML_PATH_UPLOAD_FTP_PASSWORD   = 'logicbroker_sourcing/cron_settings_upload/ftp_password';
 	const XML_PATH_UPLOAD_FTP_TYPE   = 'logicbroker_sourcing/cron_settings_upload/ftp_type';
 	const XML_PATH_UPLOAD_FTP_ACCNUMBER  = 'logicbroker_sourcing/cron_settings_upload/ftp_accnumber';
-	
+	const XML_PATH_INVENTORY_NOTIFICATION_EMAIL  = 'logicbroker_sourcing/inventory_notification/email';
+	const XML_PATH_INVENTORY_NOTIFICATION_EMAIL_ENABLED  = 'logicbroker_sourcing/inventory_notification/enabled';
+	protected $ftpCSVFormat =  array('vendor_code','vendor_sku','qty','cost');
+	protected $manualCSVFormat = array('vendor_sku','qty','cost');
+	protected $productSetupCSVFormat = array('magento_sku','vendor_sku','','');
+	protected $_csvDataCache;
+	protected $_vendorCode;
+	protected $_csvParserObj;
+	protected $emptyRecords = array(); //checkDataIntigrity fnction store empty records from CSV
+	protected $result = array(); //checkDataIntigrity fnction store final result for error
+	protected $supplierName = '';
 	
 	protected function _construct()
 	{
-		$this->_inventoryModel = Mage::getModel('logicbroker/inventory');
+		$this->_inventoryModel = Mage::getModel('dropship360/inventory');
 		$this->conn = $this->getDatabaseConnection ();
-		$this->_init("logicbroker/uploadvendor");
+		$this->_init("dropship360/uploadvendor");
+		$this->_csvParserObj = Mage::getModel('dropship360/csvparser');
 		
 	}
 	
@@ -45,11 +58,22 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 		return Mage::getSingleton('adminhtml/session');
 	}
 	
-	protected function _getCsvData($fileName)
+	protected function _getCsvData($fileName,$header = false)
 	{
 		$csvObject  = new Varien_File_Csv();
-		$csvData = $csvObject->getData($fileName);		 
-		return $csvData;
+		
+		if(!$this->_csvDataCache){
+			$this->_csvDataCache = $this->_csvParserObj->getChangedValue($csvObject->getData($fileName),$this->_vendorCode);
+		}else
+		{
+			if($header){
+				return array($this->_csvDataCache[0]); 
+			}else
+			{
+				 $this->_csvDataCache;
+			}
+		}
+		return $this->_csvDataCache;
 	}
 	
 	
@@ -74,13 +98,14 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 		try{
 			$this->save();
 		}catch(Exception $e){
-			$this->_getSession()->addError(Mage::helper('logicbroker')->__($e->getMessage()));
+			$this->_getSession()->addError(Mage::helper('dropship360')->__($e->getMessage()));
 		}	
 	}
 	
  	public function uploadSource()
     {
     	$error = false;   	
+    	$this->_vendorCode = $this->getVendor();  	
     	$this->_isProductSetupMode = $this->getProductsetupmode();   	
     	$entity = 'vendor_product_'.date('ymdHis');
     	$uploader  = Mage::getModel('core/file_uploader', self::FIELD_NAME_SOURCE_FILE);
@@ -88,28 +113,17 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
         $result    = $uploader->save(self::getWorkingDir());
         $extension = pathinfo($result['file'], PATHINFO_EXTENSION);
         $uploadedFile = $result['path'] . $result['file'];
-        if (!$extension) {
-            $this->fileObj()->rm($uploadedFile);
-            throw new Exception(Mage::helper('importexport')->__('Uploaded file has no extension'));
-            return $error = true;
-            
-        }        
-        if (strtolower($extension) != 'csv') {
-        	$this->fileObj()->rm($uploadedFile);
-        	throw new Exception(Mage::helper('importexport')->__('Incorrect file type uploaded. Please upload your Inventory feed in .csv format.'));
-        	return $error = true;
-        }
-        
         $error = $this->validateCsv($uploadedFile);
         if($error){
         	$this->fileObj()->rm($uploadedFile);
-        	$this->_getSession()->addNotice(Mage::helper('logicbroker')->__('Please fix errors and re-upload file'));
+        	$this->_getSession()->addNotice(Mage::helper('dropship360')->__('Please fix errors and re-upload file'));
         	return $error;
         }
         
         $sourceFile = self::getWorkingDir() . $entity;
 
         $sourceFile .= '.' . strtolower($extension);
+        $fileName = $entity.'.'.strtolower($extension);
 
         if(strtolower($uploadedFile) != strtolower($sourceFile)) {
             if (file_exists($sourceFile)) {
@@ -120,9 +134,9 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
                 Mage::throwException(Mage::helper('importexport')->__('Source file moving failed'));
             }
         }
-        Mage::register('file_name',$entity);
+        Mage::register('file_name',$fileName);
         if(!$error)
-        $this->insertCronEntry($entity);
+        $this->insertCronEntry($fileName);
         
         return $error;
     }
@@ -132,86 +146,40 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     {
     	//$fileName  
     	$isError = false;
-    	$csvData = $this->_getCsvData($fileName);
+    	$csvData = $this->_getCsvData($fileName,true);
     	
     	/** checks columns */
     	
     	if($this->validateCsvHeader($csvData)){
-    		$dataValidation = false;
-    	if($dataValidation){
-			$isError = true;
-		}   		
+    		$isError = false;
     	}else{    		
-    		$this->_getSession()->addError(Mage::helper('logicbroker')->__('CSV header %s is invalid ',implode(',',$this->_haderError)));
+    		$this->_getSession()->addError(Mage::helper('dropship360')->__('CSV header %s is invalid ',implode(',',$this->_haderError)));
     		$isError = true;
+    		$this->_csvDataCache = array();
     	}
     	return $isError; 
     }
     
     protected function validateCsvHeader($csvData,$isFtp = false)
     {    	
-    	if	($this->_isProductSetupMode && !$isFtp ){
-    	$csvFields  = array(
-    				0   => Mage::helper('logicbroker')->__('magento_sku'),
-    				1   => Mage::helper('logicbroker')->__('vendor_sku'),
-    				2   => Mage::helper('logicbroker')->__(''),
-    				3   => Mage::helper('logicbroker')->__('')
-    		);
-    	}else{
-    		$csvFields  = (!$isFtp) ? array(
-    				0   => Mage::helper('logicbroker')->__('vendor_sku'),
-    				1   => Mage::helper('logicbroker')->__('qty'),
-    				2   => Mage::helper('logicbroker')->__('cost'),
-    		) : array(
-    				0   => Mage::helper('logicbroker')->__('vendor_code'),
-    			1   => Mage::helper('logicbroker')->__('vendor_sku'),
-    			2   => Mage::helper('logicbroker')->__('qty'),
-    			3   => Mage::helper('logicbroker')->__('cost')
-    	);
-    	}
-
-    	$cvsDataNum   = count($csvData[0]);
     	$result = true;
-    	if(!$isFtp && !$this->_isProductSetupMode ){
-    		if($cvsDataNum != 3){
-    			foreach ($csvData[0] as $val){
-    				if(!in_array($val,array('vendor_sku','cost','qty')))
-    				{
-    					$this->_haderError[] = $val;
-    				}
-    			}
-				return false;
-    		}
-    		
-    	}else if($this->_isProductSetupMode ){
-    		if($cvsDataNum != 2){
-    			foreach ($csvData[0] as $val){
-    				if(!in_array($val,array('vendor_sku','magento_sku')))
-    				{
-    					$this->_haderError[] = $val;
-    				}
-    			}
-				return false;
-    		}
-    		
+    	if(empty($csvData))
+    	{
+    		return false;
+    	}
+    	if	($this->_isProductSetupMode && !$isFtp ){
+    	$csvFields  = $this->productSetupCSVFormat;
     	}else{
-			if($cvsDataNum == 3 || $cvsDataNum == 4){
-    			foreach ($csvData[0] as $val){
-    				if(!in_array($val,($cvsDataNum == 3) ? array('vendor_sku','qty', 'cost') : array('vendor_code','vendor_sku','qty', 'cost'))){
-    					$this->_haderError[] = $val;
-    				}
-    			}
-				if(!empty($this->_haderError))
+    		$csvFields  = (!$isFtp) ?  $this->manualCSVFormat : $this->ftpCSVFormat;
+    	}
+    	$cvsDataNum   = count($csvData[0]);
+    		
+    	if(!$this->validateManualCsvHeader($cvsDataNum,$csvData,$isFtp))
 				return false;
-				else
-				return true;
-    		}else
-			{
-				$this->_haderError[] = 'csv not supported';
+    	if(!$this->validateFtpCsvHeader($cvsDataNum,$csvData))
 				return false;
-			}
-			
-		}
+    	if(!$this->validateProductSetupCsvHeader($cvsDataNum,$csvData))
+				return false;
     	for ($i = 0; $i < $cvsDataNum; $i++) { 		 
     		if( $isFtp && ($csvData[0][0] == 'vendor_code' || $csvData[0][0] == 'vendor_sku')){
     			continue;
@@ -226,13 +194,56 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	return $result;
     }
     
+    protected function validateManualCsvHeader($cvsDataNum,$csvData,$isFtp)
+    {
+    	if(!$isFtp && !$this->_isProductSetupMode ){
+    		if($cvsDataNum != 3){
+    			foreach ($csvData[0] as $val){
+    				if(!in_array($val,array('vendor_sku','cost','qty')))
+    				{
+    					$this->_haderError[] = $val;
+    				}
+    			}
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    protected function validateFtpCsvHeader($cvsDataNum,$csvData)
+    {
+    	$validation = true;
+    	if($cvsDataNum == 3 || $cvsDataNum == 4){
+    		foreach ($csvData[0] as $val){
+    			if(!in_array($val,($cvsDataNum == 3) ? array('vendor_sku','qty', 'cost') : array('vendor_code','vendor_sku','qty', 'cost'))){
+    				$this->_haderError[] = $val;
+    				$validation = false;
+    			}
+    		}
+    		return $validation;
+    	}
+    	return true;
+    }
+    protected function validateProductSetupCsvHeader($cvsDataNum,$csvData)
+    {
+    	if($this->_isProductSetupMode ){
+    		if($cvsDataNum != 2){
+    			foreach ($csvData[0] as $val){
+    				if(!in_array($val,array('vendor_sku','magento_sku')))
+    				{
+    					$this->_haderError[] = $val;
+    				}
+    			}
+    			return false;
+    		}
+    	}
+    	return true;
+    }
 	protected function checkDataIntigrity($csvData,$isFtp = false){
-    	$emptyRecords = array();
+		
     	//patch for FTP backward compatibility header
     	(count($csvData[0]) <= 3) ? array_unshift($csvData[0], "") : $csvData[0];
     	foreach($csvData as $row => $csvRowData)
     	{
-    		$error = true;	
     		if($row == 0)
     			continue;
 			if(!$this->_isProductSetupMode && !$isFtp){
@@ -241,107 +252,110 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 			//patch for FTP backward compatibility data
 			if($isFtp)
 			(count($csvRowData) <= 3) ? array_unshift($csvRowData, "") : $csvRowData;
-						
-				
+			$this->getErrorRowNumber($csvRowData,$row);
+    	}
+    	$this->generateMsg($isFtp,$this->result,$this->emptyRecords);
+    	return in_array(true,$this->result) ? true : false;
+    }
+    protected function getErrorRowNumber($csvRowData,$row)
+    {
+    	
     		foreach($csvRowData as $key => $data){
 				$data = trim($data);
 				switch($key){
-					case 0:
+					case is_numeric($key) ? 0 : 'magento_sku' :
 						if($this->_isProductSetupMode){
 							if(empty($data)){
-								$emptyRecords['magento_sku'][] = $row;
-								$result[] = true;
+								$this->emptyRecords['magento_sku'][] = $row;
+								$this->result[] = true;
 							} else {
-							$error = false; $result[] = false;
+    						$this->result[] = false;
 							}
 						}else{
 							continue;
 						}	
 						break;
-					case 1:
+					case is_numeric($key) ? 1 : 'vendor_sku':
 						if(empty($data)){
-							$emptyRecords['vendor_sku'][] = $row;
-							$result[] = true;
+							$this->emptyRecords['vendor_sku'][] = $row;
+							$this->result[] = true;
 						} 
 						else 
-							$error = false; $result[] = false;
+    					$this->result[] = false;
 						break;
-					case 2:
+					case is_numeric($key) ? 2 : 'qty':
 						if(!is_numeric($data)  || $data < 0 ) 
 						{
 							if($data!=""){
-								$emptyRecords['qty'][] = $row;
-								$result[] = true;
+								$this->emptyRecords['qty'][] = $row;
+								$this->result[] = true;
 							}
 						}
 						else 
-							$error = false; $result[] = false;
+    					$this->result[] = false;
 						break;
-					case 3:
+					case is_numeric($key) ? 3 : 'cost':
 						if(!is_numeric($data) || $data < 0 ){
 							if($data!=""){
-								 $emptyRecords['cost'][] = $row;
-								 $result[] = true;
+								 $this->emptyRecords['cost'][] = $row;
+								 $this->result[] = true;
 							}
 						}
 						else
-							 $error = false; $result[] = false;
+    					$this->result[] = false;
 						break;
-				}	
     		}
+				}	
+    	return;
+    		}
+    protected function generateMsg($isFtp,$result,$emptyRecords){
     	
-    		if (!$isFtp) {
 				$error = in_array(true,$result) ? true : false;				
 				if($error){
 					foreach($emptyRecords as $key=>$value){			
 						if($this->_isProductSetupMode){
 							if($key == 'magento_sku'){
-								$string = implode(',',$value);
-								$this->_UploadCsvErrors['magento_sku'] = 'Missing Data at Row(s) ' .$string.' are missing data in magento_sku';
+								$string = implode(';',$value);
+								$this->_UploadCsvErrors[] = array('error_type'=>'row_magento_sku','value'=>$string);
 							}
 						}
 						if($key == 'vendor_sku'){
-							$string = implode(',',$value);
-							$this->_UploadCsvErrors['vendor_sku'] = 'Missing Data at Row(s) ' .$string.' are missing data in vendor_sku';
-						}
-						if($key == 'qty'){	
-							$string = implode(',',$value);
-							$this->_UploadCsvErrors['qty'] =  'Bad Data at Row(s) '.$string.' contain bad data in qty';
-						}
-						if($key == 'cost'){
-							$string = implode(',',$value);
-							$this->_UploadCsvErrors['cost'] = 'Bad Data at Row(s) '.$string.' contain bad data in cost';
-						}	
-					}	
-				}
-			} else {
-				$error = in_array(true,$result) ? true : false;
-				if ($error){
-					foreach($emptyRecords as $key=>$value){
-						if($key == 'vendor_sku')
-						{	$string = implode(',',$value);
-						$this->_FtpErrors['vendor_sku'] = 'Missing Data at Row(s) ' .$string.' are missing data in vendor_sku';
-						}
-						if($key == 'qty')
-						{	$string = implode(',',$value);
-						$this->_FtpErrors['qty'] =  'Bad Data at Row(s) '.$string.' contain bad data in qty';
-						}
-						if($key == 'cost')
-						{	$string = implode(',',$value);
-						$this->_FtpErrors['cost'] = 'Bad Data at Row(s) '.$string.' contain bad data in cost';
+							$string = implode(';',$value);
+    					if($isFtp){ 
+    							$this->_FtpErrors[] = array('error_type'=>'row_vendor_sku','value'=>$string);
+    							$this->sendBadFileAlert = true;
+    						}else{
+    							$this->_UploadCsvErrors[] = array('error_type'=>'row_vendor_sku','value'=>$string);
 						}
 					}
-				}
-			}	
-    	}
-		return in_array(true,$result) ? true : false;
+						if($key == 'qty'){	
+							$string = implode(';',$value);
+    					if($isFtp){
+    							$this->_FtpErrors[] =  array('error_type'=>'row_qty','value'=>$string);
+    							$this->sendBadFileAlert = true;
+    					}else{
+    							$this->_UploadCsvErrors[] =  array('error_type'=>'row_qty','value'=>$string);
+						}
+					}
+						if($key == 'cost'){
+							$string = implode(';',$value);
+    					if($isFtp){
+    							$this->_FtpErrors[] = array('error_type'=>'row_cost','value'=>$string);
+    							$this->sendBadFileAlert = true;
+    					}else{
+    							$this->_UploadCsvErrors[] = array('error_type'=>'row_cost','value'=>$string);
+    					}
+						}
+						}
+						}
+    	return ;
     }
     
     protected function getConfigValue($path)
 	{
     	return Mage::getStoreConfig($path);
     }
-    protected function getMagentoSku($vendorCode,$vendorSku){
+    public function getMagentoSku($vendorCode,$vendorSku){
     	$sku = '';
     	$vendorCollection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$vendorCode)->addFieldTofilter('lb_vendor_sku',$vendorSku);
     	if($vendorCollection->count() > 0)
@@ -357,41 +371,23 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	$records = array();
     	$success = array();
     	$failure = array();   	
+    	$counter = 0;
 		$foramterroroutput = array();
-    	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' ); 	
-    	$csvData = $this->_getCsvData(self::getWorkingDir().$fileName.'.csv');
+		$this->_csvDataCache = array();
+		$this->_vendorCode = $lb_vendor_code;
+    	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/vendor_import_log' ); 	
+    	$csvData = $this->_getCsvData(self::getWorkingDir().$fileName);
       
-        if(count($csvData) <= 1 )
+        if(count($csvData) <= 1 && Mage::getModel('dropship360/csvparser')->isCsvFileEmpty())
     	{
-            $failure[$fileName.'.csv'] = 'File is empty'; 
-            $this->_UploadCsvErrors['empty_file'] =  'File is empty';            
+            $failure[$fileName] = 'Sorry,we cant find the record to update inventory'; 
+            $this->_UploadCsvErrors[] =  array('error_type'=>'empty_file','value'=>'Sorry,we cant find the record to update inventory');
     	} 
     	
-		foreach($csvData as $row => $csvRowData)
-    	{
-    		if($row == 0)
-    			continue;
-    		
-    		if(!$this->_isProductSetupMode)
-    		{
-    		(count($csvRowData) <= 3) ? array_unshift($csvRowData, "") : $csvRowData;
-    		if(is_numeric($csvRowData[2])){
-            /* LBN - 935 change */
-    		$magento_sku = $this->getMagentoSku($lb_vendor_code, trim($csvRowData[1]));
-    		$csvqty = (!empty($magento_sku)) ? Mage::helper('logicbroker')->getIsQtyDecimal($magento_sku,$csvRowData[2]) : $csvRowData[2];;
-    		}                 
-    		else
-    		{
-    			$csvqty = $csvRowData[2];
-    		}
-    		}
-    		if(!$this->_isProductSetupMode)
-    		$records[$row] = array('vendor_sku'=>trim($csvRowData[1]),'qty'=>$csvqty ,'cost'=>$csvRowData[3],'lb_vendor_code'=>$lb_vendor_code); 
-    		else
-    			$records[$row] = array('magento_sku'=>trim($csvRowData[0]),'vendor_sku'=>trim($csvRowData[1]),'qty'=>0 ,'cost'=>0,'lb_vendor_code'=>$lb_vendor_code);
-    	}
+		$records = Mage::getModel('dropship360/csvparser')->generateManualCsvRow($csvData,$this->_isProductSetupMode,$lb_vendor_code);
     	
-    	$this->conn->beginTransaction ();
+    	Mage::helper('dropship360')->turnOnReadUncommittedMode(); // dirty read patch
+    	//$this->conn->beginTransaction ();
 		if(is_array($records) && !empty($records)){
     	$requestData = array_chunk($records, 1, true);
     	
@@ -410,10 +406,9 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 			if($successOrfail['failure']!="")
 			$failure[] = $successOrfail['failure'];
 		}
-    	$updateFileStatus = $this->load($fileName,'file_name');
-    	$updateFileStatus->setImportStatus('done');
-	    
-	    try{
+    	 try{
+	    	$updateFileStatus = Mage::getModel('dropship360/uploadvendor')->load($fileName,'file_name');
+	    	$updateFileStatus->setImportStatus('done');
 	    	$updateFileStatus->save();
 	    }catch(Exception $e){
 	    	echo $e->getMessage();
@@ -424,31 +419,27 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 	    }	
 	    $this->checkDataIntigrity($csvData);
 		}
-		if(isset($this->_UploadCsvErrors['general_error'])){
-	    $this->_UploadCsvErrors['other'] = implode(' , ', $this->_UploadCsvErrors['general_error']);
-	    unset($this->_UploadCsvErrors['general_error']);
+		$finalResultCounter = (!$this->_isProductSetupMode) ?  $this->logForUnprocessedRows($lb_vendor_code) : 0;
+		
+		if(is_array($finalResultCounter))
+		{
+			$failed = count($failure)+$finalResultCounter['failure'];
+			$success = count($success)+$finalResultCounter['success'];
+		}else
+		{
+			$failed = count($failure)+$finalResultCounter;
+			$success = count($success)+$finalResultCounter;
 		}
-		foreach($this->_UploadCsvErrors as $k=>$output){
-			if($k =='combination_error' && is_array($output)){
-				foreach($output as $oput){
-					$foramterroroutput[] = '<li>'.$oput.'</li>';
-				}
-			}else{			
-				$foramterroroutput[] = '<li>'.$output.'</li>';
-			}	
-		}		
-		array_unshift($foramterroroutput,'<ul>');
-		array_push($foramterroroutput,'</ul>');
-		$errorDiscription = implode('',$foramterroroutput);
-				unset($foramterroroutput);
-		$ftp_err = (count($failure) > 0)  ? 'Missing/Bad Data' : '';
-	    $insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,ftp_error,ftp_error_desc,created_at) VALUES ("'.$lb_vendor_code.'","'.Mage::getSingleton('admin/session')->getUser()->getUsername().'",'.count($success).','.count($failure).',"'.$ftp_err.'","'.$errorDiscription.'","'.now().'")';
-	  
+		
+		$ftp_err = ($failed > 0)  ? 'Missing/Bad Data' : '';
+		$insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,ftp_error,created_at) VALUES ("'.$lb_vendor_code.'","'.Mage::getSingleton('admin/session')->getUser()->getUsername().'",'.$success.','.$failed.',"'.$ftp_err.'","'.now().'")';
+	    $this->conn->beginTransaction ();
 	    $this->conn->query($insert);
-	    
+	    $entityId = $this->conn->lastInsertId($tableVendorImportLog);
 	    try {
 	    	$this->conn->commit ();
-	    	$file = self::getWorkingDir() . $fileName.'.csv';
+	    	$this->prepareInsertAndExeQuery($this->_UploadCsvErrors,$entityId);
+	    	$file = self::getWorkingDir() . $fileName;
 	    	$this->fileObj()->rm($file);
 	    } catch ( Exception $e ) {
 	    	$this->conn->rollBack ();
@@ -459,7 +450,10 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
             echo $e->getMessage();
 	    
 	    }
-        unset($this->_vendorSkuFlag);
+	    $this->_csvParserObj->emptyTable();
+	    $this->_csvDataCache = array();
+        $this->_vendorSkuFlag = array();
+        Mage::helper('dropship360')->turnOnReadCommittedMode(); //restore to orignal trasectional level
 	    return $this;
     }
 
@@ -467,21 +461,21 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     protected function chekDuplicateCombination($data)
     {
         $result = true;
-		$collection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$data['lb_vendor_code'])->addFieldTofilter('lb_vendor_sku',trim($data['vendor_sku']));
+		$collection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$data['lb_vendor_code'])->addFieldTofilter('lb_vendor_sku',$data['vendor_sku']);
          if($collection->count() > 0){ 
 			 $existing_product_sku = $collection->getFirstItem()->getProductSku();
 			if(!empty($existing_product_sku)){                
-				if(trim($data['magento_sku']) != trim($existing_product_sku)){
+				if($data['magento_sku'] != $existing_product_sku){
 				   $result = false;  
 				}
 			}
 		}
-		$inventoryCollection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$data['lb_vendor_code'])->addFieldTofilter('product_sku',trim($data['magento_sku']));
+		$inventoryCollection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$data['lb_vendor_code'])->addFieldTofilter('product_sku',$data['magento_sku']);
 		if($inventoryCollection->getSize() > 0){
 		   $inventoryCollection = $inventoryCollection->getData(); 
 		   $inventoryCollection = $inventoryCollection[0];
 		   $existing_vendor_sku =  $inventoryCollection['lb_vendor_sku'];
-		   if(trim($existing_vendor_sku) != trim($data['vendor_sku']))
+		   if($existing_vendor_sku != trim($data['vendor_sku']))
 		   {
 			   $result = false; 
 		   }              
@@ -530,7 +524,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     }
     protected function vendorProductInsert($data)
 	{  	   	
-    	$tableVendorInventory = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/inventory' );
+    	$tableVendorInventory = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/inventory' );
     	$inventoryCollectionResult = $this->getInventoryCollection($data);
     	$qtyArray = $this->calculateProductQty($data);
     	
@@ -539,39 +533,23 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     		case 'update':
     			$productId = Mage::getModel('catalog/product')->getIdBySku(trim($data['magento_sku']));
     			if($productId){
-    				if(!is_numeric($data['cost']) || $data['cost'] < 0 || trim($data['cost']) =="")
-    				{
-    					$costUpdate = '';
-    				}else
-    				{
-    					$costUpdate = 'cost ='. $data['cost'] . ',';
-    				}
     				
-    				if($qtyArray['upload_qty'] == .999999999 || trim($data['qty']) =="" )
-    				{
-    					$qtyUpdate = '';
-    				}else
-    				{
-    					$qtyUpdate = ' stock = '.$qtyArray['upload_qty']. ',';
-    				}    										
-					if($costUpdate=='' && $qtyUpdate =='' && !$this->_isProductSetupMode){
-						$timeUpdate = "";
-					}else{
-						$timeUpdate = ' updated_at = "'.now(). '",';
-					}
-					$vSkuUpdate = ' lb_vendor_sku = "'.$data['vendor_sku']. '"';
-				    $update = 'update '.$tableVendorInventory.' set '.$costUpdate.$qtyUpdate.$timeUpdate.$vSkuUpdate.' where id = '.$inventoryCollectionResult['vendor_id'];
+    				$update = $this->_prepareUpdateQuery($data,$qtyArray,$inventoryCollectionResult,$tableVendorInventory,false);
     				
     			try {
     					if(!$this->updateProductInventory(trim($data['magento_sku']),$qtyArray['final_qty']))
     					{
-    						$this->_UploadCsvErrors['general_error'][] = 'Update error: Error in updating magento product inventory';
+    						$this->_UploadCsvErrors[] = array('error_type'=>'inventory_update_error','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
     						return false;
     					}
-						if($update)
-    					$this->conn->query($update);
+						if($update){
+							$this->conn->beginTransaction ();
+							$this->conn->query($update);
+							$this->conn->commit ();
+						}
     					return true;
     				} catch ( Exception $e ) {
+    					$this->conn->rollBack ();
     					$this->_errors[] = $e->getMessage();
             			$this->_errors[] = $e->getTrace();
             			Mage::log($e->getMessage(), Zend_Log::ERR);
@@ -581,7 +559,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 					   
     			}else
     			{
-    				$this->_UploadCsvErrors['general_error'][] = 'Update error: magento product sku ' .$data['magento_sku'].' not exist';
+    				$this->_UploadCsvErrors[] = array('error_type'=>'magento_sku_exists','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
     				return false;
     			}
     			break;
@@ -594,12 +572,15 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     					try {
     						if(!$this->updateProductInventory($data['magento_sku'],$qtyArray['final_qty']))
     						{
-    							$this->_UploadCsvErrors['general_error'][] = 'Add error: Error in updating magento product inventory';
+    							$this->_UploadCsvErrors[] = array('error_type'=>'inventory_add_error','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
     							return false;
     						}
+    						$this->conn->beginTransaction ();
     						$this->conn->query($insert);
+    						$this->conn->commit ();
     						return true;
     					} catch ( Exception $e ) {
+    						$this->conn->rollBack ();
     						$this->_errors[] = $e->getMessage();
     						$this->_errors[] = $e->getTrace();
     						Mage::log($e->getMessage(), Zend_Log::ERR);
@@ -618,19 +599,31 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	
     }
     
+    protected function _prepareUpdateQuery($data,$qtyArray,$inventoryCollectionResult,$tableVendorInventory,$isFtp)
+    {
+    	$update;
+    	(!is_numeric($data['cost']) || $data['cost'] < 0 || trim($data['cost']) =="") ? $costUpdate = '' : $costUpdate = 'cost ='. $data['cost'] . ',';
+   		($qtyArray['upload_qty'] == .999999999 || trim($data['qty']) =="" ) ? $qtyUpdate = '' : $qtyUpdate = ' stock = '.$qtyArray['upload_qty']. ',';
+	if(!$isFtp){
+		($costUpdate=='' && $qtyUpdate =='' && !$this->_isProductSetupMode) ? $timeUpdate = ""  : $timeUpdate = ' updated_at = "'.now(). '",';
+    	$vSkuUpdate = ' lb_vendor_sku = "'.$data['vendor_sku']. '"';
+    	$update = 'update '.$tableVendorInventory.' set '.$costUpdate.$qtyUpdate.$timeUpdate.$vSkuUpdate.' where id = '.$inventoryCollectionResult['vendor_id'];
+    }else
+    {
+    	if(trim($data['qty'])!='' || trim($data['cost']) !='')
+    		$update = 'update '.$tableVendorInventory.' set '.$costUpdate. $qtyUpdate.' updated_at = "'.now().'" where id = '.$inventoryCollectionResult['vendor_id'];
+    }
+    return $update;
+    }
     protected function getInventoryLogQuery($data,$type,$qty,$updateBy=null,$ignoreData)
     {
 		if(count($ignoreData)>0){
 			if($type=='update'){
-				if(in_array('qty', $ignoreData))
-				$type = 'Cost Updated, Qty Ignored';
-				if(in_array('cost', $ignoreData))
-				$type = 'Qty Updated, Cost Ignored';
+				(in_array('qty', $ignoreData)) ? $type = 'Cost Updated, Qty Ignored' : '';
+				(in_array('cost', $ignoreData)) ? $type = 'Qty Updated, Cost Ignored' : '';
 			}else{
-				if(in_array('qty', $ignoreData))
-				$type = 'Cost Added, Qty Ignored';
-				if(in_array('cost', $ignoreData))
-				$type = 'Qty Added, Cost Ignored';
+				(in_array('qty', $ignoreData)) ? $type = 'Cost Added, Qty Ignored' : '';
+				(in_array('cost', $ignoreData)) ? $type = 'Qty Added, Cost Ignored' : '';
 			}
 			if(count($ignoreData)==2){
 				$type = 'ignore';
@@ -638,10 +631,10 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 		}
 		if($qty==0.999999999)
 		$qty = 0;
-    	$vendorRankModel = Mage::getModel('logicbroker/ranking')->load($data['lb_vendor_code'],'lb_vendor_code');
+    	$vendorRankModel = Mage::getModel('dropship360/ranking')->load($data['lb_vendor_code'],'lb_vendor_code');
     	$vendorName = $vendorRankModel->getLbVendorName();
     	 
-    	$tableName = Mage::getSingleton("core/resource")->getTableName('logicbroker/inventorylog');
+    	$tableName = Mage::getSingleton("core/resource")->getTableName('dropship360/inventorylog');
     	if(!$updateBy){
 			$updateBy = Mage::getSingleton('admin/session')->getUser()->getUsername();
 			}
@@ -732,7 +725,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	$io = new Varien_Io_File();
     	$path = Mage::getBaseDir('var') . DS . 'export' . DS;
     	$name = md5(microtime());
-    	$file = $path . DS . $name . '.csv';
+    	$file = $path . DS . $name;
     
     	$io->setAllowCreateFolders(true);
     	$io->open(array('path' => $path));
@@ -750,7 +743,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     
     protected function getVendorName($vendorCode)
 	{
-    	return Mage::getModel('logicbroker/ranking')->load($vendorCode,'lb_vendor_code')->getLbVendorName();
+    	return Mage::getModel('dropship360/ranking')->load($vendorCode,'lb_vendor_code')->getLbVendorName();
     }
 
     
@@ -779,7 +772,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     
     			return  array('error'=>true,'message' => 'Unable to connect');
     		}
-    		$loggedIn = ftp_login($ftpcon,  $ftpUserName['value'],  $ftpPassword['value']);
+    		$loggedIn = @ftp_login($ftpcon,  $ftpUserName['value'],  $ftpPassword['value']);
     		ftp_pasv($ftpcon, true);	
     		if (false === $loggedIn) {
     			return array('error'=>true,'message' => 'Unable to log in');
@@ -803,41 +796,51 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 	*/         
     public function ftpParseCsv()
 	{
-    	if(Mage::helper('logicbroker')->isProcessRunning('bulk_assign')){
+    	if(Mage::helper('dropship360')->isProcessRunning('bulk_assign')){
     		$message = 'Bulk product setup is currently running hence cannot run ftp import';
     		Mage::log($message, null, 'logicbroker_log_report.log');
     		return;
     	}
     	$ftpfileName = array();
-    	$ftpRequestPram = array('ftp_site'=>array('value'=> $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_SITE)),'ftp_username'=>array('value'=> $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_USERNAME)),'ftp_password'=>array('value'=> Mage::helper('core')->decrypt($this->getConfigValue(self::XML_PATH_UPLOAD_FTP_PASSWORD))),'ftp_type'=>array('value'=> $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_TYPE)));
+    	$this->ftpRequestPram = array('ftp_site'=>array('value'=> $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_SITE)),'ftp_username'=>array('value'=> $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_USERNAME)),'ftp_password'=>array('value'=> Mage::helper('core')->decrypt($this->getConfigValue(self::XML_PATH_UPLOAD_FTP_PASSWORD))),'ftp_type'=>array('value'=> $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_TYPE)));
 		
     	if (! Mage::getStoreConfigFlag ( self::XML_PATH_UPLOAD_ENABLED )) {
     		return $this;
     	}
-    	 
-    	$connectionResult = $this->testFtpConnection($ftpRequestPram,true);  	 
+    	$connectionResult = $this->testFtpConnection($this->ftpRequestPram,true);  	 
     	if($connectionResult['error']){
+    		$this->sendMail(array('subject'=>'Your magento site has failed to connect FTP site','message' => 'Connection Failure','bcc'=>trim(Mage::helper('dropship360')->getConfigObject('apiconfig/email/bcc'))));
     		$this->genrateLogEntry(array('ftp_error'=>'Connection error','ftp_error_desc'=>$connectionResult['message'],'error'=> 1));
     		Mage::log($connectionResult['message'], null, 'logicbroker_ftp_vendor_inventory_import.log');
     		ftp_close($connectionResult['object']);
     		return $this;
     	}
     	 
-    	$rankCollection = Mage::getModel('logicbroker/ranking')->getCollection()->addFieldToFilter('is_dropship','yes');
+    	$rankCollection = Mage::getModel('dropship360/ranking')->getCollection()->addFieldToFilter('is_dropship','yes');
     	/* file path format <ftp site>/<Logicbroker Account Number>_MagVendID<number>/Inventory/ */
     	 
     	if($rankCollection->getSize() > 0){
     		foreach($rankCollection as $ranks){
     			$path = $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_ACCNUMBER).'_'.$ranks->getLbVendorCode().'/'.'Inventory';
-    
-    			$ftpFiles = ftp_nlist($connectionResult['object'],$path);
-    
-    			if(is_array($ftpFiles)){
+    			$ftpFiles = array();
+    			$ftpFilesList = ftp_nlist($connectionResult['object'],$path);
+    			//patch for sort ftp files by time
+    			if($ftpFilesList){
+    			foreach ($ftpFilesList as $value) {
+    				if(preg_match("/.csv$/i", $value, $match)){
+    				$fileTime = ftp_mdtm($connectionResult['object'], $value);
+    				if(array_key_exists($fileTime,$ftpFiles))
+    					$ftpFiles[$fileTime+20] = $value; // if timestamp same for files
+    				else
+    					$ftpFiles[$fileTime] = $value;
+    				}
+    			}
+    			ksort($ftpFiles); // sort associative arrays in acending order, according to the key(time)
+    			}
+    			if($ftpFiles){
     				foreach($ftpFiles as $file){
-    					if(!preg_match("/\bArchive\b/i", $file, $match)){
     					if($this->downloadFtpFile($connectionResult['object'],$file,$path, $ranks->getLbVendorCode()))
     						$ftpfileName[$ranks->getLbVendorCode()][] = self::getWorkingDir().str_replace("\\","/",$path).DS.$this->downloadFtpFile($connectionResult['object'],$file,$path);
-    				}
     				}
     			}
     			ftp_chdir($connectionResult['object'],'/');
@@ -848,32 +851,25 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     		ftp_close($connectionResult['object']);
     		return $this;
     	}
-		$nondropshipCollection = Mage::getModel('logicbroker/ranking')->getCollection()->addFieldToFilter('is_dropship','no');
-		if($nondropshipCollection->getSize() > 0){
-    		foreach($nondropshipCollection as $nondropship){
-    			$path = $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_ACCNUMBER).'_'.$nondropship->getLbVendorCode().'/'.'Inventory';
-    			$ftpFiles = ftp_nlist($connectionResult['object'],$path);
-    			if(is_array($ftpFiles)){
-    				foreach($ftpFiles as $file){
-    					if(!preg_match("/\bArchive\b/i", $file, $match)){
-							$this->archiveFtpFile(array('object'=>$connectionResult['object'],'path'=>self::getWorkingDir().str_replace("\\","/",$path).DS.$this->downloadFtpFile($connectionResult['object'],$file,$path)));
-							$this->genrateLogEntry(array('lb_vendor_code'=>$nondropship->getLbVendorCode(),'ftp_error'=>'Import Error','ftp_error_desc'=>$nondropship->getLbVendorCode().' is not a dropship supplier','error'=> 1)); 
-						}
-    				}
-    			}
-    			ftp_chdir($connectionResult['object'],'/');
-    		}    		
-    	}
     	if(!empty($ftpfileName)){
     		$this->initialize();
+    		$this->_csvParserObj->emptyTable();
+    		$this->_csvDataCache = array();
+    		Mage::helper('dropship360')->turnOnReadUncommittedMode(); //dirty read patch
     		foreach($ftpfileName as $vendorCode=>$fileinfo)
     		{
+    			$this->_vendorCode = $vendorCode;
     			foreach($fileinfo as $path){
-    				if($this->validateCsvHeader($this->_getCsvData($path),true)){
+    				if($this->validateCsvHeader($this->_getCsvData($path,true),true)){
+    					Mage::helper('dropship360')->turnOnReadUncommittedMode(); // dirty read patch
 						$this->ftpUpdateVendorProduct($this->_getCsvData($path),$path,$vendorCode);	
+						Mage::helper('dropship360')->turnOnReadCommittedMode(); //restore to orignal trasectional level
+						$this->_csvDataCache = array();//for more than one csv file on FTP server
     					
     				}else{
+    					$this->_csvDataCache = array();
     					$logPath = explode('logicbrokervendorproduct',str_replace("\\","/",$path));
+    					$this->sendMail(array('isfailed'=>true,'vendor_code'=>$vendorCode,'subject'=>'dropship360 failed to update inventory','message' => 'Bad File header,Check header format at following FTP path '.$logPath[1]));
     					$this->genrateLogEntry(array('lb_vendor_code'=>$vendorCode,'ftp_error'=>'Bad File header','ftp_error_desc'=>'Check header format at following FTP path '.$logPath[1],'error'=> 1));
     					Mage::log('Please check header format', null, 'logicbroker_ftp_vendor_inventory_import.log');
     				}
@@ -881,7 +877,6 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 					$this->archiveFtpFile(array('object'=>$connectionResult['object'],'path'=>$path));
     			}
     		}
-    
     		$this->finalize();
     	}else{
     		Mage::log('No files found on ftp server', null, 'logicbroker_ftp_vendor_inventory_import.log');
@@ -889,17 +884,19 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     		return $this;
     	}
     	ftp_close($connectionResult['object']);
+    	$this->_csvParserObj->emptyTable();
+    	$this->_csvDataCache = array();
+    	Mage::helper('dropship360')->turnOnReadCommittedMode(); //restore to orignal transection level
     	return $this;
-    
     }
     
     protected function initialize(){
-    	Mage::helper('logicbroker')->startProcess('manual_upload');
+    	Mage::helper('dropship360')->startProcess('manual_upload');
     	Mage::log('Ftp upload started', null, 'logicbroker_ftp_vendor_inventory_import.log');
     }
     
     protected function finalize(){
-    	Mage::helper('logicbroker')->finishProcess('manual_upload');
+    	Mage::helper('dropship360')->finishProcess('manual_upload');
     	Mage::log('Ftp upload finished', null, 'logicbroker_ftp_vendor_inventory_import.log');
     }
     
@@ -909,7 +906,17 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	$patharr = explode('logicbrokervendorproduct',$path);
     	$dirname = pathinfo($patharr[1],PATHINFO_DIRNAME);
     	$basename = pathinfo($patharr[1],PATHINFO_BASENAME );
-		$newname = Mage::getModel('core/date')->date('Y-m-d h:i:s').'_'.$basename;
+	$newname = Mage::getModel('core/date')->date('Ymd-his').'_'.$basename;
+	$connection = $this->testFtpConnection($this->ftpRequestPram,true);
+	if($connection['error'])  
+		{  
+		$this->sendMail(array('subject'=>'Your magento site has failed to connect FTP site','message' => "Connection Failure--Can not archive file -".$basename,'bcc'=>trim(Mage::helper('dropship360')->getConfigObject('apiconfig/email/bcc'))));
+			Mage::log($connection['message'] ."--Can not archive file -".$basename, null, 'logicbroker_ftp_vendor_inventory_import.log'); 
+		}		 
+		else 
+		{
+			$object['object'] = $connection['object']; 
+		} 
     	ftp_chdir($object['object'],$dirname);
     	ftp_mkdir($object['object'], 'Archive');
 		ftp_chdir($object['object'],'Archive');
@@ -918,6 +925,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 		ftp_chdir($object['object'],'/');
 		$this->fileObj()->rm($object['path']);
 		ftp_delete($object['object'], $dirname.'/'.$basename);
+		ftp_close($connection['object']);
     	return;
     	
     }
@@ -925,14 +933,6 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 	{
     	$file = str_replace("/","\\",$file);
     	$extension = pathinfo($file, PATHINFO_EXTENSION);    
-    	if (strtolower($extension) != 'csv') {
-    		$this->fileObj()->rm($file);
-    		$logPath = explode('logicbrokervendorproduct',str_replace("\\","/",$file));
-    		$this->genrateLogEntry(array('lb_vendor_code'=>$vendorCode, 'ftp_error'=>'Bad File', 'ftp_error_desc'=>'Disallowed file type '.$logPath[1], 'error'=> 1));
-    		Mage::log('Disallowed file type.', null, 'logicbroker_ftp_vendor_inventory_import.log');
-    
-    		return false;
-    	}
     	return true;
     }
     
@@ -950,10 +950,6 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	ftp_chdir($ftpRequest,'/'.$fileName[0].'/'.$fileName[1]);
     	$server_file = $fileName[2];
     	$local_file = self::getWorkingDir().$path.DS.$fileName[2];
-    
-    	if(!$this->validateFtpFile(self::getWorkingDir().$path.DS.$fileName[2], $vendorCode)){
-    		return false;
-    	}
     	// download server file
     	if (ftp_get($ftpRequest, $local_file, $server_file, FTP_ASCII)){
     		 
@@ -963,48 +959,45 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	}
     }
     
+    protected function uploadReport($file,$vendorCode){
+    	$path = $this->getConfigValue(self::XML_PATH_UPLOAD_FTP_ACCNUMBER).'_'.$vendorCode.'/'.'Inventory';
+    	$reprotPath = 'report'.Mage::getModel('core/date')->date('Ymd-his').'.csv';
+    	$connection = $this->testFtpConnection($this->ftpRequestPram,true);
+    	if($connection['error'])
+    	{
+    		$this->sendMail(array('subject'=>'Your magento site has failed to connect FTP site','message' => "Connection Failure--Can not upload report file -".$basename,'bcc'=>trim(Mage::helper('dropship360')->getConfigObject('apiconfig/email/bcc'))));
+    		Mage::log($connection['message'] ."--Can not archive file -".$basename, null, 'logicbroker_ftp_vendor_inventory_import.log');
+    	}
+    	else
+    	{
+    		$object = $connection['object'];
+    	}
+    	ftp_chdir($object,'/');
+    	ftp_chdir($object,$path);
+    	ftp_mkdir($object,'Reports');
+    	ftp_chdir($object,'Reports');
+    	ftp_put($object, $reprotPath,$file['value'], FTP_ASCII);
+    	ftp_chdir($object,'/');
+    	$this->fileObj()->rm( $file['value']);
+    	ftp_close($connection['object']);
+    	return;
+    }
     protected function ftpUpdateVendorProduct($csvData,$path,$vendorCode = null)
 	{
     	$records = array();
     	$success = array();
     	$failure = array();
 		$itemerroroutput = array();
+		$counter = 0;
     	//$vendorCode = '';
-    	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' );
-		 if(count($csvData) <= 1 )
+    	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/vendor_import_log' );
+		 if(count($csvData) <= 1 && Mage::getModel('dropship360/csvparser')->isCsvFileEmpty())
     	{
-            $failure[] = 'File is empty'; 
-            $this->_FtpErrors['empty_file'] =  'File is empty';            
+            $failure[] = 'Sorry,we cant find the record to update inventory';
+            $this->_FtpErrors[] =  array('error_type'=>'empty_file','value'=>'Sorry,we cant find the record to update inventory');           
     	} 
-    	foreach($csvData as $row => $csvRowData)
-    	{
-    		if($row == 0)
-    			continue;
-    		$data = trim($data);
-    		//patch for backwards compatible for ftp change lbn-1070
-			(count($csvRowData) <= 3) ? array_unshift($csvRowData, "") : $csvRowData;
-			if(is_numeric($csvRowData[2]) || $csvRowData[2] > 0){
-				//$qty = floor($csvRowData[2]);
-                /* LBN - 935 change */
-               $magento_sku = $this->getMagentoSku($vendorCode, trim($csvRowData[1]));
-                            
-                if(!empty($magento_sku))
-                {                    
-    		       $qty = Mage::helper('logicbroker')->getIsQtyDecimal($magento_sku,$csvRowData[2]);  
-                }
-                else
-                {
-                   $qty = $csvRowData[2];  
-                }
-                /* End of LBN - 935 change */
-			}else{
-				$qty = $csvRowData[2];
-			}
-    		$records[$row] = array('lb_vendor_code'=>$vendorCode,'vendor_sku'=>trim($csvRowData[1]),'qty'=>$qty ,'cost'=>$csvRowData[3]);
-    		//$vendorCode = $csvRowData[0];
-    	}
-    
-		$this->conn->beginTransaction ();
+    	$records = Mage::getModel('dropship360/csvparser')->generateFtpCsvRow($csvData,$vendorCode);
+		//$this->conn->beginTransaction ();
 		if(is_array($records) && !empty($records)){
     	$requestData = array_chunk($records, 1, true);
     
@@ -1014,7 +1007,6 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 				$result[] = $this->validateCsvData($data, true);
 			}
 		}					
-		
 		foreach($result as $successOrfail){
 			if($successOrfail['success']!="")
 			$success[] =  $successOrfail['success'];
@@ -1024,28 +1016,36 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     	}
     	$this->checkDataIntigrity($this->_getCsvData($path),true);
     	}
-		if(isset($this->_FtpErrors['general_error'])){
-    	$this->_FtpErrors['other'] = implode(' , ', $this->_FtpErrors['general_error']);
-    	unset($this->_FtpErrors['general_error']);
+    	$finalResultCounter = (!$this->_isProductSetupMode) ? $this->logForUnprocessedRows($vendorCode,true) : 0;
+    	if(is_array($finalResultCounter))
+    	{
+    		$failed = count($failure)+$finalResultCounter['failure'];
+    		$success = count($success)+$finalResultCounter['success'];
+    	}else
+    	{
+    		$failed = count($failure)+$finalResultCounter;
+    		$success = count($success)+$finalResultCounter;
     	}
-		foreach($this->_FtpErrors as $k=>$output){
-			if($k =='combination_error' && is_array($output)){
-				foreach($output as $oput){
-					$itemerroroutput[] = '<li>'.$oput.'</li>';
-				}
-			}else{			
-				$itemerroroutput[] = '<li>'.$output.'</li>';
-			}	
-		}
-    	array_unshift($itemerroroutput,'<ul>');
-    	array_push($itemerroroutput,'</ul>');
-    	
-    	$ftp_err = (count($failure) > 0)  ? 'Missing/Bad Data' : '';
-    	$insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,ftp_error,ftp_error_desc,created_at) VALUES ("'.$vendorCode.'","FTP",'.count($success).','.count($failure).',"'.$ftp_err.'","'.implode('',$itemerroroutput).'","'.now().'")';
-    	 unset($itemerroroutput);
+    	$itemerroroutput = Mage::helper('core')->jsonEncode($this->_FtpErrors);
+    	//$failed = count($failure)+$counter;
+    	$ftp_err = ($failed > 0)  ? 'Missing/Bad Data' : '';
+    	$insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,ftp_error,created_at) VALUES ("'.$vendorCode.'","FTP",'.$success.','.$failed.',"'.$ftp_err.'","'.now().'")';
+    	 $this->conn->beginTransaction ();
     	$this->conn->query($insert);
+    	$entityId = $this->conn->lastInsertId($tableVendorImportLog);
     	try {
     		$this->conn->commit ();
+    		if(count($this->_FtpErrors) > 0){
+    		$csvFile = Mage::helper('dropship360')->generateErrorList(array('ftp_error_desc'=>$itemerroroutput,'lb_vendor_code'=>$vendorCode),true);
+    		$this->uploadReport($csvFile,$vendorCode);
+    		}
+    		if($this->sendBadFileAlert){
+    			$logPath = explode('logicbrokervendorproduct',str_replace("\\","/",$path));
+    			$this->sendMail(array('isfailed'=>true,'vendor_code'=>$vendorCode,'subject'=>'dropship360 failed to update inventory','message' => 'Missing/Bad data, check CSV data at following FTP path <br>'.$logPath[1]));
+    		}
+    		$this->prepareInsertAndExeQuery($this->_FtpErrors,$entityId);
+    		$itemerroroutput = array();
+    		$this->_FtpErrors = array();
     	} catch ( Exception $e ) {
     		$this->conn->rollBack ();
     		Mage::log($e->getMessage(), null, 'logicbroker_ftp_vendor_inventory_import.log');
@@ -1056,7 +1056,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     
     protected function ftpVendorProductUpdate($data)
 	{	 
-    	$tableVendorInventory = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/inventory' );
+    	$tableVendorInventory = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/inventory' );
     	$inventoryCollectionResult = $this->getInventoryCollection($data,true);
     	$qtyArray = $this->calculateProductQty(array('magento_sku'=>$inventoryCollectionResult['magento_sku'],'qty'=>$data['qty'],'lb_vendor_code'=>$data['lb_vendor_code'])); 	
     	switch($inventoryCollectionResult['operationType'])
@@ -1064,50 +1064,36 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     		case 'update':
     			$productId = Mage::getModel('catalog/product')->getIdBySku($inventoryCollectionResult['magento_sku']);
     			if($productId){
-    				if(!is_numeric($data['cost']) || $data['cost'] < 0 || trim($data['cost']) =="")
-    				{
-    					$costUpdate = '';
-    				}else
-    				{
-    					$costUpdate = ' cost ='. $data['cost'] . ',';
-    				}
-    				
-    				if($qtyArray['upload_qty'] == .999999999 || trim($data['qty']) =="" )
-    				{
-    					$qtyUpdate = '';
-    				}else
-    				{
-    					$qtyUpdate = ' stock = '.$qtyArray['upload_qty']. ',';
-    				}
-					if($costUpdate=='' && $qtyUpdate ==''){
-						$timeUpdate = "";
-					}else{
-						$timeUpdate = ' updated_at = "'.now(). '"';
-					}
-    				$update = 'update '.$tableVendorInventory.' set '.$costUpdate. $qtyUpdate.$timeUpdate.' where id = '.$inventoryCollectionResult['vendor_id'];
-    					
+    					$update = $this->_prepareUpdateQuery($data,$qtyArray,$inventoryCollectionResult,$tableVendorInventory,true);
     				try {
     					if(!$this->updateProductInventory($inventoryCollectionResult['magento_sku'],$qtyArray['final_qty']))
     					{
-    						$this->_FtpErrors['general_error'][] = 'Update error: Error in updating magento product inventory';
+    						$this->_FtpErrors[] = array('error_type'=>'inventory_update_error','value'=>array('magento_sku'=>$inventoryCollectionResult['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));;
+    						$this->sendBadFileAlert = true;
     						return false;
     					}
-						if($update)
+						if($update){
+							$this->conn->beginTransaction ();
     					$this->conn->query($update);
+							$this->conn->commit ();
+						}
     					return true;
     				} catch ( Exception $e ) {
+    					$this->conn->rollBack ();
     					Mage::log($e->getMessage(), null, 'logicbroker_ftp_vendor_inventory_import.log');
     					echo $e->getMessage();
     				}
     				 
     			}else{
-    				$this->_FtpErrors['general_error'][] = 'Update error: '.$data['lb_vendor_code'].' and '.$data['vendor_sku'] .' combination does not exist';
+    				$this->_FtpErrors[] = array('error_type'=>'combination_notexist','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+    				$this->sendBadFileAlert = true;
     				return false;
     			}
     			break;
     		default :
 		/*fix for ticket lbn-710 vendor_sku not visible*/
-    			$this->_FtpErrors['general_error'][] = $data['lb_vendor_code'].' and '.$data['vendor_sku'] .' combination does not exist';
+    			$this->_FtpErrors[] = array('error_type'=>'combination_notexist','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));;
+    			$this->sendBadFileAlert = true;
     			return false;
     	}	 
     	return true;
@@ -1116,9 +1102,9 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
     protected function genrateLogEntry($message)
     {
     	$vendorCode = (!empty($message['lb_vendor_code'])) ? $message['lb_vendor_code'] : '';
-    	$ftp_error = (!empty($message['ftp_error'])) ? $message['ftp_error'] : '';;
-    	$ftp_error_desc = (!empty($message['ftp_error_desc'])) ? $message['ftp_error_desc'] : '';;
-    	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' );
+    	$ftp_error = (!empty($message['ftp_error'])) ? $message['ftp_error'] : '';
+    	$ftp_error_desc = (!empty($message['ftp_error_desc'])) ? $message['ftp_error_desc'] : '';
+    	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/vendor_import_log' );
     	$this->conn->beginTransaction ();
 		$now = now();
     	$insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,created_at,ftp_error,ftp_error_desc) VALUES ("'.$vendorCode.'","FTP",'.count($success).','.$message['error'].',"'.$now.'","'.$ftp_error.'","'.$ftp_error_desc.'")';
@@ -1162,9 +1148,10 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 			if(!$duplicateCombination = $this->chekDuplicateCombination($data)){        
 				$invalidData = true;
 				if(!$isFtp){
-					$this->_UploadCsvErrors['combination_error'][] =  'Supplier code'. $data['lb_vendor_code'] .' and vendor sku '.$data['vendor_sku'].' combination not matching' ;
+					$this->_UploadCsvErrors[] =  array('error_type'=>'combination_exist','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
 				}else{
-					$this->_FtpErrors['combination_error'][] =  'Supplier code'. $data['lb_vendor_code'] .' and vendor sku '.$data['vendor_sku'].' combination not matching' ;
+					$this->_FtpErrors[] =  array('error_type'=>'combination_exist','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+					$this->sendBadFileAlert = true;
 				}					
 			}
 			$vendorCollection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$data['lb_vendor_code'])->addFieldTofilter('lb_vendor_sku',trim($data['vendor_sku']));
@@ -1178,7 +1165,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 			if($vendorCollection->getSize() > 0){
 				if($data['magento_sku']!=$vendorCollection->getFirstItem ()->getProductSku()){
 					$invalidData = true;
-					 $this->_UploadCsvErrors['combination_error'][] =  'Vendor sku '.$data['vendor_sku'].' is already been assigned for this vendor'; 
+					 $this->_UploadCsvErrors[] =  array('error_type'=>'already_assigned','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
 				}
 			}					
 			if($invalidData){
@@ -1195,10 +1182,11 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 			$failure+=1;
 			if(!$isFtp){
 				if(trim($data['vendor_sku']))	
-				$this->_UploadCsvErrors['general_error'][] = 'Vendor Sku '. $data['vendor_sku'] .' & Supplier code '.$data['lb_vendor_code'].' combination does not exist';
+				$this->_UploadCsvErrors[] = array('error_type'=>'combination_notexist','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
 			}else{
 				if(trim($data['vendor_sku']))	
-				$this->_FtpErrors['general_error'][]  = 'Vendor Sku '. $data['vendor_sku'] .' & Supplier code '.$data['lb_vendor_code'].' combination does not exist';
+				$this->_FtpErrors[]  = array('error_type'=>'combination_notexist','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+				$this->sendBadFileAlert = true;
 			}
 		}
 		if($data['magento_sku']){
@@ -1208,7 +1196,15 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 				$insertInventoryLog = $this->getInventoryLogQuery($data, $inventoryCollectionResult['operationType'], $data['qty'], null,$ignoreData);
 			}
 			if($insertInventoryLog)
-			$this->conn->query($insertInventoryLog);
+			{
+				$this->conn->beginTransaction ();
+				$this->conn->query($insertInventoryLog);
+				try{
+					$this->conn->commit ();
+				}catch(Exception $e){
+					$this->conn->rollBack ();
+				}
+			}
 		}
 		return	array('success'=>$success, 'failure'=>$failure);	
 	} 
@@ -1234,11 +1230,11 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 				if(!empty($existing_product_sku)){                
 					if($data['magento_sku'] != $existing_product_sku){
 						$invalidData = true;
-						$this->_UploadCsvErrors['combination_error'][] = 'Vendor sku '.$data['vendor_sku'].' is duplicate in Magento Sku '. $data['magento_sku'] .' for this supplier'; 	
+						$this->_UploadCsvErrors[] = array('error_type'=>'duplicate_vendor_sku','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));	
 	  
 					}else{
 						$invalidData = true;
-						$this->_UploadCsvErrors['combination_error'][] =  'Vendor sku '.$data['vendor_sku'].' & Magento Sku '. $data['magento_sku'] .' combination already present'; 	
+						$this->_UploadCsvErrors[] =  array('error_type'=>'combination_exist','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost'])); 	
 					}
 				}
 			}
@@ -1266,13 +1262,20 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 				($this->vendorProductInsert($data)) ? $success += 1 : $failure+=1;
 				if($this->vendorProductInsert($data)){
 					$insertInventoryLog = $this->getInventoryLogQuery($data, $type, 0, null, null);
-					if($insertInventoryLog)
-					$this->conn->query($insertInventoryLog);
+					if($insertInventoryLog){
+						$this->conn->beginTransaction ();
+						$this->conn->query($insertInventoryLog);
+						try{
+							$this->conn->commit ();
+						}catch(Exception $e){
+							$this->conn->rollBack ();
+						}
+					}
 				}				
 			}
 		}else{
 			$failure+=1;
-			$this->_UploadCsvErrors['general_error'][] = 'Magento Sku '.$data['magento_sku'].' does not exist';	
+			$this->_UploadCsvErrors[] = array('error_type'=>'magento_sku_exists','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
 		}
 		return	array('success'=>$success, 'failure'=>$failure);	
 	}  
@@ -1331,5 +1334,208 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 	    }	
 		return $trimmedSkus;
 	}
+	
+	protected function sendMail($mailData = array()){
+		if (!Mage::getStoreConfigFlag (self::XML_PATH_INVENTORY_NOTIFICATION_EMAIL_ENABLED)) {
+			return $this;
+		}
+		$mailData['datetime'] = Mage::getModel('core/date')->date();
+		$postObject = new Varien_Object();
+		$postObject->setData($mailData);
+		$email = trim(Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_EMAIL));
+		$templateId = 'logicbroker_ftp_con_fail';
+		$isMailSent = Mage::helper('dropship360')->sendMail($postObject,$email,$templateId);
+		if(!$isMailSent)
+			Mage::log('Notification email not sent :'.$email, null, 'logicbroker_debug.log');
+	}
+	protected function logForUnprocessedRows($vendorCode,$isFtp = false){
+		$msg = '';
+		$error = 0;
+		$success = 0;
+		$proObj = Mage::getModel('dropship360/ranking')->load($vendorCode,'lb_vendor_code');
+		$proLinkAttr = $proObj->getLinkingAttribute();
+		$proLinkAttr = empty($proLinkAttr) ? 'none' : $proLinkAttr;
+		$this->supplierName = $proObj->getLbVendorName();
+		$helper = Mage::helper('dropship360');
+		$csvData = Mage::getModel('dropship360/csvparser')->getUnprocessedCsvRows($vendorCode,$isFtp);
+		if(count($csvData) > 0 ){
+		foreach($csvData as $data){
+		$collection = $this->_inventoryModel->getCollection()->addFieldTofilter('lb_vendor_code',$vendorCode)->addFieldTofilter('lb_vendor_sku',$data['vendor_sku']);
+		if($collection->getSize() > 0)
+		{
+			$msg = array('error_type'=>'data_notchnage','value'=>array('magento_sku'=> $collection->getFirstItem()->getProductSku(),'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+			(!$isFtp) ? $this->_UploadCsvErrors[] = $msg : 	$this->_FtpErrors[] = $msg;
+			$error++;
+		}else
+		{
+			switch ($proLinkAttr) {
+				case  'none':
+					$msg = array('error_type'=>'combination_notexist','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+					(!$isFtp) ? $this->_UploadCsvErrors[] = $msg : 	$this->_FtpErrors[] = $msg;
+					$error++;
+					break;
+				default:
+			$proCol = Mage::getModel('catalog/product')->getCollection();
+					if(!$this->checkAttributeAval($proLinkAttr,$proCol)){
+						$msg = array('error_type'=>'attribute_notexist','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+						(!$isFtp) ? $this->_UploadCsvErrors[] = $msg : 	$this->_FtpErrors[] = $msg;
+						$error++;
+					}else{
+						$product = $proCol->addAttributeToFilter($proLinkAttr,$data['vendor_sku']);
+						if($this->validateGenerateProduct($product,$data,$proLinkAttr,$isFtp)){
+							$tempArray = $this->genNonExistPro($product,$data,$isFtp);
+							!empty($tempArray['success']) ?  $success++ : '';
+							!empty($tempArray['failure']) ?  $error++ : '';
+						}else
+							{
+								$error++;
+							}
+					}
+				break;
+					}
+				}
+			}
+			$csvData[0] = $this->_csvDataCache[0];
+			$this->emptyRecords = array(); 
+			$this->result = array();
+			$this->checkDataIntigrity($csvData,$isFtp);
+		}
+		return array('success'=>$success,'failure'=>$error);
+	}
+	protected function prepareInsertAndExeQuery($csvData,$entityId){
+		if(count($csvData) <= 0 || empty($entityId))
+			return ;
+		$tableName = Mage::getSingleton ( 'core/resource' )->getTableName ('dropship360/vendor_import_log_desc');
+		
+		foreach($csvData as $data)
+		{
+		try {
+				$this->conn->insertArray($tableName,array('error_id','description'),array(array($entityId,Mage::helper('core')->jsonEncode($data))));
+		} catch ( Exception $e ) {
+            Mage::logException($e);
+            	Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+			}
+			
+		}
+		return ;
+	}
+	protected function validateGenerateProduct($product,$data,$attr,$isFtp){
+		$isValid = true;
+		$helper = Mage::helper('dropship360');
+		if($product->getSize() == 0)
+		{
+			$errorType = ($attr == $helper::LOGICBROKER_PRODUCT_LINK_CODE_SKU) ? 'magento_sku_exists' : $attr.'_notexist'; 
+			$msg = array('error_type'=>$errorType,'value'=>array('magento_sku'=>$data['vendor_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+			(!$isFtp) ? $this->_UploadCsvErrors[] = $msg : 	$this->_FtpErrors[] = $msg;
+			$isValid = false;
+		}elseif($product->getSize() > 1)
+		{
+			$msg = array('error_type'=>$attr.'_multiple','value'=>array('magento_sku'=>'','qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+			(!$isFtp) ? $this->_UploadCsvErrors[] = $msg : 	$this->_FtpErrors[] = $msg;
+			$isValid = false;
+		}else{
+			$data['magento_sku'] = $product->getFirstItem()->getSku();
+			if(!$this->chekDuplicateCombination($data))
+			{
+				$msg = array('error_type'=>'combination_exist','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+				(!$isFtp) ? $this->_UploadCsvErrors[] = $msg : 	$this->_FtpErrors[] = $msg;
+				$isValid = false;
+			}
+		}
+			
+		return $isValid;
+	}
+	
+	protected function genNonExistPro($proObj,$data,$isFtp){
+		$invalidData = false;
+		$failure = 0;
+		$success = 0;
+		$ignoreData = array();
+		$data['magento_sku'] = $proObj->getFirstItem()->getSku();
+		/* LBN - 935 change */
+		 $data['qty'] = (is_numeric($data['qty'])) ? Mage::helper('dropship360')->getIsQtyDecimal($data['magento_sku'],$data['qty']) : $data['qty'];
+		if(!is_numeric($data['qty']) || $data['qty'] < 0){
+			$ignoreData[]= 'qty';
+		}
+		if(!is_numeric($data['cost']) || $data['cost'] < 0){
+			$ignoreData[]= 'cost';
+		}
+		if((!is_numeric($data['cost']) || $data['cost'] < 0) && (!is_numeric($data['qty']) || $data['qty'] < 0)){
+			if($data['cost']!="" && $data['qty']!="")
+				$invalidData = true;
+		}
+		
+		if($invalidData){
+			$failure+=1;
+		}else{
+			($this->insertNonExistPro($proObj,$data,$isFtp)) ? 	$success += 1 : $failure += 1;
+			}
+		
+		$this->insertInventoryLog($ignoreData,$data,$isFtp);
+
+		return array('success'=>$success,'failure'=>$failure);
+	}
+	
+	protected function insertNonExistPro($proObj,$data,$isFtp = false){
+		
+		$vendorCode = ($isFtp) ? $data['lb_vendor_code'] : $this->_vendorCode;
+		$tableVendorInventory = Mage::getSingleton ('core/resource')->getTableName('dropship360/inventory');
+		$qtyArray = $this->calculateProductQty($data);
+		$costInsert = (!is_numeric($data['cost']) || $data['cost'] < 0 || trim($data['cost']) =="") ? 0 : $data['cost'] ;
+		$qtyInsert = ($qtyArray['upload_qty'] == .999999999 || trim($data['qty']) =="" ) ? 0 : $qtyArray['upload_qty'];
+		$dbFields = array('lb_vendor_code','lb_vendor_name','product_sku','lb_vendor_sku','stock','cost','created_at','updated_at');
+		$dbFieldVal = array(
+			array($vendorCode,$this->supplierName,$data['magento_sku'],$data['vendor_sku'],$qtyInsert,$costInsert,now(),now())
+		);
+		try {
+			if(!$this->updateProductInventory(trim($data['magento_sku']),$qtyArray['final_qty']))
+			{
+				$this->_UploadCsvErrors[] = array('error_type'=>'inventory_update_error','value'=>array('magento_sku'=>$data['magento_sku'],'qty'=>$data['qty'],'vendor_sku'=>$data['vendor_sku'],'cost'=>$data['cost']));
+				return false;
+			}
+			$this->conn->insertArray($tableVendorInventory,$dbFields,$dbFieldVal);
+			return true;
+		} catch ( Exception $e ) {
+			Mage::logException($e);
+			Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+		}
+		
+		
+	}
+	protected function insertInventoryLog($ignoreData,$data,$isFtp)
+	{
+		$type = 'add';
+		$vendorCode = ($isFtp) ? $data['lb_vendor_code'] : $this->_vendorCode;
+		if(count($ignoreData)>0){
+			(in_array('qty', $ignoreData)) ? $type = 'Cost Added, Qty Ignored' : '';
+			(in_array('cost', $ignoreData)) ? $type = 'Qty Added, Cost Ignored' : '';
+			
+			if(count($ignoreData)==2){
+				$type = 'ignore';
+			}
+		}
+		if($data['qty']==0.999999999)
+			$data['qty'] = 0;
+		$tableName = Mage::getSingleton("core/resource")->getTableName('dropship360/inventorylog');
+		$updatedBy = (!$isFtp) ? Mage::getSingleton('admin/session')->getUser()->getUsername() : 'FTP';
+		$dbFields = array('lb_vendor_code','lb_vendor_name','product_sku','cost','stock','updated_by','activity','updated_at','created_at');
+		$dbFieldVal = array(
+			array($vendorCode,$this->supplierName,$data['magento_sku'],$data['cost'],$data['qty'],$updatedBy,$type,now(),now())
+		);
+		try {
+			$this->conn->insertArray($tableName,$dbFields,$dbFieldVal);
+			return true;
+		} catch ( Exception $e ) {
+			Mage::logException($e);
+			Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+		}
+		
+	}
+	protected function checkAttributeAval($attr,$object){
+		$isExist = false;
+		$attrEav = Mage::getResourceModel('catalog/eav_attribute')->loadByCode('catalog_product',$attr);
+		if ($attrEav->getId())
+			$isExist = true;
+		return $isExist;
+	}
 }
-	 

@@ -8,10 +8,10 @@
  */
 -->
 <jstranslator>
-    <validate-url-logicbroker translate="message" module="logicbroker">
+    <validate-url-logicbroker translate="message" module="dropship360">
         <message>Please enter a valid URL. Protocol is required (http://, https:// or ftp://)</message>
     </validate-url-logicbroker>
-    <validate-one-required-by-name-logicbroker translate="message" module="logicbroker">
+    <validate-one-required-by-name-logicbroker translate="message" module="dropship360">
        <message>Please select one of the options.</message>
     </validate-one-required-by-name-logicbroker>
 </jstranslator>

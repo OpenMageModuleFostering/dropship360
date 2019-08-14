@@ -23,8 +23,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
   {
       $entityTypeId = Mage::getModel ( 'eav/config' )->getEntityType ( 'catalog_product' )->getEntityTypeId (); 
   	  $prodNameAttrId = Mage::getModel('eav/entity_attribute')->loadByCode($entityTypeId, 'name')->getAttributeId();
-      $collection = Mage::getModel('logicbroker/inventory')->getCollection();
-      $collection->getSelect()->join(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('logicbroker/ranking')),'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array('lb_vendor_name'));
+      $collection = Mage::getModel('dropship360/inventory')->getCollection();
+      $collection->getSelect()->join(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('dropship360/ranking')),'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array('lb_vendor_name'));
       $collection->getSelect()->joinLeft(array('prod' => Mage::getSingleton('core/resource')->getTableName('catalog/product')),'prod.sku = main_table.product_sku',array('magento_pro_id'=>'entity_id'));
       $collection->getSelect()->joinLeft(array('cpev' => Mage::getSingleton('core/resource')->getTableName('catalog/product').'_varchar'),'cpev.entity_id=prod.entity_id AND cpev.attribute_id='.$prodNameAttrId.'',array('product_name' => 'value'));
       $collection->getSelect()->where('prod.entity_id IS NOT NULL');
@@ -41,7 +41,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
   protected function _prepareColumns()
   {
       $this->addColumn('lb_vendor_name', array(
-          'header'    => Mage::helper('logicbroker')->__('Supplier'),
+          'header'    => Mage::helper('dropship360')->__('Supplier'),
           'align'     =>'right',
           'width'     => '50px',
       	'filter_index' => 	'lbRanking.lb_vendor_name',
@@ -49,27 +49,27 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
       ));
 
 	  $this->addColumn('stock', array(
-          'header'    => Mage::helper('logicbroker')->__('Supplier Inventory'),
+          'header'    => Mage::helper('dropship360')->__('Supplier Inventory'),
           'index'     => 'stock',
            'type' =>    'number'
       ));
 	  $store = $this->_getStore();
       	  $this->addColumn('cost', array(
-          'header'    => Mage::helper('logicbroker')->__('Cost'),
+          'header'    => Mage::helper('dropship360')->__('Cost'),
           'index'     => 'cost',
           'type' => 'price',
       	  'currency_code' => $store->getBaseCurrency()->getCode(),
       ));
  
       	  $this->addColumn('product_name', array(
-      	  		'header'    => Mage::helper('logicbroker')->__('Product Name'),
+      	  		'header'    => Mage::helper('dropship360')->__('Product Name'),
       	  		'align'     =>'left',
       	  		'width'     => '80px',
       	  		'index'     => 'product_name',
       	  		'filter_index'=>'cpev.value', 
       	  ));
 	 $this->addColumn('product_sku', array(
-          'header'    => Mage::helper('logicbroker')->__('Product Sku'),
+          'header'    => Mage::helper('dropship360')->__('Product Sku'),
           'align'     =>'left',
           'width'     => '80px',
           'index'     => 'product_sku',
@@ -77,14 +77,14 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
       ));
 
 	 $this->addColumn('lb_vendor_sku', array(
-	 		'header'    => Mage::helper('logicbroker')->__('Supplier Sku'),
+	 		'header'    => Mage::helper('dropship360')->__('Supplier Sku'),
 	 		'align'     =>'left',
 	 		'width'     => '80px',
 	 		'index'     => 'lb_vendor_sku',
 	 		'renderer' => 'Logicbroker_Dropship360_Block_Adminhtml_Widget_Grid_Column_Skuaction'
 	 ));
 	  $this->addColumn('updated_at', array(
-          'header'    => Mage::helper('logicbroker')->__('Last Sync'),
+          'header'    => Mage::helper('dropship360')->__('Last Sync'),
           'index'     => 'updated_at',
           'width'     => '80px',
           'default'   => '--',    
@@ -95,13 +95,13 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
 	  // below code added for Jira ticket 734
 	  $this->addColumn('action',
 	  		array(
-	  				'header'    =>  Mage::helper('logicbroker')->__('Action'),
+	  				'header'    =>  Mage::helper('dropship360')->__('Action'),
 	  				'width'     => '100',
 	  				'type'      => 'action',
 	  				'getter'    => 'getMagentoProId',
 	  				'actions'   => array(
 	  						array(
-	  								'caption'   => Mage::helper('logicbroker')->__('Edit'),
+	  								'caption'   => Mage::helper('dropship360')->__('Edit'),
 	  								'url'       => array('base'=> 'adminhtml/catalog_product/edit/back/edit/tab/product_info_tabs_vendor_tab'),
 	  								'field'     => 'id'
 	  						)
@@ -111,8 +111,8 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
 	  				'index'     => 'stores',
 	  				'is_system' => true,
 	  		));
-	  $this->addExportType('*/*/exportCsv', Mage::helper('logicbroker')->__('CSV'));
-		$this->addExportType('*/*/exportXml', Mage::helper('logicbroker')->__('XML'));
+	  $this->addExportType('*/*/exportCsv', Mage::helper('dropship360')->__('CSV'));
+		$this->addExportType('*/*/exportXml', Mage::helper('dropship360')->__('XML'));
 	  
       return parent::_prepareColumns();
 	}

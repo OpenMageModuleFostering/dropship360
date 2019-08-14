@@ -1,0 +1,85 @@
+    .black_overlay{
+        display: none;
+        position: fixed;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        z-index:1001;
+        -moz-opacity: 0.8;
+        opacity:.80;
+        filter: alpha(opacity=80);
+    }
+    .white_content {
+        display: none;
+        position: fixed;
+        top: 25%;
+        left: 25%;
+        width: 50%;
+        height: 50%;
+        padding: 16px;
+        border: 8px solid #f3bf8f;
+        background-color: white;
+        z-index:1002;
+        overflow: auto;
+    }
+.supplier-pager .amount {
+	float: left;
+	height: 30px;
+    line-height: 30px;
+}
+
+.supplier-pager .limiter {
+	float: left;
+	line-height: 30px;
+    height: 30px;
+    margin: 0 10px;
+}
+
+.supplier-pager .pages strong {
+    display: none;
+}
+
+.supplier-pager .pages {
+    margin: 0 auto;
+    text-align: center;
+    display: inline-block;
+    overflow: hidden;
+    float: none;
+}
+
+.supplier-pager .pages > ol {
+    margin: 0px auto;
+    overflow: hidden;
+    text-align: center;
+}
+
+.supplier-pager .pages li {
+    float: left;
+    margin: 0 0px 0 1px;
+    display: block;
+    text-align: center;
+}
+
+.supplier-pager .pages li.current {
+    background-color: #E5E5E5;
+    border: none;
+}
+
+.supplier-pager .pages li a,.supplier-pager .pages li.current {
+    background-color: #F5F5F5;
+    display: inline-block;
+    border: 0;
+    font-size: 13px;
+    text-align: center;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+    line-height: 30px;
+    width: 25px;
+    height: 30px;
+    padding: 0;
+    color: #ea7601;
+    font-family: Verdana, Arial, sans-serif;
+}

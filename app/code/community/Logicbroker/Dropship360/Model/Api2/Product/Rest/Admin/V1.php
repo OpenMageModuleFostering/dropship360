@@ -17,7 +17,7 @@ class Logicbroker_Dropship360_Model_Api2_Product_Rest_Admin_V1 extends Logicbrok
 			foreach($requestData as $chunkData)
 			{
 				$processedData['productdata'] = $chunkData;
-				$result[] = Mage::getModel('logicbroker/productimport')->_init()->processData($processedData);
+				$result[] = Mage::getModel('dropship360/productimport')->_init()->processData($processedData);
 			}
 			$time_end = now();
 			echo 'Start Time = '.$time_start;

@@ -16,13 +16,15 @@ class Logicbroker_Dropship360_Model_Logicbroker {
         $roleName = 'logicbroker';
         $parentId = '';
         $roleType = 'G';
-        $ruleNodes = array();
+        $definedRole = Mage::helper('dropship360')->getConfigObject('apiconfig/soap_role');
+        $ruleNodes = (!empty($definedRole)) ? explode(',',$definedRole) : array('all');
 
         if (!is_array($fieldsetData)) {
             return false;
         }
         $role->load($roleName, 'role_name');
-        $ruleNodes = array('all');
+        //$ruleNodes = array('all');
+        //$ruleNodes = $definedRole;
         try {
             $role = $role->setName($roleName)
                     ->setPid($parentId)
@@ -157,27 +159,74 @@ class Logicbroker_Dropship360_Model_Logicbroker {
     
     public function send($attachment = null,$fieldsetData) {
     	try {
-    
-    		$fieldsetData['isnewreg'] = true;
-    		$postObject = new Varien_Object();
-    		$postObject->setData($fieldsetData);
-    		$mailTemplate = Mage::getModel('core/email_template');
-    		/* @var $mailTemplate Mage_Core_Model_Email_Template */
-    		$mailTemplate->setDesignConfig(array('area' => 'frontend'))
-    		->sendTransactional(
-    				'logicbroker_email_email_template',
-    				'general',
-    				Mage::helper('logicbroker')->getConfigObject('apiconfig/email/toaddress'),
-    				Mage::helper('logicbroker')->getConfigObject('apiconfig/email/toname'),
-    				array('templatevar' => $postObject)
-    		);
-    		if (!$mailTemplate->getSentSuccess()) {
-    			Mage::helper('logicbroker')->genrateLog(0,'Installation notification started','Installation notification ended','Module installation notifiaction mail sending failed');
-    			return false;
-    		}
-    		return true;
+	    		$fieldsetData['isnewreg'] = true;
+	    		$version = Mage::helper('dropship360')->getConfigObject('default/logicbroker_integration/integration/ds360_version');
+	    		$fieldsetData['subject'] = 'New DS360 Package Extension version '.$version.' was installed';
+	    		$postObject = new Varien_Object();
+	    		$postObject->setData($fieldsetData);
+	    		$templateId = 'logicbroker_email_email_template';
+	    		$email = Mage::helper('dropship360')->getConfigObject('apiconfig/email/toaddress');
+	    		$isMailSent = Mage::helper('dropship360')->sendMail($postObject,$email,$templateId);
+	    		if (!$isMailSent) {
+	    			Mage::helper('dropship360')->genrateLog(0,'Installation notification started','Installation notification ended','Module installation notifiaction mail sending failed');
+	    		}
+	    		Mage::getSingleton('adminhtml/session')->unsNotification();
+	    		return true;
     	} catch (Exception $e) {
     		return false;//$e->getMassage();
+    	}
+    }
+    
+    public function prepareNotification($object,$orderId){
+    	if($object == null || $orderId == null)
+    		return;
+    	$collection = $object->getCollection();
+    	if($collection->getSize() == 0 )
+    		$this->saveNotificationValue($orderId,'logicbroker/setup_notification/order');
+    	}
+    public function saveNotificationValue($value = null,$path){
+    	$data = array(
+    			'scope'         => 'default',
+    			'scope_id'    => '0',
+    			'path'       => $path,
+    			'value'     => $value,
+    	);
+    	try{
+    		Mage::getModel('core/config_data')->load($data['path'],'path');
+			Mage::getModel('core/config_data')->setData($data)->save();
+    	}catch(Exception $e){
+    		return false;
+    	}
+    }
+    
+    public function setupNotification()
+    {
+    	$order = Mage::getStoreConfig('logicbroker/setup_notification/order');
+    	
+    	if($order)
+    	{
+    		$inventory = Mage::getModel('dropship360/orderitems')->getCollection()->addFieldToFilter('item_order_id',$order)->addFieldToFilter('lb_item_status','Transmitting');
+    		if($inventory->getSize() > 0){
+    			
+    			try {
+    				$fieldsetData['order'] = Mage::getModel('sales/order')->load($order);
+    				$fieldsetData['subject'] = 'DS360 Order has been Placed on Magento';
+    				$postObject = new Varien_Object();
+    				$postObject->setData($fieldsetData);
+    				$templateId = 'logicbroker_order_notification';
+    				$email = Mage::helper('dropship360')->getConfigObject('apiconfig/email/toaddress');
+    				$isMailSent = Mage::helper('dropship360')->sendMail($postObject,$email,$templateId);
+    				if (!$isMailSent) {
+    					Mage::helper('dropship360')->genrateLog(0,'Order notification started','Order notification ended','First order goes to transmitting successfully email sending failed');
+    				}
+    				$this->saveNotificationValue(null,'logicbroker/setup_notification/order');
+    				return true;
+    			} catch (Exception $e) {
+    				return false;//$e->getMassage();
+    			}
+    			
+    		}
+    		
     	}
     }
         

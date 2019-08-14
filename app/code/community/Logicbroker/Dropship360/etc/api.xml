@@ -38,15 +38,15 @@
                     </unhold>
 					<updateItemStatus translate="title" module="fulfillment">
                         <title>updateItemStatus</title>
-                        <acl>sales/order/updateItemStatus</acl>
+                        <acl>sales/order/updateitemstatus</acl>
                     </updateItemStatus>
                     <getLbOrderByItemStatus>
                         <title>getLbOrderByItemStatus</title>
-                        <acl>sales/order/getLbOrderByItemStatus</acl>
+                        <acl>sales/order/getlborderbyitemstatus</acl>
                     </getLbOrderByItemStatus> 
                     <setLbOrderItemStatus>
                         <title>setLbOrderItemStatus</title>
-                        <acl>sales/order/setLbOrderItemStatus</acl>
+                        <acl>sales/order/setlborderitemstatus</acl>
                     </setLbOrderItemStatus>
                     
                 </methods>
@@ -256,11 +256,11 @@
             </sales_order_creditmemo>
             <dropship360_versions>
                 <title>dropship360</title>                
-                <model>logicbroker/versions_api</model>
+                <model>dropship360/versions_api</model>
                 <acl>dropship360/versions</acl>
                 <methods>                    
                    
-                   <getdropship360version translate="title" module="logicbroker">
+                   <getdropship360version translate="title" module="dropship360">
                         <title>getdropship360version</title>
                            <title>get dropship360 vesion</title>
                            <method>getdropship360version</method>
@@ -322,15 +322,15 @@
                         <info translate="title" module="sales">
                             <title>Retrieve orders info</title>
                         </info>
-                        <updateItemStatus translate="title" module="sales">
+                        <updateitemstatus translate="title" module="sales">
                                 <title>update Item Status</title>
-                        </updateItemStatus>
-                        <getLbOrderByItemStatus translate="title" module="sales">
+                        </updateitemstatus>
+                        <getlborderbyitemstatus translate="title" module="sales">
                         	<title>Retrive orders by item status</title>
-                        </getLbOrderByItemStatus>
-                        <setLbOrderItemStatus translate="title" module="sales">
+                        </getlborderbyitemstatus>
+                        <setlborderitemstatus translate="title" module="sales">
                         	<title>Set order item status</title>
-                        </setLbOrderItemStatus>
+                        </setlborderitemstatus>
                        
                         <shipment translate="title" module="sales">
                             <title>Order shipments</title>
@@ -392,13 +392,13 @@
                         </creditmemo>
                     </order>
                 </sales>
-                <dropship360 translate="title" module="logicbroker">
+                <dropship360 translate="title" module="dropship360">
                         <title>dropship360</title>
                         <sort_order>1</sort_order>
-                        <versions translate="title" module="logicbroker">
+                        <versions translate="title" module="dropship360">
                             <title>versions</title>
                             <sort_order>2000</sort_order>                    
-                            <dropship360 translate="title" module="logicbroker">
+                            <dropship360 translate="title" module="dropship360">
                                 <title>dropship360</title>
                             </dropship360>  
                         </versions>
