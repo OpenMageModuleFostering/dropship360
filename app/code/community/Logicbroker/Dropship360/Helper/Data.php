@@ -17,12 +17,13 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	const LOGICBROKER_ITEM_STATUS_CANCELLED   = 'Cancelled';
 	const LOGICBROKER_ITEM_STATUS_NO_DROPSHIP   = 'No Dropship';
 	const LOGICBROKER_ITEM_STATUS_COMPLETED   = 'Completed';
+	const LOGICBROKER_ITEM_STATUS_ERROR   = 'Error';
 	const LOGICBROKER_PRODUCT_LINK_UPC   = 'UPC';
 	const LOGICBROKER_PRODUCT_LINK_MNP   = 'Manufacturer Part Number';
 	const LOGICBROKER_PRODUCT_LINK_SKU   = 'Magento Sku';
 	const LOGICBROKER_PRODUCT_LINK_NONE   = 'None';
-	const LOGICBROKER_PRODUCT_LINK_CODE_UPC   = 'lb_upc';
-	const LOGICBROKER_PRODUCT_LINK_CODE_MNP   = 'lb_mnp';
+	const LOGICBROKER_PRODUCT_LINK_CODE_UPC   = 'upc';
+	const LOGICBROKER_PRODUCT_LINK_CODE_MNP   = 'manufacturer_part_number';
 	const LOGICBROKER_PRODUCT_LINK_CODE_SKU   = 'sku';
 	protected $_maxtime = 60; 	// time in minutes
     public function getConfigObject($nodeName = null)
@@ -32,7 +33,17 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function getItemStatuses()
     {
-	return array('Sourcing','Reprocess','Backorder','Transmitting','Sent to Supplier','Cancelled','No Dropship','Completed');
+	return array (
+				self::LOGICBROKER_ITEM_STATUS_SOURCING,
+				self::LOGICBROKER_ITEM_STATUS_REPROCESS,
+				self::LOGICBROKER_ITEM_STATUS_BACKORDER,
+				self::LOGICBROKER_ITEM_STATUS_TRANSMITTING,
+				self::LOGICBROKER_ITEM_STATUS_SENT_TO_SUPPLIER,
+				self::LOGICBROKER_ITEM_STATUS_CANCELLED,
+				self::LOGICBROKER_ITEM_STATUS_NO_DROPSHIP,
+				self::LOGICBROKER_ITEM_STATUS_COMPLETED,
+				self::LOGICBROKER_ITEM_STATUS_ERROR
+		);
     }
 
 
@@ -60,6 +71,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	    $product_collection = Mage::getResourceModel('catalog/product_collection');
 	    $product_collection->getSelect()->join(Mage::getConfig()->getTablePrefix().'cataloginventory_stock_item', 'e.entity_id ='.Mage::getConfig()->getTablePrefix().'cataloginventory_stock_item.product_id');
 	    $product_collection->getSelect()->where('e.sku = ' ."'" .$product_sku."'");
+	    $product_collection->getSelect()->limit(1);
 	    $product_collection_count =  count($product_collection);
 	    if($product_collection_count > 0)
 	    {
@@ -254,7 +266,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	    	return array('error' => true);
 	    }
 		$io = new Varien_Io_File();
-		$path = Mage::getBaseDir('var') . DS . 'export' . DS;
+		$path = Mage::getBaseDir('var') . DS . 'export';
 		$name = md5(microtime());
 		$file = $path . DS . $name . '.csv';
 		$io->setAllowCreateFolders(true);
@@ -289,6 +301,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 				unset($csv);
 				}
 		}
+		$io->streamClose();
 		return array(
 		    'type'  => 'filename',
 		    'value' => $file,
@@ -299,11 +312,11 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	}
     public function prepareExportVaues($description,$vendorCode){
     	$csvData = array();
-    	$decodedata = Mage::app()->getLayout()->createBlock('dropship360/adminhtml_vendorproductuploadhistory')->prepareRowData($description);
+    	$decodedata = Mage::getModel('dropship360/inventorylog')->prepareRowData($description);
     	if(!is_array($decodedata) || empty($decodedata))
     		return empty($decodedata) ? implode('',$decodedata) : $decodedata;
     	foreach($decodedata as $data){
-    		$msgArray = Mage::app()->getLayout()->createBlock('dropship360/adminhtml_vendorproductuploadhistory')->getMessageArray();
+    		$msgArray = Mage::getModel('dropship360/inventorylog')->getMessageArray();
     		$msg = $msgArray[$data['error_type']];
     		if(is_array($data['value']) && !empty($data['value'])){
     			$csvData[] = array('magento_sku'=>$data['value']['magento_sku'],'vendor_sku'=>$data['value']['vendor_sku'],'cost'=>$data['value']['cost'],'qty'=>$data['value']['qty'],'reason'=> $this->genrateHtml($data['value'],$msg,$vendorCode));
@@ -314,7 +327,7 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
     	return $csvData;
     }
     public function genrateHtml($value,$msg,$vendorCode){
-    	$replace = Mage::app()->getLayout()->createBlock('dropship360/adminhtml_vendorproductuploadhistory')->getReplaceValue();
+    	$replace = Mage::getModel('dropship360/inventorylog')->getReplaceValue();
     	$string = $msg;
     	$value['vendor_code'] = $vendorCode;
     	foreach($replace as $val){
@@ -419,5 +432,9 @@ class Logicbroker_Dropship360_Helper_Data extends Mage_Core_Helper_Abstract
 	public function getSupplierName($vendorCode){
 		$vendorRankModel = Mage::getSingleton('dropship360/ranking')->load($vendorCode,'lb_vendor_code');
 		return $vendorRankModel->getLbVendorName();
+	}
+	
+	public function convertToHtmlcode($name){
+		return htmlentities($name,ENT_QUOTES,'ISO-8859-1');
 	}
 }

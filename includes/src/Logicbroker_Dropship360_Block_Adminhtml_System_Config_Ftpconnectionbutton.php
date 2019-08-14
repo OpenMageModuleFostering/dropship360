@@ -49,7 +49,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_System_Config_Ftpconnectionbutton
      */
     public function getAjaxSyncUrl()
     {
-        return $this->getUrl('logicbroker/adminhtml_upload/validateftpconnection');
+        return $this->getUrl('adminhtml/logicbroker_upload/validateftpconnection');
     }
 
     

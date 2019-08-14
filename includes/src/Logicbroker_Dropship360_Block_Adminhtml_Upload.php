@@ -19,7 +19,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload extends Mage_Adminhtml_Bloc
     	));
     	$this->addButton('history',array(
     			'label'     => 'History',
-    			'onclick'   => 'setLocation(\'' . $this->getUrl('*/adminhtml_upload/vendorsuploadhistory') .'\')',
+    			'onclick'   => 'setLocation(\'' . $this->getUrl('*/logicbroker_upload/vendorsuploadhistory') .'\')',
     			'class'     => 'save',
     	));
     	parent::__construct();
@@ -105,6 +105,6 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload extends Mage_Adminhtml_Bloc
     }
     protected function getSetupUrl()
     {
-    	return $this->getUrl('*/adminhtml_upload/run');
+    	return $this->getUrl('*/logicbroker_upload/run');
     }
 }

@@ -2,7 +2,7 @@
 <config>
   <modules>
     <Logicbroker_Dropship360>
-      <version>1.0.7</version>
+      <version>1.0.8</version>
     </Logicbroker_Dropship360>
   </modules>
   <global>
@@ -169,15 +169,15 @@
         
   </global>
   
-  <admin>
+ <admin>
         <routers>
-		<logicbroker>
-                    <use>admin</use>
-                        <args>
-                            <module>Logicbroker_Dropship360</module>
-                            <frontName>logicbroker</frontName>
-			</args>
-		</logicbroker>
+		<adminhtml>
+				 <args>
+                    <modules>
+                        <Logicbroker_Dropship360 after="Mage_Adminhtml">Logicbroker_Dropship360_Adminhtml</Logicbroker_Dropship360>
+                    </modules>
+                </args>
+        </adminhtml>
         </routers>
     </admin>
     <adminhtml>
@@ -271,7 +271,7 @@
             </logicbroker_backorder>
            <logicbroker_uploadvendor>
                <run>
-                    <model>dropship360/uploadvendor::ftpParseCsv</model>
+                    <model>dropship360/import::ftpParseCsv</model>
                 </run>
             </logicbroker_uploadvendor> 
             <logicbroker_report_email>

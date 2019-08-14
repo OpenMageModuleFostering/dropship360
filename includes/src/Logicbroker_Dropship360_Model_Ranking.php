@@ -49,12 +49,13 @@ class Logicbroker_Dropship360_Model_Ranking extends Mage_Core_Model_Abstract
     }
 	
 	protected function saveVendorDetails($value){
+		$helper = Mage::helper('dropship360');
 		$vendorDetail = Mage::getModel('dropship360/ranking')->load($value['lb_vendor_code'],'lb_vendor_code');    		
 		if(!$vendorDetail->getId()){
 			$vendorDetail->setLbVendorCode($value['lb_vendor_code']);
-			$vendorDetail->setLbVendorName($value['lb_vendor_name']);
+			$vendorDetail->setLbVendorName($helper->convertToHtmlcode($value['lb_vendor_name']));
 			$vendorDetail->setRanking($value['ranking']);
-            $vendorDetail->setIsDropship('no');
+            		$vendorDetail->setIsDropship('no');
 			$vendorDetail->setUpdatedAt(now());
 			$vendorDetail->setCreatedAt(now());
 			$vendorDetail->save();

@@ -60,22 +60,23 @@
                         <children>
 							<inventory translate="title">
                                 <title>Supplier Inventory</title>
-                                <action>logicbroker/adminhtml_upload</action>
+<!--                                 <action>logicbroker/adminhtml_upload</action> -->
+                               <action>adminhtml/logicbroker_upload</action> 
                                 <sort_order>12</sort_order>
                             </inventory>
                             <vendor_ranking translate="title">
                                 <title>Supplier Management</title>
-                                <action>logicbroker/adminhtml_ranking</action>
+                                <action>adminhtml/logicbroker_ranking</action>
                                 <sort_order>13</sort_order>
                             </vendor_ranking>
                             <order_sourcing translate="title">
                                 <title>PO Management</title>
-                                <action>logicbroker/adminhtml_sourcing/sourcinggrid</action>
+                                <action>adminhtml/logicbroker_sourcing/sourcinggrid</action>
                                 <sort_order>11</sort_order>
                             </order_sourcing>
                             <bar_report translate="title">
                                 <title>Activity Monitor</title>
-                                <action>logicbroker/adminhtml_report/activitymonitor</action>
+                                <action>adminhtml/logicbroker_report/activitymonitor</action>
                                 <sort_order>14</sort_order>
                             </bar_report>
                              <logicbroker_integration translate="title">

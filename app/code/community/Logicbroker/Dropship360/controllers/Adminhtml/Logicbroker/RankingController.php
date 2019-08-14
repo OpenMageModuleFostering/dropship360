@@ -6,7 +6,7 @@
  * @category    Community
  * @package     Logicbroker_Dropship360
  */
-class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml_Controller_Action {
+class Logicbroker_Dropship360_Adminhtml_Logicbroker_RankingController extends Mage_Adminhtml_Controller_Action {
 
 	protected function _initAction() {
 		$this->loadLayout ()->_setActiveMenu ( 'dropship360/vendor_ranking' )->_addBreadcrumb ( Mage::helper ( 'adminhtml' )->__ ( 'Supplier Management' ), Mage::helper ( 'adminhtml' )->__ ( 'Supplier Management' ) );		
@@ -39,6 +39,7 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 	
 	public function addNewVendorAction() {		
 		$isSuccess = false;
+		$helper = Mage::helper('dropship360');
 		$data = $this->getRequest ()->getPost ();
 		$arrVendor = array();
 		$vendorRankCollection =  Mage::getModel ( 'dropship360/ranking' );
@@ -55,7 +56,7 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 		$code = 'MagVendID'.$suffix;
 		$vendorRankCollection->setLbVendorCode($code);
 		$vendorRankCollection->setRanking($data['rank']);
-		$vendorRankCollection->setLbVendorName($data['name']);
+		$vendorRankCollection->setLbVendorName($helper->convertToHtmlcode($data['name']));
 		$vendorRankCollection->setLbVendorType('user');
 		$vendorRankCollection->setCreatedAt(now());
 		$vendorRankCollection->setUpdatedAt(now());
@@ -76,7 +77,7 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 	public function saverankingAction() {
 		$vendorName = array();		
 		$data = $this->getRequest ()->getPost ();
-		
+		try{
 		$tableName = $data['partent_save_table_input'];
 		$dropShip = json_decode((urldecode($data['dropship_data'])),true); 
 		$nonDropShip = json_decode((urldecode($data['nondropship_data'])),true);
@@ -112,6 +113,11 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 		Mage::getSingleton ( 'adminhtml/session' )->addSuccess ( Mage::helper ( 'dropship360' )->__ ( 'Supplier ranking saved successfully' ) );
 		$this->_redirect ( '*/*/' );
 		return;
+		}catch(Exception $e){
+			Mage::getSingleton ( 'adminhtml/session' )->addError ( $e->getMessage () );
+			$this->_redirect ( '*/*/' );
+			return;
+		}
 	}
 	protected function _saveVendorRanking($key, $val, $rank = false) {
 		try {
@@ -132,12 +138,14 @@ class Logicbroker_Dropship360_Adminhtml_RankingController extends Mage_Adminhtml
 	
 	protected function _updateVendorName($val) {
 		try {
+			$helper = Mage::helper('dropship360');
 			$model = Mage::getModel ( 'dropship360/ranking' )->load ( $val['code'], 'lb_vendor_code' );
 			if($model->getLbVendorCode())
-			$model->setLbVendorName ($val['name'])->save();
+			$model->setLbVendorName ($helper->convertToHtmlcode($val['name']))->save();
 			Mage::getModel ( 'dropship360/inventory' )->upDateVendorName($val);
 		} catch ( Exception $e ) {
-			Mage::getSingleton ( 'adminhtml/session' )->addError ( $e->getMessage () );
+			Mage::throwException('Error occured while renaming vendor in ranking table : '.$e->getMessage());
+			//Mage::getSingleton ( 'adminhtml/session' )->addError ( $e->getMessage () );
 		}	
 	}
 	

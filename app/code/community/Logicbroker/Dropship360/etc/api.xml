@@ -71,6 +71,10 @@
                         <code>104</code>
                         <message>Invaild Store Id</message>
                     </invaild_store>
+                    <invaild_dropshipstatus>
+                        <code>105</code>
+                        <message>Invaild Dropship360 Status Only Transmitting Status Supported</message>
+                    </invaild_dropshipstatus>
                 </faults>
             </sales_order>
             <sales_order_shipment>

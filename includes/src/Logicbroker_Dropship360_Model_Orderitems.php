@@ -25,7 +25,9 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 		
 		$collectionVendor = Mage::getModel ( 'dropship360/inventory' )->getCollection ()->addFieldToFilter ( 'product_sku', $productSku );
 		$collectionVendor->getSelect ()->joinleft ( array ('lbRanking' => Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/ranking' )), 'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array ('*') )->where('lbRanking.is_dropship = "yes" and lbRanking.is_active = "yes"');
+		$collectionVendor->getSelect ()->group ( 'lbRanking.id' );
 		$collectionVendor->getSelect ()->order ( $orderBy );
+		
 		return $collectionVendor;
 	}
 	
@@ -64,6 +66,7 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 	{
 		$inventory = Mage::getModel ( 'dropship360/inventory' )->getCollection()
 					->addFieldToFilter('lb_vendor_code',$vendorCode)->addFieldToFilter('product_sku',$productSku);		
+		$inventory->getSelect()->limit(1);
 		$filedData = $inventory->getFirstItem()->getData();
 		$LbInventoryStock = $filedData['stock'];
 		$finalStock = $LbInventoryStock - $qtyInvoiced;
@@ -80,6 +83,7 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 	{		
 		$arrData = array();
 		$inventoryModel = Mage::getModel('dropship360/inventory')->getCollection()->addFieldToFilter('lb_vendor_code',$request['lb_vendor_code'])->addFieldToFilter('product_sku',$request['product_sku']);
+		$inventoryModel->getSelect()->limit(1);
 		$arrData['lb_vendor_code'] = $request['lb_vendor_code'];
 		$arrData['lb_item_status'] = Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_TRANSMITTING;
 		$arrData['updated_by'] = 'User';

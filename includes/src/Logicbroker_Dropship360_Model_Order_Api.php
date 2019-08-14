@@ -153,23 +153,25 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 		$productItems = array();
 		$productItems = $this->_getAttributes($item, 'order_item');		
 		$lbItems = Mage::getModel('dropship360/orderitems')->getCollection()
-				->addFieldToSelect(array('sku', 'lb_vendor_sku', 'lb_item_status', 'lb_vendor_code', 'item_id'))
+				->addFieldToSelect(array('sku', 'lb_vendor_sku', 'lb_item_status', 'lb_vendor_code', 'item_id','vendor_cost'))
 					->addFieldToFilter('item_order_id',array('eq'=>$order->getId()))
 					->addFieldToFilter('item_id', array('eq'=>$productItems['item_id']))
 					->addFieldToFilter('lb_item_status', array('eq'=>$this->_itemStatusTansmitting));
 		$lbItems->getSelect()->join(array('salesOrder'=>Mage::getSingleton('core/resource')->getTableName('sales/order')),
   			'salesOrder.entity_id = main_table.item_order_id', array('state'))->where('salesOrder.state = ?','processing');
+		$lbItems->getSelect()->limit(1);
 		if($lbItems->getSize() > 0){
 				$productItems['lb_item_status'] =  $lbItems->getFirstItem()->getLbItemStatus();
 				$productItems['lb_vendor_sku']  =  $lbItems->getFirstItem()->getLbVendorSku();					
 				$productItems['lb_vendor_code'] =  $lbItems->getFirstItem()->getLbVendorCode(); 	
+				$productItems['lb_vendor_cost'] =  $lbItems->getFirstItem()->getVendorCost();
 		} 	
 		return 	$productItems;		
 	}
 
 	
 	 /**
-     * Change Logic broker order item status
+     * Change Dropship360 order item status for given item sku
      *
      * @param string $orderIncrementId, array $sku, string $status
      * @return bool
@@ -235,7 +237,9 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 		if (!$store_id) {
 			$this->_fault('invaild_store');
 		}
-		$orderItemStatus = (!empty($orderItemStatus)) ? $orderItemStatus : 'Transmitting';
+		//Default DS item status will be TRANSMITTING
+		$orderItemStatus = (!empty($orderItemStatus)) ? $orderItemStatus : Logicbroker_Dropship360_Helper_Data::LOGICBROKER_ITEM_STATUS_TRANSMITTING;
+			
 		$orderItemsdDetails = array();
 		try{
 			
@@ -264,7 +268,12 @@ class Logicbroker_Dropship360_Model_Order_Api extends Mage_Sales_Model_Order_Api
 	}
 	
 	
-	
+	/**
+	 * set itemStatus to all dropship360 order items irrespective of SKU   
+	 * @param Mage_sales_order $orderIncrementId
+	 * @param Logicbroker_Dropship360_Model_Orderitems $itemStatus
+	 * @return multitype:string
+	 */
 	public function setLbOrderItemStatus($orderIncrementId,$itemStatus){
 	
 		$order = $this->_initOrder($orderIncrementId);

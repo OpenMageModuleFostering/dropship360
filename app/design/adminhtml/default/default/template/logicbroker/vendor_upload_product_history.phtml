@@ -13,15 +13,19 @@
             <td class="form-buttons"><?php echo $this->getButtonsHtml() ?></td>
         </tr>
     </table>
+   
 </div>
-<div class="grid">
-
-   <div class="entry-edit">
-    <?php if(count($this->getLogCollection()) > 0 ): ?>
+<div class="supplier-pager">
+ <?php echo $this->getPagerHtml(); ?>
+</div>
+ <div class="grid">
+   <div class="entry-edit" style="clear:both;">
+  <?php if(count($this->getCollection()) > 0 ): ?>
+    
     <fieldset>
         <ul class="note-list">
         <?php $i = 0 ?>
-        <?php foreach ($this->getLogCollection() as $_item): ?>
+        <?php foreach ($this->getCollection() as $_item): ?>
         
             <li>
             <strong><?php echo $_item['lb_vendor_code'] ?></strong>
@@ -33,10 +37,31 @@
             <span class="separator">|</span>
             <strong><?php echo $_item['failure'] ?> failed updates</strong>
             <?php if(!empty($_item['ftp_error'])): ?>
-            <a href="<?php echo $this->getUrl('*/*/exportErrorCsv',array('vcode'=>$_item['lb_vendor_code'], 'vdate'=>$_item['created_at']))?>" onmouseout = " setTimeout(function(){$('simplediv<?php echo $i ?>').hide();return false;},200); " onmouseover="$('simplediv<?php echo $i ?>').show();return false;"><strong><?php echo $_item['ftp_error'] ?> </strong></a>
-            <div id="simplediv<?php echo $i ?>" style="background-color:none;border:1px solid black;display:none;width:500px;height:auto;word-wrap: break-word;padding:3px"><?php 
+            <a href = "javascript:void(0)" onclick = "document.getElementById('simplediv<?php echo $i ?>').style.display='block';document.getElementById('fade').style.display='block';document.getElementById('simplediv<?php echo $i ?>').className='white_content active' "><strong><?php echo $_item['ftp_error'] ?> </strong></a>
+            <div id="simplediv<?php echo $i ?>" class="white_content">
+            <div>
+            <button title="Save Config" type="button" class="scalable save" onclick="setLocation('<?php echo Mage::helper('adminhtml')->getUrl('*/*/exportErrorCsv',array('vcode'=>$_item['lb_vendor_code'], 'vdate'=>$_item['created_at']))?>')" style="float:left"><span><span><span>Download</span></span></span></button>
+            <button title="Save Config" type="button" class="scalable save" onclick="document.getElementById('simplediv<?php echo $i ?>').style.display='none';document.getElementById('fade').style.display='none'" style="float:right"><span><span><span>Close</span></span></span></button>
+            </div>
+            <div class="clear"></div>
+           	<div style="padding-top:10px">
+           	<hr/>
+           	<strong><?php echo $_item['lb_vendor_code'] ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item['updated_by'] ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item['success'] ?> successfully updates</strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item['failure'] ?> failed updates</strong>
+            <span class="separator">|</span>
+			<strong> <?php echo $this->formatDate($_item['created_at'], 'medium', true); ?></strong>
+			<hr/>
+            <?php 
 			$rowData = (!is_null($_item['ftp_error_desc'])) ? $_item['ftp_error_desc'] : $_item['error_id'];
-			echo  $this->parseDescription($rowData,$_item['lb_vendor_code']); ?></div>
+			echo  $this->parseDescription($rowData,$_item['lb_vendor_code']); ?>
+			</div>
+            </div>
+             <div id="fade" class="black_overlay"></div>
             <?php endif; ?>
             <span class="separator">|</span>
 			<strong> <?php echo $this->formatDate($_item['created_at'], 'medium', true); ?></strong>
@@ -54,10 +79,22 @@
 </div>
 
 <script type="text/javascript">
-function popup()
-{
-		
+$(document).on('keyup',function(evt) {
+	if (evt.keyCode == 27) {
+       $$('.white_content.active').each(function(ele){
+		$(ele).removeClassName('active');
+		$(ele).addClassName('inactive');
+		$(ele.id).style.display='none';
+		document.getElementById('fade').style.display='none';	
+	})
 }
+});			
+$('fade').observe('click', function(event) {
+	$$('.white_content.active').each(function(ele){
+		$(ele).removeClassName('active');
+		$(ele).addClassName('inactive');
+		$(ele.id).style.display='none';
+		document.getElementById('fade').style.display='none';	
+	})
+});
 </script>
-
-

@@ -35,6 +35,12 @@
 					<element name="lb_item_status" type="xsd:string" minOccurs="0" />
                     <element name="lb_vendor_sku" type="xsd:string" minOccurs="0" />
                     <element name="lb_vendor_code" type="xsd:string" minOccurs="0" />
+                    <element name="lb_vendor_cost" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+            <complexType name="salesOrderEntity">
+                <all>  
+                	<element name="coupon_code" type="xsd:string" minOccurs="0" /> 
                 </all>
             </complexType>
             <complexType name="salesOrderLbEntity">

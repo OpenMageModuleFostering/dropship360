@@ -83,7 +83,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Vendorlist
     	if($collectionVendor->count() > 0){
     		foreach ($collectionVendor as $vendor) {
     			$options[] = array(
-    					'label' => $vendor->getLbVendorCode().'--'.$vendor->getLbVendorName(),
+    					'label' => $vendor->getLbVendorCode().'--'.html_entity_decode($vendor->getLbVendorName(),ENT_QUOTES,"ISO-8859-1"),
     					'value' => $vendor->getLbVendorCode()
     			);
     		}

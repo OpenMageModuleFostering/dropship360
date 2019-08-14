@@ -7,7 +7,7 @@
  * @package     Logicbroker_Dropship360
  */
  
-class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_Controller_Action
+class Logicbroker_Dropship360_Adminhtml_Logicbroker_UploadController extends Mage_Adminhtml_Controller_Action
 {
 
 	protected function _initAction()
@@ -41,10 +41,10 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	public function uploadFileAction()
 	{
 		$data = $this->getRequest()->getPost();
-		$productSetupMode = ($data['productsetupmode']) ? $data['productsetupmode'] : 0;
+		$productSetupMode = (array_key_exists('productsetupmode', $data)) ? $data['productsetupmode'] : 0;
 		if($productSetupMode)
 		{
-			$redirectUrl = '*/adminhtml_ranking/index'; 
+			$redirectUrl = '*/logicbroker_ranking/index'; 
 		}
 		else
 		{
@@ -57,7 +57,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 		}
 		if ($data) {
 			try {
-				$import = Mage::getModel('dropship360/uploadvendor');
+				$import = Mage::getModel('dropship360/import');
 				$validationResult = $import->setData($data)->uploadSource();
 				if(!$validationResult){
 					$this->initialize();
@@ -121,11 +121,21 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 	public function validateftpconnectionAction()
 	{
 		$paramsArray = $this->getRequest()->getParams();
-		$validateConnection = Mage::getModel('dropship360/uploadvendor');
-		$result = $validateConnection->testFtpConnection($paramsArray['groups']['cron_settings_upload']['fields']);
-		$result = Mage::helper('core')->jsonEncode($result);
+		$ftpdetails = $paramsArray['groups']['cron_settings_upload']['fields'];
+		$urlString = 'ftp://'.$ftpdetails['ftp_username']['value'].':'.$ftpdetails['ftp_password']['value'].'@'.$ftpdetails['ftp_site']['value'];
+		$result = array();
+		$validateConnection = Mage::getModel('dropship360/import_ftp');
+		try {
+			$validateConnection->connect($urlString);
+			$validateConnection->close();
+			$result = array('error'=>false,'message' => null);
+			$result = Mage::helper('core')->jsonEncode($result);
+		} catch (Exception $e) {
+			$result = array('error'=>true,'message' => $e->getMessage());
+			$result = Mage::helper('core')->jsonEncode($result);
+		}
+		
 		Mage::app()->getResponse()->setBody($result);
-	
 	}
 	
     public function saveAction() 
@@ -214,7 +224,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 		$isProductSetupMode = (isset($paramsArray['isproductsetupmode']) && $paramsArray['isproductsetupmode']) ? true : false;
 		$type = ($isProductSetupMode) ? 'setup' : 'upload';
 		$fileName   = 'logicbroker_supplier_product_'.$type.'.csv';
-		$content = Mage::getModel('dropship360/uploadvendor')->getCsvFile($isProductSetupMode);
+		$content = Mage::getModel('dropship360/import')->getCsvFile($isProductSetupMode);
 		$this->_prepareDownloadResponse($fileName, $content);
 		$this->_redirect('*/*/index');
 		
@@ -263,6 +273,7 @@ class Logicbroker_Dropship360_Adminhtml_UploadController extends Mage_Adminhtml_
 			}
 				foreach($rowIds as $sku){
 				$collection = Mage::getModel('dropship360/inventory')->getCollection()->addFieldToFilter('product_sku',$sku)->addFieldToFilter('lb_vendor_code',$vendorCode);
+				$collection->getSelect()->limit(1);
 				$inventoryId = ($collection->getSize() > 0) ? $collection->getFirstItem()->getId() : '';
 				if(!$inventoryId)
 				{

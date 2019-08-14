@@ -53,7 +53,7 @@ FOREIGN KEY (`error_id`) REFERENCES {$installer->getTable('dropship360/vendor_im
 //patch apply for MAGENTO-CE/EE 1.9.2.2
 $admin_permission_block = Mage::getConfig()->getTablePrefix().'permission_block';
 if ($installer->getConnection()->isTableExists($admin_permission_block)){
-	$installer->getConnection()->insertMultiple(
+	$installer->getConnection()->insertOnDuplicate(
 			$installer->getTable('admin/permission_block'),
 			array(
 					array('block_name' => 'dropship360/adminhtml_reports_staticemailgrid', 'is_allowed' => 1)
@@ -62,7 +62,7 @@ if ($installer->getConnection()->isTableExists($admin_permission_block)){
 }
 $admin_permission_var = Mage::getConfig()->getTablePrefix().'permission_variable';
 if ($installer->getConnection()->isTableExists($admin_permission_var)){
-	$installer->getConnection()->insertMultiple(
+	$installer->getConnection()->insertOnDuplicate(
 			$installer->getTable('admin/permission_variable'),
 			array(
 					array('variable_name' => 'logicbroker_sourcing/cron_settings_upload/ftp_site', 'is_allowed' => 1),

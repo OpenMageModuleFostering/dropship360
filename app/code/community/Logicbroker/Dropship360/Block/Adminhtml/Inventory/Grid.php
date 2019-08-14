@@ -26,7 +26,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Grid extends Mage_Adminh
       $collection = Mage::getModel('dropship360/inventory')->getCollection();
       $collection->getSelect()->join(array('lbRanking'=>Mage::getSingleton('core/resource')->getTableName('dropship360/ranking')),'lbRanking.lb_vendor_code = main_table.lb_vendor_code', array('lb_vendor_name'));
       $collection->getSelect()->joinLeft(array('prod' => Mage::getSingleton('core/resource')->getTableName('catalog/product')),'prod.sku = main_table.product_sku',array('magento_pro_id'=>'entity_id'));
-      $collection->getSelect()->joinLeft(array('cpev' => Mage::getSingleton('core/resource')->getTableName('catalog/product').'_varchar'),'cpev.entity_id=prod.entity_id AND cpev.attribute_id='.$prodNameAttrId.'',array('product_name' => 'value'));
+      $collection->getSelect()->joinLeft(array('cpev' => Mage::getSingleton('core/resource')->getTableName('catalog/product').'_varchar'),'cpev.store_id = 0 AND cpev.entity_id=prod.entity_id AND cpev.attribute_id='.$prodNameAttrId.'',array('product_name' => 'value'));
       $collection->getSelect()->where('prod.entity_id IS NOT NULL');
       $this->setCollection($collection);
       return parent::_prepareCollection();

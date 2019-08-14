@@ -337,7 +337,7 @@
 					<show_in_store>0</show_in_store>
               	</enabled>
               	<cron_setting translate="label">
-                     <label>Oudated Product Notification Cron Frequency</label>
+                     <label>Outdated Product Notification Cron Frequency</label>
                      <frontend_model>dropship360/adminhtml_system_config_crontime</frontend_model>
 		     <backend_model>dropship360/system_config_backend_oudatedinventory_email</backend_model>
                      <sort_order>10</sort_order>

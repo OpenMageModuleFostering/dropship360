@@ -28,7 +28,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Vendortab extends M
     }
     public function getTabUrl()
     {
-        return $this->getUrl('logicbroker/adminhtml_inventory/vendors', array('_current' => true));
+        return $this->getUrl('adminhtml/logicbroker_inventory/vendors', array('_current' => true));
     }
     public function getTabClass()
     {

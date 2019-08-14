@@ -15,18 +15,26 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
 	protected $_stockBeforeQtyDecimalCheck = ''; 
 	protected $_iserror = true;
 	protected $_errorMsg = '';
+	const XML_PATH_INVENTORY_NOTIFICATION_EMAIL  = 'logicbroker_sourcing/inventory_notification/email';
+	const XML_PATH_INVENTORY_NOTIFICATION_DAYS  = 'logicbroker_sourcing/inventory_notification/days';
+	
 	protected function _construct()
 	{
        $this->_init("dropship360/inventory");
     }
-
+	/**
+	 * @param Logicbroker_Dropship360_Model_Api2_Inventory_Rest_Admin_V1 $restReqest 
+	 * function used by REST for update vendor inventory
+	 */
     public function prepareInventoryTable($restReqest)
 	{   	
     	$result = $this->prepareData($restReqest);
     	$this->updateProductStock();
     	return $result;    	
     }
-    
+    /**
+     * update vendor inventory using REST
+     */
     protected function updateProductStock()
 	{    	
     	$dataCollection = Mage::getModel('dropship360/inventory')->getCollection();
@@ -51,6 +59,11 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	}   	
     }
 	
+    /**
+     * update catalogInventory for product
+     * @param Logicbroker_Dropship360_Model_Inventory $sku
+     * @param Logicbroker_Dropship360_Model_Inventory $qty
+     */
 	protected function saveStockData($sku, $qty)
 	{
 		$productId = Mage::getModel('catalog/product')->getIdBySku($sku);
@@ -67,13 +80,15 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     				$stockItem->save();
     			} catch (Exception $e) {
     				Mage::helper('dropship360')->genrateLog(0,'mgento inventory update started','mgento inventory update ended','Section :Error In Setting/update magento inventory: '.$e->getMessage().' sku : '.$sku);
-    				echo $e->getMessage();
     			}    			
     		}
     	}
 	}
 
-    
+    /**
+     * prepare and insert/update vendor data from REST request 
+     * @param REST $restReqest
+     */
     protected function prepareData($restReqest)
 	{
     	$result = array();
@@ -87,6 +102,63 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
 		return 	$result;
     }
     
+    /**
+     * This function is used to save Vendor inventory
+     * @param array $val
+     * @return array $msg
+     */
+    protected function saveLbInventory($rowVal, $buffer)
+    {
+    	$val = array_map('trim',$rowVal);
+    	$originalStock = $val['stock'];
+    	$vendorObject =  Mage::getModel('dropship360/ranking');
+    	$vendorCollection =  $vendorObject->load($val['lb_vendor_code'],'lb_vendor_code');
+    	if(!$this->validateRowData($val))
+    	{
+    		return $this->_errorMsg;
+    	}
+    
+    	$ignoreData = array();
+    	(!is_numeric($val['cost']) || $val['cost'] < 0) ? $ignoreData[]= 'cost' : '';
+    	(!is_numeric($val['stock']) || $val['stock'] < 0) ? $ignoreData[]= 'stock' : '';
+    	(!is_numeric($val['stock']) || $val['stock'] < 0 || $val['stock'] == "") ? $stockFlag = false : $stockFlag = true;
+    	(!is_numeric($val['cost']) || $val['cost'] < 0 || $val['cost'] == "") ? $costFlag = false : $costFlag = true;
+    	$val['stock'] = $this->updateStock($val,$buffer);
+    	$collection = $this->_prepareCollection($val);
+    	if(is_null($collection)){
+    		return $this->_errorMsg;
+    	}
+    	// 		if($collection->getSize() >= 2 && empty($val['product_sku']))
+    		// 		{
+    		// 			return  'Multiple records found. Please provide Product SKU';
+    		// 		}
+    	$collection->getSelect()->limit(1);
+    	$product_sku = $collection->getFirstItem()->getProductSku();
+    	/* LBN - 935 change */
+    	$val['stock'] = Mage::helper('dropship360')->getIsQtyDecimal($product_sku,$val['stock']);
+    	 
+    	if($collection->getSize() > 0){
+    		$collection->getFirstItem ()->setUpdatedAt(now());
+    		($stockFlag == true) ? $collection->getFirstItem ()->setStock($val['stock']) : '';
+    		($costFlag == true) ? $collection->getFirstItem ()->setCost($val['cost']) : '';
+    		$arrayUpdate = array('updated_by'=>'system','product_sku'=>$product_sku,'lb_vendor_code'=>$val['lb_vendor_code'],'cost'=>$val['cost'],'stock'=>$originalStock);
+    		$logDetail = $this->getLogMsg($ignoreData);
+    		$this->_saveInventoryLog($logDetail['type'],$arrayUpdate);
+    		if(count($ignoreData)!=2){
+    			$collection->getFirstItem ()->save();
+    			$this->_updateVendorList($vendorCollection,$val,false);
+    		}
+    		return $logDetail['msg'];
+    	}else{
+    		return 'Vendor Sku "'.$val['lb_vendor_sku'].'" and Magento SKU "'.$val['product_sku'].'" combination does not exist for vendor ';
+    	}
+    }
+    
+    /**
+     * Validate row data getting from REST 
+     * @param json $val
+     * @return boolean
+     */
     protected function validateRowData($val)
 	{
     	if(empty($val['product_sku']) && empty($val['lb_vendor_sku'])){
@@ -97,8 +169,14 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     		$this->_iserror = false;
 		}
     	return $this->_iserror;
-		}
-
+	}
+	
+	/**
+	 * get processed stock for vendor
+	 * @param json $val
+	 * @param core_config_data $buffer
+	 * @return stock (request-stock + buffer)
+	 */
     protected function updateStock($val,$buffer)
         {
     	if(!empty($buffer))
@@ -106,7 +184,11 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	return $val['stock'];
         } 
   
-    
+    /**
+     * prepare collection from vendor inventory table
+     * @param jason $val
+     * @return collection
+     */
     protected function _prepareCollection($val)
         {
 		$dataCollection = Mage::getModel('dropship360/inventory');
@@ -135,8 +217,13 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     		}
         }        
     	return $collection;
-			}
-            
+	}
+	
+    /**
+     * generate inline log message for product details page
+     * @param array $ignoreData
+     * @return array
+     */        
     protected function getLogMsg($ignoreData)
     {
 			if(count($ignoreData)>0){
@@ -160,56 +247,33 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	return array('msg'=>$msg,'type'=>$type);
     }
     
-	/** 
-	 * This function is used to save Vendor inventory
-	 * @param array $val
-	 * @return array $msg
-	 */
-	protected function saveLbInventory($rowVal, $buffer)
-	{
-		$val = array_map('trim',$rowVal);
-		$originalStock = $val['stock'];
-		$vendorObject =  Mage::getModel('dropship360/ranking');
-		$vendorCollection =  $vendorObject->load($val['lb_vendor_code'],'lb_vendor_code');
-		if(!$this->validateRowData($val))
-			{
-				return $this->_errorMsg;
-			}
-		
-		$ignoreData = array();
-		(!is_numeric($val['cost']) || $val['cost'] < 0) ? $ignoreData[]= 'cost' : '';
-		(!is_numeric($val['stock']) || $val['stock'] < 0) ? $ignoreData[]= 'stock' : '';
-		(!is_numeric($val['stock']) || $val['stock'] < 0 || $val['stock'] == "") ? $stockFlag = false : $stockFlag = true; 
-    	(!is_numeric($val['cost']) || $val['cost'] < 0 || $val['cost'] == "") ? $costFlag = false : $costFlag = true;
-		$val['stock'] = $this->updateStock($val,$buffer);
-		$collection = $this->_prepareCollection($val);
-		if(is_null($collection)){
-			return $this->_errorMsg;
-		}
-		$product_sku = $collection->getFirstItem()->getProductSku();
-        /* LBN - 935 change */
-        $val['stock'] = Mage::helper('dropship360')->getIsQtyDecimal($product_sku,$val['stock']);
-        if($collection->getSize() >= 2 && empty($val['product_sku']))
-        {
-            return  'Multiple records found. Please provide Product SKU';  
-        }        
-		if($collection->getSize() > 0){		
-			$collection->getFirstItem ()->setUpdatedAt(now());
-			($stockFlag == true) ? $collection->getFirstItem ()->setStock($val['stock']) : '';
-			($costFlag == true) ? $collection->getFirstItem ()->setCost($val['cost']) : '';
-			$arrayUpdate = array('updated_by'=>'system','product_sku'=>$product_sku,'lb_vendor_code'=>$val['lb_vendor_code'],'cost'=>$val['cost'],'stock'=>$originalStock);
-			$logDetail = $this->getLogMsg($ignoreData);
-			$this->_saveInventoryLog($logDetail['type'],$arrayUpdate);
-			if(count($ignoreData)!=2){
-				$collection->getFirstItem ()->save();
-				$this->_updateVendorList($vendorCollection,$val,false);
-			}
-			return $logDetail['msg'];
-		}else{
-			return 'Vendor Sku "'.$val['lb_vendor_sku'].'" and Magento SKU "'.$val['product_sku'].'" combination does not exist for vendor ';
-		}
-	}
+    /**
+     * create new vendor using REST if not exist 
+     * @param Logicbroker_Dropship360_Model_Ranking $object
+     * @param string $data
+     */
+    protected function _updateVendorList($object,$data = ''){
+    	if(!empty($data)){
+    		$object->setUpdatedAt(now());
+    		$object->setLbVendorType('enhanced');
+    		if(!$object->getId()) $object->setIsDropship('no');
+    		$object->setLbVendorCode($data['lb_vendor_code']);
     
+    	}
+    	try{
+    		$object->save();
+    	}catch(Exception $e){
+    		Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+    	}
+    } 
+	
+/* update or add vendor inventory using REST code ends here */
+/**************************************************************/
+    /**
+     * create,update,delete vendor data from product details page
+     * @param Mage_catalog_Model_Product $request
+     * @return boolean|multitype:number boolean
+     */        
     public function saveTabVendorData($request)
 	{   	
   	$update = isset($request['vendor_update']) ? $request['vendor_update'] : '';
@@ -242,6 +306,11 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	return array('inventory'=>$finalStock,'result' => $result);
     }
     
+    /**
+     * validate frontend admin data provided by user on product detail page 
+     * @param Mage_catalog_Model_Product $request
+     * @return boolean
+     */
     protected function _validate($request)
     {
     	$arrVendorCode = array();
@@ -271,13 +340,25 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	(!$isUniqueCombination && !$isEntrySame) ? $isError = false : $isError;   	
     	return $isError;
     }
-     
+
+    /**
+     * check unique combination of vendorCode and vendorSku 
+     * in logicbroker_vendor_inventory table
+     * @param Logicbroker_Dropship360_Model_Inventory $vendorCode
+     * @param Logicbroker_Dropship360_Model_Inventory $vendorSku
+     * @return number
+     */
     protected function checkCodeSkuCombination($vendorCode,$vendorSku)
     {
     	$collection = $this->getCollection()->addFieldTofilter('lb_vendor_code',$vendorCode)->addFieldTofilter('lb_vendor_sku',$vendorSku);
     	return $collection->count();
     }
     
+    /**
+     * add new vendor on product details page for SKU in request
+     * @param Mage_catalog_Model_Product $request
+     * @param Mage_catalog_Model_Product $productSku
+     */
     protected function _addNewInventoryVendor($request,$productSku){
     	$vendorCollection =  Mage::getModel('dropship360/ranking')->load($request['lb_vendor_code'],'lb_vendor_code');
 		$request['created_at'] = now();
@@ -304,13 +385,20 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	}
     }
     
+    /**
+     * update vendor inventory data as per data from product details page for SKU in request
+     * @param Logicbroker_Dropship360_Model_Inventory $id
+     * @param Mage_Catalog_Model_Product $request
+     * @return boolean
+     */
     protected function _updateInventoryVendor($id,$request){
     	
     	$model = $this->load($id);
     	$vendorCode = $model->getLbVendorCode();
     	$vendorName = $model->getLbVendorName();
     	$DbValues['cost'] = $model->getCost();
-    	$DbValues['stock'] = $model->getStock();
+    	//patch apply to check empty stock 
+    	$DbValues['stock'] = ($model->getStock() == '') ? -9999999 : $model->getStock();
     	$DbValues['lb_vendor_sku'] = $model->getLbVendorSku();
 		$productSku = $model->getProductSku();
 		$request['lb_vendor_sku'] = trim($request['lb_vendor_sku']);
@@ -346,6 +434,10 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	return true;
     }
     
+    /**
+     * Delete vendor from product details page for SKU in request 
+     * @param Logicbroker_Dropship360_Model_Inventory $vendorId
+     */
     protected function _deleteInvendorVendor($vendorId){   	
     	$model = $this->load($vendorId);   	
     	$vendorCode = $model->getLbVendorCode();
@@ -361,6 +453,11 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	}
     }
     
+    /**
+     * add inline comment to dropship360 history tab on product details page
+     * @param Logicbroker_Dropship360_Model_Inventorylog $type
+     * @param Mage_Catalog_Model_Product $request
+     */
     public function _saveInventoryLog($type,$request){
     	$modelLog = Mage::getModel('dropship360/inventorylog');
     	$request['activity'] = $type;
@@ -379,21 +476,50 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	}
     }
     
-    protected function _updateVendorList($object,$data = ''){
-    	if(!empty($data)){
-    		$object->setUpdatedAt(now());
-    		$object->setLbVendorType('enhanced');
-    		if(!$object->getId()) $object->setIsDropship('no');
-    		$object->setLbVendorCode($data['lb_vendor_code']);
-    		
+    /**
+     * update catalogInventory 
+     * @param array $result
+     * @param Mage_Catalog_Model_Product $sku
+     */
+    public function productInventoryUpdate($result,$sku)
+    {
+    	if(!$result['result']){
+    		return;
     	}
-		try{
-    		$object->save();   		
-    	}catch(Exception $e){
-    		Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+    
+    	$finalStock = $result['inventory'];
+    	$finalStock = Mage::helper('dropship360')->getIsQtyDecimal($sku, $finalStock);
+    	$conn = Mage::getSingleton ( 'core/resource' )->getConnection ( 'core_write' );
+    
+    	$tableNameStatus = Mage::getSingleton ( 'core/resource' )->getTableName ( 'cataloginventory/stock_status' );
+    	$tableNameItem = Mage::getSingleton ( 'core/resource' )->getTableName ( 'cataloginventory/stock_item' );
+    	$tableNameItemIdx = Mage::getSingleton ( 'core/resource' )->getTableName ( 'cataloginventory/stock_status_indexer_idx' );
+    
+    	$stockStatus = $finalStock ? 1 : 0;
+    	$productId = Mage::getModel('catalog/product')->getIdBySku($sku);
+    	if($productId){
+    		$updateStatus = 'update '.$tableNameStatus.' SET qty = '.$finalStock.',stock_status = '.$stockStatus.' where product_id = '.$productId;
+    		$updateItem = 'update '.$tableNameItem.' SET qty = '.$finalStock.',is_in_stock = '.$stockStatus.' where product_id = '.$productId;
+    		$updateItemIdx =  'update '.$tableNameItemIdx.' SET qty = '.$finalStock.',stock_status = '.$stockStatus.' where product_id = '.$productId;
+    		$conn->beginTransaction ();
+    		$conn->query ($updateStatus);
+    		$conn->query ($updateItem);
+    		$conn->query ($updateItemIdx);
+    		try {
+    			$conn->commit ();
+    		} catch ( Exception $e ) {
+    			$conn->rollBack ();
+    			Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+    		}
     	}
     }
     
+    /**
+     * calculate final stock
+     * @param request $stock
+     * @param Logicbroker_Dropship360_Model_Inventory $dbCost
+     * @return stock
+     */
     protected function _updateBuffer($stock,$dbCost = null){
     	$buffer = Mage::getStoreConfig('logicbroker_sourcing/inventory/buffer');
     	$finalStock = 0;
@@ -413,7 +539,10 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	}
     	return $finalStock;
     }
-    /* method use to send email notification to logicbroker 
+    /***************Vendor details save from product details page code ends here*****/
+    
+    /**
+     * method use to send email notification to logicbroker 
      * that first vendor has been added to logicbroker_vendor_inventory
      */
     protected function _afterSave()
@@ -429,7 +558,11 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     	return;
     }
     
-   protected function sendVendorNotification(){
+    /**
+     * send email notification to logicbroker support
+     * @return boolean
+     */
+   	protected function sendVendorNotification(){
    	
    			try {
    				$fieldsetData['subject'] = 'DS360 Product Setup completed on Magento';
@@ -446,21 +579,51 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
    			return false;//$e->getMassage();
    		}
    	}
+   
+   	/**
+   	 * send notification email to users mention in activity monitor section
+   	 * @return Logicbroker_Dropship360_Model_Inventory
+   	 */
+   	public function notificationProductInventoryUpdate(){
+   		$itemObject;
+   		$fileInfo = array();
+   		$ioAdapter = new Varien_Io_File();
+   		$open_monitor_from = Date('Y-m-d h:i:s', strtotime('-'.Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_DAYS).' day'));
+   		$open_monitor_to = Mage::getModel('core/date')->gmtDate();
+   		$itemObject = Mage::getModel('dropship360/inventory')->getCollection()->addFieldTofilter('updated_at', array('from' => $open_monitor_from,'to' => $open_monitor_to));
+   		if($itemObject->getSize() <= 0){
+   			Mage::log('cannot send outdated product inventory email collection is empty for form :'.$open_monitor_from.' to :'.$open_monitor_to, null, 'notification_error.log');
+   			return $this;
+   		}
+   		$fileInfo = Mage::getModel('dropship360/csvparser')->getCsvFile($itemObject);
+   		$mailData['days'] = Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_DAYS);
+   		$mailData['subject'] = 'dropship360 list of outdated product inventory';
+   		$postObject = new Varien_Object();
+   		$postObject->setData($mailData);
+   		$email = trim(Mage::getStoreConfig(self::XML_PATH_INVENTORY_NOTIFICATION_EMAIL));
+   		$templateId = 'logicbroker_outdated_product_inventory';
+   		$isMailSent = Mage::helper('dropship360')->sendMail($postObject,$email,$templateId,$fileInfo['value']);
+   		$ioAdapter->rm($fileInfo['value']);
+   		return $this;
+   	}
+   	
+   	/**
+   	 * update vendor name 
+   	 * @param Logicbroker_Dropship360_Model_Ranking $vendor
+   	 */
    	public function upDateVendorName($vendor){
    		if(empty($vendor['code'])  || empty($vendor['name']))
    		{
    			return;
    		}
+   		$helper = Mage::helper('dropship360'); 
    		$table =  Mage::getSingleton ( 'core/resource' )->getTableName ( 'dropship360/inventory' );
-   		$update = 'UPDATE '.$table.' SET lb_vendor_name = "'.$vendor['name'].'" WHERE lb_vendor_code = "'.$vendor['code'].'"';
    		$conObj = Mage::getSingleton ( 'core/resource' )->getConnection('core_write');
-   		$conObj->beginTransaction();
-   		$conObj->query($update);
    		try {
-   			$conObj->commit ();
+   			$conObj->update($table,array('lb_vendor_name'=>$helper->convertToHtmlcode($vendor['name'])),array('lb_vendor_code = ?'=>$vendor['code']));
    		} catch ( Exception $e ) {
-   			$conObj->rollBack ();
-   			Mage::getSingleton ( 'adminhtml/session' )->addError($e->getMessage ());
+   			Mage::throwException('Error occured while renaming vendor in inventory table : '.$e->getMessage());
+   			//Mage::getSingleton ( 'adminhtml/session' )->addError($e->getMessage ());
    		}
    	}
 }

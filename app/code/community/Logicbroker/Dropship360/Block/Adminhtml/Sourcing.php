@@ -22,6 +22,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Sourcing extends Mage_Adminhtml_Bl
   	
   	$lbItemCollection = Mage::getModel('dropship360/orderitems')->getCollection()->addFieldTofilter('item_order_id',$item->getOrderId())->addFieldTofilter('sku',$item->getSku());
   	$lbItemCollection->getSelect()->joinLeft( array('lbr'=> Mage::getSingleton('core/resource')->getTableName('dropship360/ranking')), "main_table.lb_vendor_code = lbr.lb_vendor_code",array("lbr.lb_vendor_name"));
+  	$lbItemCollection->getSelect()->limit(1);
   	return $lbItemCollection->getFirstItem ();
   }
 }

@@ -7,7 +7,7 @@
  * @package     Logicbroker_Dropship360
  */
  
-class Logicbroker_Dropship360_Adminhtml_SourcingController extends Mage_Adminhtml_Controller_Action
+class Logicbroker_Dropship360_Adminhtml_Logicbroker_SourcingController extends Mage_Adminhtml_Controller_Action
 {
 
 	protected function _initAction() {
@@ -27,9 +27,9 @@ class Logicbroker_Dropship360_Adminhtml_SourcingController extends Mage_Adminhtm
      */
     
 	public function sourcinggridAction() {
-		$this->_initAction() ->_title($this->__('PO Management'));
-		$this->getLayout()->createBlock('dropship360/adminhtml_sourcing_grid')->toHtml();
-		$this->loadLayout()->renderLayout();
+		$this->_initAction(); //->_title($this->__('PO Management'));
+		$this->getLayout()->createBlock('dropship360/adminhtml_sourcing_pomanagment');
+		$this->renderLayout();
 		
 	}     
 	public function editAction() {

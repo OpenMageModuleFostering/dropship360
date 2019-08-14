@@ -285,7 +285,7 @@ function respondToClick(id) {
 function respondToChange(obj) {
 	if(obj.value){	
 		var itemId = obj.id.split('-');
-		new Ajax.Request('<?php echo $this->getUrl('logicbroker/adminhtml_logicbroker/changeStatusAjax') ?>', {
+		new Ajax.Request('<?php echo $this->getUrl('adminhtml/logicbroker_logicbroker/changeStatusAjax') ?>', {
 				parameters: {
 							'lb_item_id': itemId[1],
 							'lb_item_status': obj.value,

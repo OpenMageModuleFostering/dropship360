@@ -32,9 +32,9 @@ var formSubmit = false;
 function downloadSampleCsv()
 		{
 			if(isProductModeSteup)
-			setLocation("<?php echo $this->getUrl('logicbroker/adminhtml_upload/download',array('_query'=>array('isproductsetupmode' => true))) ?>");
+			setLocation("<?php echo $this->getUrl('adminhtml/logicbroker_upload/download',array('_query'=>array('isproductsetupmode' => true))) ?>");
 			else
-			setLocation("<?php echo $this->getUrl('logicbroker/adminhtml_upload/download') ?>");
+			setLocation("<?php echo $this->getUrl('adminhtml/logicbroker_upload/download') ?>");
 		}
 		document.observe("dom:loaded", function(){
 			if($('uploadStarted'))

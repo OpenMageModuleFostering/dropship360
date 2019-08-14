@@ -7,7 +7,7 @@
  * @package     Logicbroker_Dropship360
  */
  
-class Logicbroker_Dropship360_Adminhtml_LogicbrokerController extends Mage_Adminhtml_Controller_Action
+class Logicbroker_Dropship360_Adminhtml_Logicbroker_LogicbrokerController extends Mage_Adminhtml_Controller_Action
 {
 
 	protected function _initAction() {

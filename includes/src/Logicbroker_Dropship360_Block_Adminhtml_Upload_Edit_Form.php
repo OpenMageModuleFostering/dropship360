@@ -18,7 +18,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_Upload_Edit_Form extends Mage_Admi
     	$isProductSetupMode = $this->getProductsetupmode();
         $form = new Varien_Data_Form(array(
             'id'      => 'edit_form',
-            'action'  => ($isProductSetupMode) ? $this->getUrl('*/adminhtml_upload/uploadFile') : $this->getUrl('*/*/uploadFile'),
+            'action'  => ($isProductSetupMode) ? $this->getUrl('*/logicbroker_upload/uploadFile') : $this->getUrl('*/*/uploadFile'),
             'method'  => 'post',
             'enctype' => 'multipart/form-data'
         ));

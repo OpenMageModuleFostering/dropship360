@@ -10,7 +10,7 @@ class Logicbroker_Dropship360_Model_Productimport {
 	protected $prePopulatedAttribute = array ();
 	protected $catalogTable;
 	protected $productCategory;
-	protected $allowedAttribute = array('name','short_description','description','weight','price','msrp','manufacturer','action','lb_upc','lb_manufacturer_product_number');
+	protected $allowedAttribute = array('name','short_description','description','weight','price','msrp','manufacturer','action','upc','manufacturer_part_number');
 	protected $preDefineAttribute = array (
 			'status' => 2,
 			'visibility' => 1,
