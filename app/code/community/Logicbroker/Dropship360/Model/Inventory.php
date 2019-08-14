@@ -245,9 +245,9 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     public function saveTabVendorData($request){
     	
     	$inventoryStock = array();
-    	$update = $request['vendor_update'];
-    	$addNew = $request['vendor_new'];
-    	$sku = $request['sku'];
+    	$update = isset($request['vendor_update']) ? $request['vendor_update'] : '';
+    	$addNew = isset($request['vendor_new']) ? $request['vendor_new'] : '';
+    	$sku = isset($request['sku']) ? $request['sku'] : '';
     	$result = true;
     	
     	$error = $this->_validate($request);
@@ -257,7 +257,7 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     		return $result = false;
     	}
     	
-    	
+    if(!empty($update)){	
     	foreach($update as $key => $data){
     		if($data['is_delete'] == 1){
     			$this->_deleteInvendorVendor($key);
@@ -268,7 +268,7 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     			
     		}
     	}
-    	
+    	}
     	if(!empty($addNew)){
     	
     		foreach($addNew as $key => $data){
@@ -290,7 +290,9 @@ class Logicbroker_Dropship360_Model_Inventory extends Mage_Core_Model_Abstract
     protected function _validate($request)
     {
     	$arrVendorCode = array();
-    	$isError = true;
+    	$isUniqueCombination = false;
+	$isEntrySame = false;	
+	$isError = true;
     	$errorArr = array();
     	if(!empty($request['vendor_new'])){
     	foreach ($request['vendor_new'] as $key => $data){

@@ -46,7 +46,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Vendorlist
     	) )->where('lbRanking.is_dropship = ?','yes');
     	
     	$collectionVendor->getSelect ()->group('main_table.lb_vendor_code');
-    	if($collectionVendor > 0){
+    	if($collectionVendor->count() > 0){
     	foreach ($collectionVendor as $vendor) {
     		$options[] = array(
     				'label' => $vendor->getLbVendorName(),
@@ -88,7 +88,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Vendorlist
     	 
     	$collectionVendor->getSelect ()->group('main_table.lb_vendor_code');
     	
-    	if($collectionVendor > 0){
+    	if($collectionVendor->count() > 0){
     	foreach ($collectionVendor as $vendor) {
     		$options[] = array(
     				'label' => $vendor->getLbVendorName(),
@@ -105,7 +105,7 @@ class Logicbroker_Dropship360_Model_System_Config_Source_Vendorlist
     	$options =array();
     	$collectionVendor = Mage::getModel ( 'logicbroker/ranking' )->getCollection ();
     	
-    	if($collectionVendor > 0){
+    	if($collectionVendor->count() > 0){
     		foreach ($collectionVendor as $vendor) {
     			$options[] = array(
     					'label' => $vendor->getLbVendorCode().'--'.$vendor->getLbVendorName(),

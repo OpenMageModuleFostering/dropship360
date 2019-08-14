@@ -27,7 +27,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_System_Config_Crontime extends Mag
         }
 
         $html = '<input type="hidden" id="' . $element->getHtmlId() . '" />';
-        $html .= '<select name="'. $this->getName($element->getName()) . '" '.$element->serialize($this->getHtmlAttributes()).' style="width:auto">'."\n";
+        $html .= '<select name="'. $this->getName($element->getName()) . '" style="width:auto">'."\n";
         
         for( $i=-2;$i<24;$i++ ) {
             $hour = str_pad($i, 2, '0', STR_PAD_LEFT);
@@ -40,7 +40,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_System_Config_Crontime extends Mag
         }
         $html.= '</select>'."\n";
 
-        $html.= '&nbsp;:&nbsp;<select name="'. $this->getName($element->getName()) . '" '.$element->serialize($this->getHtmlAttributes()).' style="width:auto">'."\n";
+        $html.= '&nbsp;:&nbsp;<select name="'. $this->getName($element->getName()) . '" style="width:auto">'."\n";
         //$html.= '<option value="*" '. ( ($value_min == '*') ? 'selected="selected"' : '' ) .'>*</option>';
         for( $i=-1;$i<60;$i++ ) {
             $hour = str_pad($i, 2, '0', STR_PAD_LEFT);
@@ -51,7 +51,7 @@ class Logicbroker_Dropship360_Block_Adminhtml_System_Config_Crontime extends Mag
         }
         $html.= '</select>'."\n";
 
-        $html.= '&nbsp;:&nbsp;<select name="'. $this->getName($element->getName()) . '" '.$element->serialize($this->getHtmlAttributes()).' style="width:auto">'."\n";
+        $html.= '&nbsp;:&nbsp;<select name="'. $this->getName($element->getName()) . '"style="width:auto">'."\n";
         //$html.= '<option value="*" '. ( ($value_sec == '*') ? 'selected="selected"' : '' ) .'>*</option>';
         for( $i=-1;$i<60;$i++ ) {
             $hour = str_pad($i, 2, '0', STR_PAD_LEFT);

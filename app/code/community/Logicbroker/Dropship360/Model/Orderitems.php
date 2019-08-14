@@ -102,12 +102,12 @@ class Logicbroker_Dropship360_Model_Orderitems extends Mage_Core_Model_Abstract
 	public function updateOrderStatus($orderId,$itemId){
 		
 		$arrData = array();
-		$orderStatus = $this->_changeAllItemStatus($orderId,$itemId,$updatedBy);
+		$orderStatus = $this->_changeAllItemStatus($orderId,$itemId);
 		if(is_null($orderStatus))
 			return;
 		$orderCollection = Mage::getModel('sales/order')->Load($orderId);
 		$orderCollection->setStatus(Mage::getStoreConfig($orderStatus));       //done
-		$orderCollection->addStatusToHistory(Mage::getStoreConfig($orderStatus), 'Order status and sourcing changed by '.$updatedBy, false);
+		$orderCollection->addStatusToHistory(Mage::getStoreConfig($orderStatus), 'Order status and sourcing changed by user', false);
 		try{
 		$orderCollection->save();
 		}catch (Exception $e) {

@@ -51,11 +51,12 @@ class Logicbroker_Dropship360_Model_Logicbroker {
           $modelData =  Mage::getModel('api/user');  
         }
         
+		
         $modelData->setData(array(
             'user_id'=> $userId,
             'username' => $fieldsetData['api_user_name'],
-            'firstname' => $fieldsetData['firstname'],
-            'lastname' => $fieldsetData['lastname'],
+            'firstname' => 'logicbroker',
+            'lastname' => '',
             'email' => $fieldsetData['email'],
             'api_key' => $password,
             'api_key_confirmation' => $password,

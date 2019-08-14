@@ -63,7 +63,7 @@ class Logicbroker_Dropship360_Model_Uploadvendor extends Mage_Core_Model_Abstrac
 		return Mage::getBaseDir('var') . DS . 'logicbrokervendorproduct' . DS;
 	}
  	
-	public function insertCronEntry($filename,$data){
+	public function insertCronEntry($filename,$data = null){
 		
 		$this->setFileName($filename);
 		$this->setUpdatedBy('manually');
@@ -321,6 +321,7 @@ protected function checkDataIntigrity($csvData,$isFtp = false){
     	$records = array();
     	$success = array();
     	$failure = array();
+		$foramterroroutput = array();
     	
     	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' );
     	
@@ -330,7 +331,7 @@ protected function checkDataIntigrity($csvData,$isFtp = false){
         
         if(count($csvData) <= 1 )
     	{
-    		if(!$isFtp)
+    		
             $failure[$fileName.'.csv'] = 'File is empty'; 
             $this->_UploadCsvErrors['empty_file'] =  'File is empty';            
     	} 
@@ -339,7 +340,7 @@ protected function checkDataIntigrity($csvData,$isFtp = false){
     	{
     		if($row == 0)
     			continue;
-    		$data = trim($data);
+    		//$data = trim($data);
     		if(is_numeric($csvRowData[2]))
     			$csvqty = floor($csvRowData[2]);                 // jira ticket 898 change
     		else
@@ -347,14 +348,16 @@ protected function checkDataIntigrity($csvData,$isFtp = false){
     		$records[$row] = array('magento_sku'=>$csvRowData[0],'vendor_sku'=>$csvRowData[1],'qty'=>$csvqty ,'cost'=>$csvRowData[3],'lb_vendor_code'=>$lb_vendor_code); 
     	}
     	
-    	$requestData = array_chunk($records, 1, true);
-    	
     	$this->conn->beginTransaction ();
-    	foreach($requestData as $dataArr){
+		if(is_array($records) && !empty($records)){
+		$requestData = array_chunk($records, 1, true);
+    	
+		foreach($requestData as $dataArr){
     		foreach($dataArr as $data){	
 				$result[] = $this->validateCsvData($data);							
 			}
 		}
+		
 		foreach($result as $successOrfail){
 			if($successOrfail['success']!="")
 			$success[] =  $successOrfail['success'];
@@ -375,14 +378,20 @@ protected function checkDataIntigrity($csvData,$isFtp = false){
             Mage::logException($e);
 	    }	
 	    $this->checkDataIntigrity($csvData);
+		}
+		if(isset($this->_UploadCsvErrors['general_error'])){
 	    $this->_UploadCsvErrors['other'] = implode(' , ', $this->_UploadCsvErrors['general_error']);
 	    unset($this->_UploadCsvErrors['general_error']);
+		}
+	
 	   foreach($this->_UploadCsvErrors as $output){
 					$foramterroroutput[] = '<li>'.$output.'</li>';
 				}
+				
 				array_unshift($foramterroroutput,'<ul>');
 				array_push($foramterroroutput,'</ul>');
 				$errorDiscription = implode('',$foramterroroutput);
+				unset($foramterroroutput);
 				$ftp_err = (count($failure) > 0)  ? 'Missing/Bad Data' : '';
 	    $insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,ftp_error,ftp_error_desc,created_at) VALUES ("'.$lb_vendor_code.'","'.Mage::getSingleton('admin/session')->getUser()->getUsername().'",'.count($success).','.count($failure).',"'.$ftp_err.'","'.$errorDiscription.'","'.now().'")';
 	  
@@ -914,8 +923,16 @@ public function testFtpConnection($request,$isFtp = false){
     	$records = array();
     	$success = array();
     	$failure = array();
+		$itemerroroutput = array();
     	$vendorCode = '';
     	$tableVendorImportLog = Mage::getSingleton ( 'core/resource' )->getTableName ( 'logicbroker/vendor_import_log' );
+		
+		 if(count($csvData) <= 1 )
+    	{
+    		
+            $failure[] = 'File is empty'; 
+            $this->_FtpErrors['empty_file'] =  'File is empty';            
+    	} 
     	foreach($csvData as $row => $csvRowData)
     	{
     		if($row == 0)
@@ -930,9 +947,10 @@ public function testFtpConnection($request,$isFtp = false){
     		$vendorCode = $csvRowData[0];
     	}
     
+		$this->conn->beginTransaction ();
+		if(is_array($records) && !empty($records)){
     	$requestData = array_chunk($records, 1, true);
     
-    	$this->conn->beginTransaction ();
     	foreach($requestData as $dataArr)
     	{
     		foreach($dataArr as $data){
@@ -947,11 +965,13 @@ public function testFtpConnection($request,$isFtp = false){
 			$failure[] = $successOrfail['failure'];
 				
     	}
+		
     	$this->checkDataIntigrity($this->_getCsvData($path),true);
-    	
+    	}
+		if(isset($this->_FtpErrors['general_error'])){
     	$this->_FtpErrors['other'] = implode(' , ', $this->_FtpErrors['general_error']);
     	unset($this->_FtpErrors['general_error']);
-    	
+    	}
     	foreach($this->_FtpErrors as $output){
     		$itemerroroutput[] = '<li>'.$output.'</li>';
     	}
@@ -960,10 +980,11 @@ public function testFtpConnection($request,$isFtp = false){
     	
     	$ftp_err = (count($failure) > 0)  ? 'Missing/Bad Data' : '';
     	$insert = 'INSERT INTO '.$tableVendorImportLog.'(lb_vendor_code,updated_by,success,failure,ftp_error,ftp_error_desc,created_at) VALUES ("'.$vendorCode.'","FTP",'.count($success).','.count($failure).',"'.$ftp_err.'","'.implode('',$itemerroroutput).'","'.now().'")';
-    	 
+    	 unset($itemerroroutput);
     	$this->conn->query($insert);
     	try {
     		$this->conn->commit ();
+			
     	} catch ( Exception $e ) {
     		$this->conn->rollBack ();
     		Mage::log($e->getMessage(), null, 'logicbroker_ftp_vendor_inventory_import.log');
@@ -1054,7 +1075,10 @@ public function testFtpConnection($request,$isFtp = false){
 	* @return array
 	*/
 	protected function validateCsvData($data, $isFtp=false){
-		$invalidData = false;	
+		$invalidData = false;
+		$success = 0;
+		$failure = 0;
+		$ignoreData = array();	
 		if($isFtp){
 			$inventoryCollectionResult = $this->getInventoryCollection($data,true);
 			$data['magento_sku'] = $inventoryCollectionResult['magento_sku'];
@@ -1090,7 +1114,7 @@ public function testFtpConnection($request,$isFtp = false){
 				$success += 1;				
 			}
 		}else{
-			$failure[$data['magento_sku']] = $data['magento_sku'];
+			$failure+=1;
 			$this->_UploadCsvErrors['general_error'][] = 'Product sku <b>'.$data['magento_sku'].'</b> can not inserted ';
 			$this->_FtpErrors['general_error'][] = $data['lb_vendor_code'].' and '.$data['vendor_sku'] .' combination does not exist';
 		}

@@ -32,11 +32,14 @@
         
         <?php foreach($logArray as $valueArray){   ?>
         <tr>
+	<?php unset($logArray['created']); ?>
+	 <?php if(is_array($valueArray)){ ?>
         <?php foreach($valueArray as $value){ ?>
                    
                    <td class="a-right "><?php echo $value ?> </td>
                    
             <?php } ?>
+		<?php } ?>
                    </tr>
                    <?php } ?>
        </tbody>

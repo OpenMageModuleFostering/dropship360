@@ -82,6 +82,7 @@ public function tarPatch()
 	}
 
 	public function logicbrokerSourcing() {
+		
 		if(!Mage::getStoreConfig(self::CRON_STRING_PATH_SOURCING)) {
 			return;
 		}
