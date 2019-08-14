@@ -1,0 +1,32 @@
+<?php
+/* Logicbroker sourcing add vendor on product edit page */
+?>
+<?php ?>
+<div class="entry-edit">
+    <?php if($this->getInventoryLog()-> count() > 0 ): ?>
+    <fieldset>
+        <ul class="note-list">
+        
+        <?php foreach ($this->getInventoryLog() as $_item): ?>
+            <li>
+            <strong><?php echo $_item->getLbVendorCode() ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item->getLbVendorName() ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item->getCost() ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item->getStock() ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item->getUpdatedBy() ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item->getActivity() ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $this->formatDate($_item->getUpdatedAt(), 'medium', true); ?></strong>
+            </li>
+        <?php endforeach; ?>
+        </ul>
+    </fieldset>
+    <?php else :?>
+        <h2>No Data Found</h2>
+        <?php endif; ?>
+</div>

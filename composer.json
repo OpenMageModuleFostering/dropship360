@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/dropship360",
+    "type": "magento-module",
+    "license": "Customer-License",
+    "homepage": "",
+    "description": "logicbroker enables Magento merchants to seamlessly connect with vendors via EDI for drop ship automation.",
+    "authors": [
+    {
+        "name": "Logicbroker",
+        "email": "magentoext@logicbroker.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

@@ -1,0 +1,142 @@
+<?php
+/* logicbroker sourcing */
+?>
+
+
+<script type="text/javascript">
+//<![CDATA[
+var firstStepTemplate = '<div class="option-box" id="vendor_{{id}}">'+
+            '<table id="<?php echo $this->getFieldId() ?>_{{id}}" class="option-header" cellpadding="0" cellspacing="0">'+
+            '<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_is_delete" name="<?php echo $this->getFieldName() ?>[{{id}}][is_delete]" value="" />'+
+            '<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_updated_by" name="<?php echo $this->getFieldName() ?>[{{id}}][updated_by]" value="<?php echo $this->escapeHtml(Mage::getSingleton('admin/session')->getUser()->getUsername()) ?>" />'+
+            //'<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_cost" name="<?php echo $this->getFieldName() ?>[{{id}}][cost]" value="" />'+
+            //'<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_inventory" name="<?php echo $this->getFieldName() ?>[{{id}}][inventory]" value="" />'+
+            //'<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_lb_vendor_sku" name="<?php echo $this->getFieldName() ?>[{{id}}][lb_vendor_sku]" value="" />'+
+            '<thead>'+
+                '<tr>'+
+                    '<th class="opt-title" style="width:307px;"><?php echo Mage::helper('catalog')->__('Vendor') ?> <span class="required">*</span></th>'+
+                    '<th class="opt-type" style="width:75px;"><?php echo Mage::helper('catalog')->__('Cost') ?> <span class="required">*</span></th>'+
+                    '<th class="opt-req"  style="width:75px;"><?php echo $this->jsQuoteEscape(Mage::helper('logicbroker')->__('Inventory')) ?><span class="required">*</span></th>'+
+                    '<th class="opt-order" style="width:75px;"><?php echo Mage::helper('catalog')->__('Vendor Sku') ?><span class="required">*</span></th>'+
+                    '<th class="a-right"><?php echo $this->jsQuoteEscape($this->getDeleteButtonHtml()) ?></th>'+
+                '</tr>'+
+            '</thead>'+
+            '<tr>'+
+            '<td style = "padding: 5px 5px;"><?php echo $this->getVendorSelectHtml() ?></td>'+
+            '<td style = "padding: 5px 5px;"><input style="width: 84px;" type="text" class="required-entry validate-number validate-zero-or-greater input-text vendor-input-text" id="<?php echo $this->getFieldId() ?>_{{id}}_cost" name="<?php echo $this->getFieldName() ?>[{{id}}][cost]" value=""></td>'+	
+            '<td style = "padding: 5px 5px;"><input style="width: 84px;" type="text" class="required-entry validate-number validate-zero-or-greater input-text vendor-input-text" id="<?php echo $this->getFieldId() ?>_{{id}}_inventory" name="<?php echo $this->getFieldName() ?>[{{id}}][stock]" value=""></td>'+
+            '<td style = "padding: 5px 5px;"><input style="width: 84px;" type="text" class="required-entry input-text vendor-input-text" id="<?php echo $this->getFieldId() ?>_{{id}}lb_vendor_sku" name="<?php echo $this->getFieldName() ?>[{{id}}][lb_vendor_sku]" value=""></td>'+
+            '<td>&nbsp;</td>'+
+        '</tr></table></div>';
+
+var productOptionVendor = {
+    div : $('product_options_container_top_vendor'),
+    templateSyntax : /(^|.|\r|\n)({{(\w+)}})/,
+    templateText : firstStepTemplate,
+    itemCount : 1,
+    add : function(data) {
+        this.template = new Template(this.templateText, this.templateSyntax);
+
+        if(!data.id){
+            data = {};
+            data.id  = this.itemCount;
+            data.type = '';
+            data.option_id = 0;
+        } else {
+            this.itemCount = data.item_count;
+        }
+
+        Element.insert(this.div, {'after':this.template.evaluate(data)});
+
+
+        this.itemCount++;
+        this.bindRemoveButtons();
+        
+    },
+    remove : function(event){
+        var element = $(Event.findElement(event, 'div'));
+        //console.log(element);
+        if(element){
+            //alert('product_'+element.readAttribute('id')+'_'+'is_delete');
+            $('product_'+element.readAttribute('id')+'_'+'is_delete').value = '1';
+            element.addClassName('no-display');
+            element.addClassName('ignore-validate');
+            element.hide();
+        }
+    },
+    bindRemoveButtons : function(){
+        var buttons = $$('div.product-custom-options-vendor .delete-product-option-vendor');
+        for(var i=0;i<buttons.length;i++){
+            if(!$(buttons[i]).binded){
+                $(buttons[i]).binded = true;
+                Event.observe(buttons[i], 'click', this.remove.bind(this));
+            }
+        }
+        this.bindSelectType();
+        this.bindInputType();
+        
+    },
+
+    bindSelectType : function(){
+        
+        var types = $$('.select-vendor-option-type');
+        for(var i=0;i<types.length;i++){
+            if(!$(types[i]).binded){
+                $(types[i]).binded = true;
+                Event.observe(types[i], 'change', this.changeSelectInput.bind(this));
+            }
+        }
+    },
+
+	bindInputType : function(){
+        
+        var types = $$('.vendor-input-text');
+        for(var i=0;i<types.length;i++){
+            if(!$(types[i]).binded){
+                $(types[i]).binded = true;
+                Event.observe(types[i], 'blur', this.changeInput.bind(this));
+            }
+        }
+    },
+		
+    changeSelectInput : function(event){
+        var element = $(Event.findElement(event, 'select'));
+
+        var group = '';
+        var previousGroupElm = $(element.readAttribute('id').sub('_type', '_previous_group'));
+        previousGroupElm.value = element.getValue();
+        },
+
+    changeInput : function(event){
+        var element = $(Event.findElement(event, 'input'));
+
+        var group = '';
+        var previousGroupElm = $(element.readAttribute('id').sub('_type', '_previous_group'));
+        //alert(element.readAttribute('id'));
+        //previousGroupElm.value = element.getValue();
+        }
+    }
+
+
+
+productOptionVendor.bindRemoveButtons();
+
+
+if($('<?php echo $this->getAddButtonId() ?>')){
+    Event.observe('<?php echo $this->getAddButtonId() ?>', 'click', productOptionVendor.add.bind(productOptionVendor));
+}
+
+//validation for selected input type
+Validation.addAllThese([
+    ['required-option-select', <?php echo $this->helper('core')->jsonEncode(Mage::helper('catalog')->__('Select a vendor')) ?>, function(v, elm) {
+        if (elm.getValue() == '') {
+            return false;
+        }
+        return true;
+}]]);
+
+//adding data to templates
+
+
+//]]>
+</script>

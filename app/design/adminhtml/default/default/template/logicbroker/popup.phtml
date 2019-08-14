@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment form</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+    <script type="text/javascript" src="<?php echo $this->getJsUrl() ?>prototype/prototype.js"></script>
+    <script type="text/javascript" src="<?php echo $this->getJsUrl() ?>prototype/validation.js"></script>
+	<script type="text/javascript" src="<?php echo $this->getJsUrl() ?>mage/adminhtml/form.js"></script>
+	<style>
+		.validation-advice {
+		    clear: both;
+			min-height: 15px;
+			margin: 3px 0 5px 9px;
+			padding-left: 135px;
+			font-size: .95em;
+			font-weight: bold;
+			line-height: 1.25em;
+			color: #D40707; 
+			
+		}
+	</style>
+	
+</head>
+<body style="background-color:#fff9e9">
+<div id="messages"></div>
+
+<div> 
+<input name='form_key' type='hidden' value='<?php echo Mage::getSingleton('core/session')->getFormKey() ?>' />
+<label>Please enter a name for the Vendor Ranking History entry &nbsp;</label><span><input id="save_table_input" class="required-entry" name="save_table" value=""></span>
+<div class="validation-advice" id="error-input" style="display: none;">This is a required field.</div>
+
+<button style="margin-left:100px" type="button"  id="save_table" onclick="submitForm()" >Save Table</button>
+<span><button type="button" id="save_table_close" name="save_table_close" value="save table" onclick="parent.closePopup();">Close</button></span>
+
+</div>
+
+
+<script type="text/javascript">
+function submitForm()
+{
+	if($('save_table_input').value == '')
+	{
+		return $('error-input').setStyle({display:'block'})
+	}	
+	$('save_table').setAttribute('disabled','disabled');
+	$('save_table_close').setAttribute('disabled','disabled');
+	$('error-input').setStyle({display:'none'})
+	parent.saveRanking();
+	parent.setTableName($('save_table_input').value);
+	parent.submitPartentFrom();
+	//window.setTimeout('parent.closePopup()', 2011);
+	//$('save_table_form').submit();
+	
+}
+</script>
+</body>
+</html>

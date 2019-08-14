@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns:typens="urn:{{var wsdl.name}}" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns="http://schemas.xmlsoap.org/wsdl/"
+    name="{{var wsdl.name}}" targetNamespace="urn:{{var wsdl.name}}">
+    <types>
+        <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:Magento">
+            <import namespace="http://schemas.xmlsoap.org/soap/encoding/" schemaLocation="http://schemas.xmlsoap.org/soap/encoding/" />
+			 
+			 <complexType name="salesOrderListEntity">
+                <all>
+                   <element name="item_details" type="typens:salesOrderListLbItemEntityArray" minOccurs="0" />
+                </all>
+            </complexType>
+            
+            <complexType name="salesOrderListLbItemEntityArray">
+                <complexContent>
+                    <restriction base="soapenc:Array">
+                        <attribute ref="soapenc:arrayType" wsdl:arrayType="typens:salesOrderListLbItemEntity[]" />
+                    </restriction>
+                </complexContent>
+            </complexType>
+            
+            <complexType name="salesOrderListLbItemEntity">
+                <all>
+					<element name="item_sku" type="xsd:string" minOccurs="0" />
+                    <element name="lb_vendor_sku" type="xsd:string" minOccurs="0" />
+                    <element name="lb_vendor_code" type="xsd:string" minOccurs="0" />
+                    <element name="lb_vendor_cost" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+            
+			 <complexType name="salesOrderItemEntity">
+                <all>
+					<element name="lb_item_status" type="xsd:string" minOccurs="0" />
+                    <element name="lb_vendor_sku" type="xsd:string" minOccurs="0" />
+                    <element name="lb_vendor_code" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+            <complexType name="salesOrderLbEntity">
+                <all>
+					<element name="increment_id" type="xsd:string" minOccurs="0" />
+                    <element name="status" type="xsd:string" minOccurs="0" />
+                    <element name="state" type="xsd:string" minOccurs="0" />
+                    <element name="ResultCount" type="xsd:int" minOccurs="0" />
+                    <element name="orderDetails" type="typens:salesOrderLbStatusEntityArray" minOccurs="0" />
+                    <element name="error_message" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+           <complexType name="salesOrderLbStatusEntityArray">
+                <complexContent>
+                    <restriction base="soapenc:Array">
+                        <attribute ref="soapenc:arrayType" wsdl:arrayType="typens:salesOrderLbStatusEntity[]" />
+                    </restriction>
+                </complexContent>
+            </complexType>
+            
+              <complexType name="salesOrderLbStatusEntity">
+                <all>
+					<element name="increment_id" type="xsd:string" minOccurs="0" />
+                    <element name="status" type="xsd:string" minOccurs="0" />
+                    <element name="state" type="xsd:string" minOccurs="0" />
+                    <element name="error_message" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+            
+            <complexType name="salesOrderSetLbStatusEntity">
+                <all>
+					<element name="success_message" type="xsd:string" minOccurs="0" />
+                    <element name="error_message" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+            
+            <complexType name="salesOrderGetLbStatusConfig">
+                <all>
+					<element name="begin_sourcing" type="xsd:string" minOccurs="0" />
+                    <element name="awaiting_transmission" type="xsd:string" minOccurs="0" />
+                    <element name="backorder" type="xsd:string" minOccurs="0" />                    
+                    <element name="sourcing_complete" type="xsd:string" minOccurs="0" />
+                </all>
+            </complexType>
+            
+            <complexType name="versionsGetdropship360version">
+                <all>
+					<element name="magentoVer" type="xsd:string" minOccurs="0" />
+                    <element name="dropship360Ver" type="xsd:string" minOccurs="0" />
+                    <element name="dropshipDbScriptVer" type="xsd:string" minOccurs="0" />                    
+                </all>
+            </complexType>
+        </schema>
+    </types>
+    
+   <message name="salesOrderUpdateItemStatusRequest">
+      <part name="sessionId" type="xsd:string"/>
+      <part name="orderId" type="xsd:string"/>
+      <part name="items" type="typens:ArrayOfString"/>
+      <part name="status" type="xsd:string"/>
+   </message>
+   <message name="salesOrderUpdateItemStatusResponse">
+      <part name="result" type="xsd:boolean"/>
+   </message>
+   
+   <message name="salesOrderGetLbOrderStatusRequest">
+      <part name="sessionId" type="xsd:string"/>
+      <part name="orderIncrementId" type="xsd:string"/>
+      <part name="orderStatus" type="xsd:string"/>
+      <part name="limit" type="xsd:int"/>
+   </message>
+   <message name="salesOrderGetLbOrderStatusResponse">
+       <part name="result" type="typens:salesOrderLbEntity" />
+   </message>
+   
+   <message name="salesOrderSetLbOrderStatusRequest">
+      <part name="sessionId" type="xsd:string"/>
+      <part name="orderIncrementId" type="xsd:string"/>
+      <part name="orderStatus" type="xsd:string"/>
+   </message>
+   <message name="salesOrderSetLbOrderStatusResponse">
+       <part name="result" type="typens:salesOrderSetLbStatusEntity" />
+   </message>
+   
+   <message name="salesOrderGetLbOrderStatusConfigRequest">
+      <part name="sessionId" type="xsd:string"/>
+   </message>
+   <message name="salesOrderGetLbOrderStatusConfigResponse">
+       <part name="result" type="typens:salesOrderGetLbStatusConfig" />
+   </message>
+   
+   <message name="versionsGetdropship360versionRequest">
+      <part name="sessionId" type="xsd:string"/>
+   </message>
+    <message name="versionsGetdropship360versionResponse">
+      <part name="result" type="typens:versionsGetdropship360version" />
+   </message>
+   
+   <portType name="{{var wsdl.handler}}PortType">
+		<operation name="salesOrderUpdateItemStatus">
+			 <documentation>Update Logic Broker Item Status</documentation>
+			 <input message="typens:salesOrderUpdateItemStatusRequest"/>
+			 <output message="typens:salesOrderUpdateItemStatusResponse"/>
+		</operation>
+		<operation name="salesOrderGetLbOrderStatus">
+			 <documentation>Retrive order by status</documentation>
+			 <input message="typens:salesOrderGetLbOrderStatusRequest"/>
+			 <output message="typens:salesOrderGetLbOrderStatusResponse"/>
+		</operation>
+		<operation name="salesOrderSetLbOrderStatus">
+			 <documentation>Retrive order by status</documentation>
+			 <input message="typens:salesOrderSetLbOrderStatusRequest"/>
+			 <output message="typens:salesOrderSetLbOrderStatusResponse"/>
+		</operation>	
+		<operation name="salesOrderGetLbOrderStatusConfig">
+			 <documentation>Retrive order by status</documentation>
+			 <input message="typens:salesOrderGetLbOrderStatusConfigRequest"/>
+			 <output message="typens:salesOrderGetLbOrderStatusConfigResponse"/>
+		</operation>
+        <operation name="versionsGetdropship360version">
+			 <documentation>this is an example of api method</documentation>
+			 <input message="typens:versionsGetdropship360versionRequest"/>
+			 <output message="typens:versionsGetdropship360versionResponse"/>
+		</operation>
+	</portType>
+	<binding name="{{var wsdl.handler}}Binding" type="typens:{{var wsdl.handler}}PortType">
+	 	<operation name="salesOrderUpdateItemStatus">
+         <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+         <input>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+		</operation>
+		<operation name="salesOrderGetLbOrderStatus">
+         <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+         <input>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+		</operation>
+		<operation name="salesOrderSetLbOrderStatus">
+         <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+         <input>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+		</operation>
+		<operation name="salesOrderGetLbOrderStatusConfig">
+         <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+         <input>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+		</operation>
+        
+        <operation name="versionsGetdropship360version">
+         <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
+         <input>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+		</operation>
+	 </binding> 
+</definitions>

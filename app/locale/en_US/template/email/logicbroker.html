@@ -1,0 +1,17 @@
+<!--@subject Contact Form@-->
+<!--@vars
+{"var data.name":"Sender Name",
+"var data.email":"Sender Email",
+"var data.telephone":"Sender Telephone",
+"var data.comment":"Comment"}
+@-->
+
+{{if templatevar.isnewreg}}
+A new user has installed Extension on following URL -: {{store url=""}}
+{{else}}
+    Please find the excel sheet in attachment customer details are given below -:<br> Name : {{var templatevar.firstname}} <span>{{var templatevar.lastname}}
+</span> <br> Email : {{var templatevar.email}}
+{{/if}}
+
+
+

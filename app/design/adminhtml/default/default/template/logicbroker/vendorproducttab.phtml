@@ -1,0 +1,53 @@
+<?php
+/* Logicbroker sourcing add vendor on product edit page */
+?>
+<div class="entry-edit custom-options product-custom-options-vendor">
+    
+    <div class="entry-edit-head">
+        <h4><?php echo Mage::helper('catalog')->__('Vendor Details') ?></h4>
+        <div class="right"><?php echo $this->getAddButtonHtml() ?></div>
+    </div>
+
+    <div id="product_options_container" class="box">
+        <div id="product_options_container_top_vendor">
+        <!-- If vendor inventory data is available  -->
+        <?php if($collection = $this->getAssignedData()): ?>
+        <?php if($collection->count() > 0) { ?>
+        <?php foreach($collection as $vendor){ ?>
+        <div class="option-box" id="vendor_<?php echo $vendor->getId() ?>">
+        <table id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>" class="option-header" cellpadding="0" cellspacing="0">
+        <input type="hidden" id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>_is_delete" name="<?php echo $this->getFieldName() ?>[<?php echo $vendor->getId() ?>][is_delete]" value="" />
+        <input type="hidden" id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>_lb_vendor_code" name="<?php echo $this->getFieldName() ?>[<?php echo $vendor->getId() ?>][lb_vendor_code]" value="<?php echo $vendor->getLbVendorCode() ?>" />
+		<thead>
+        <tr>
+           <th class="opt-title" style="width:150px;"><?php echo Mage::helper('logicbroker')->__('Vendor Code') ?></th>
+           <th class="opt-type" style="width:150px;"><?php echo Mage::helper('logicbroker')->__('Vendor Name') ?></th>
+           <th class="opt-req" style="width:75px;"><?php echo $this->jsQuoteEscape(Mage::helper('logicbroker')->__('Cost')) ?><span class="required">*</span></th>
+           <th class="opt-order" style="width:75px;"><?php echo Mage::helper('logicbroker')->__('Inventory') ?><span class="required">*</span></th>
+           <th class="opt-order" style="width:75px;"><?php echo Mage::helper('logicbroker')->__('Vendor Sku') ?><span class="required">*</span></th>
+           <th class="opt-order" style="width:150px;"><?php echo Mage::helper('logicbroker')->__('Last Sync') ?><span class="required">*</span></th>
+           <th class="a-right"><?php echo $this->jsQuoteEscape($this->getUpdateDeleteButtonHtml()) ?></th>
+           </tr>
+           </thead>
+           <tr>
+           <td><?php echo $vendor->getLbVendorCode() ?></td>
+           <td><?php echo $vendor->getVendorName() ?></td>
+           <td style = "padding: 5px 5px;"><input  style="width: 84px;" type="text" class="required-entry  validate-number validate-zero-or-greater input-text vendor-input-text" id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>_cost" name="<?php echo $this->getFieldName() ?>[<?php echo $vendor->getId() ?>][cost]" value="<?php echo $vendor->getCost() ?>"><?php //echo $vendor->getCost() ?></td>	
+            <td style = "padding: 5px 5px;"><input style="width: 84px;" type="text" class="required-entry validate-number validate-zero-or-greater input-text vendor-input-text" id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>_inventory" name="<?php echo $this->getFieldName() ?>[<?php echo $vendor->getId() ?>][stock]" value="<?php echo $vendor->getStock() ?>"><?php //echo $vendor->getStock() ?></td>
+            <td style = "padding: 5px 5px;"><input style="width: 84px;" type="text" class="required-entry input-text vendor-input-text" id="<?php echo $this->getFieldId() ?>_<?php echo $vendor->getId() ?>lb_vendor_sku" name="<?php echo $this->getFieldName() ?>[<?php echo $vendor->getId() ?>][lb_vendor_sku]" value="<?php echo $vendor->getLbVendorSku() ?>"><?php //echo $vendor->getLbVendorSku() ?></td>
+            <td style = "padding: 5px 5px;"><strong><?php echo $this->formatDate($vendor->getUpdatedAt(), 'medium', true); ?></strong></td>
+            <td>&nbsp;</td>
+        </tr></table></div>
+        <?php } } ?>
+        <?php endif; ?>
+        <!-- end -->
+        </div>
+        <?php echo $this->getOptionsBoxHtml() ?>
+    </div>
+</div>
+
+<script type="text/javascript">
+// re-bind form elements onchange
+varienWindowOnload(true);
+
+</script>

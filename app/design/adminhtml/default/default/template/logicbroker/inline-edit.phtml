@@ -1,0 +1,83 @@
+<?php
+/**
+ logicbroker
+ */
+?>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+    function saveRanking()
+ {
+
+	
+	 var arrDropshipParameter = $H({});
+	 var arrNonDropshipParameter = $H({});
+	 var arrVendorNameParameter = $H({});
+	 arrDropshipParameter.set(JSON.stringify(arrDropship));
+	 arrNonDropshipParameter.set(JSON.stringify(arrNonDropship));
+	 arrVendorNameParameter.set(JSON.stringify(arrVendorName));
+	 
+     
+    
+    
+    var actionUrl = '<?php echo Mage::getSingleton('adminhtml/url')->getUrl('*/*/saveranking') ?>'
+    var formdataStart = "<form id='edit_form' action='"+actionUrl+"' method='post'></form>";
+    var formDataEnd = "<div><input name='partent_save_table_input' id='partent_save_table_input' type='hidden' value=''><input name='dropship_data' id='dropship_data' type='hidden' value=''><input name='nondropship_data' id='nondropship_data' type='hidden' value=''><input name='vendorname_data' id='vendorname_data' type='hidden' value=''> <input name='form_key' type='hidden' value='<?php echo Mage::getSingleton('core/session')->getFormKey() ?>' /></div>";
+    
+    if(!$('edit_form'))
+        {
+            $('panel').insert(formdataStart);
+            $('edit_form').insert(formDataEnd);
+        }
+        
+        
+    
+    $('dropship_data').value = arrDropshipParameter.toQueryString();
+	$('nondropship_data').value = arrNonDropshipParameter.toQueryString();
+	$('vendorname_data').value = arrVendorNameParameter.toQueryString();
+}
+function setTableName(name){
+
+	$('partent_save_table_input').value = name;
+}
+
+function submitPartentFrom(){
+	closePopup();
+	$('edit_form').submit();
+}
+		
+	function showPopup(sUrl) {
+	    oPopup = new Window({
+	        id:'popup_window',
+	        className: 'magento',
+	        url: sUrl,
+	        width: 350,
+	        height: 100,
+	        minimizable: false,
+	        maximizable: false,
+	        showEffectOptions: {
+	            duration: 0.4
+	        },
+	        hideEffectOptions:{
+	            duration: 0.4
+	        },
+	        destroyOnClose: true
+	    });
+	    oPopup.setZIndex(100);
+	    oPopup.showCenter(true);
+	}
+
+	function closePopup() {
+	    Windows.close('popup_window');
+	}
+
+	function saveRankingTable()
+		{
+		showPopup('<?php echo Mage::getSingleton('adminhtml/url')->getUrl('*/*/popup',array('_query'=>array('issuccessfull' => ''))) ?>')
+		}
+	
+    
+//]]>
+</script>

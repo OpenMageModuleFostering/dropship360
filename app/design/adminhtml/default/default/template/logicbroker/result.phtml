@@ -1,0 +1,74 @@
+<?php $collection = $this->getLogCollection(); //echo '<pre>'; print_r($collection); die(); ?>
+
+<div class="content-header">
+    <table cellspacing="0">
+        <tr>
+            <td style="<?php echo $this->getHeaderWidth() ?>"><?php echo $this->getHeaderHtml() ?></td>
+            <td class="form-buttons"><?php echo $this->getButtonsHtml() ?></td>
+        </tr>
+    </table>
+</div>
+<div class="grid">
+<?php if(count($collection) > 0): ?>
+    <table cellspacing="0" class="data" id="logicbrokergrid_table">
+                <?php foreach($collection as $key => $logArray){ ?>
+                            <thead>
+                                    <tr class="tablelogheading" >
+                               <td colspan="4"><ul class = " logheading"><li><strong><?php echo $this->formatDate($logArray['created'], 'medium', true); ?><span class="separator">|</span><strong><?php echo $key; ?></strong></li></ul></td>
+                                            
+                                     </tr>
+                             <?php //$i=0; if($i == 0) {?>
+                             <tr class="headings">
+                             				<th>Vendor Name</th>
+                                            <th>Vendor Code</th>
+                                            <th>Ranking</th>
+                                            <th>Dropship</th>
+                                            
+                                        </tr>
+                                        <?php //} $i++; ?>                  
+                            </thead>
+                
+        <tbody>
+        
+        <?php foreach($logArray as $valueArray){   ?>
+        <tr>
+        <?php foreach($valueArray as $value){ ?>
+                   
+                   <td class="a-right "><?php echo $value ?> </td>
+                   
+            <?php } ?>
+                   </tr>
+                   <?php } ?>
+       </tbody>
+<?php } ?>
+    </table>
+    <script type="text/javascript">
+var headingArr = [];
+$$('.logheading').each(function(row){
+	
+	headingArr.push($(row).innerHTML)
+	$(row).setStyle({display:'none'})
+})
+
+for(var i=0; i<= headingArr.length; i++ )
+{
+// 	$$('.tablelogheading').each(function(row){
+// 		$(row).innerHTML = '<h1>'+headingArr[i]+'</h1>'})
+//alert(headingArr[i]);
+	if( headingArr[i] !=undefined ){
+		//alert($$('.tablelogheading')[i].innerHTML)
+		try{
+		$$('.tablelogheading')[i].innerHTML = '<td colspan="4"><ul class="" style="border-bottom: 2.5px solid #000000;margin: 15px 0 5px 5px;">'+headingArr[i]+'</ul></td>';
+		}catch(err){
+			console.log(err.message);
+			}
+	}
+	}
+
+
+</script>
+    
+   <?php else: ?> 
+   <h1>No Data Found</h1>
+</div>
+<?php endif; ?>

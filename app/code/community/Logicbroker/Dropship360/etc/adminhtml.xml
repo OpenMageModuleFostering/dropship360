@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+	<config>
+		<acl>
+			<resources>
+				<admin>
+					<children>
+						<system>
+							<children>
+								<config>
+									<children>
+										<logicbroker_integration translate="title" module="logicbroker">
+											<title>General Information</title>
+											<sort_order>1</sort_order>
+										</logicbroker_integration>
+										<logicbroker_sourcing translate="title" module="logicbroker">
+											<title>Sourcing Section</title>
+											<sort_order>2</sort_order>
+										</logicbroker_sourcing>
+										<logicbroker_cron translate="title" module="logicbroker">
+											<title>Cron Settings</title>
+											<sort_order>2</sort_order>
+										</logicbroker_cron>
+									</children>
+								</config>
+							</children>
+						</system>
+						<logicbroker translate="title" module="logicbroker">
+                        <title>logicbroker</title>
+                        <sort_order>91</sort_order>
+                        <children>
+                            <suppliers translate="title">
+                                <title>Vendor</title>
+                            </suppliers>
+							<inventory translate="title">
+                                <title>Vendor Inventory</title>
+                            </inventory>
+                            <vendor_ranking translate="title">
+                                <title>Vendor Ranking</title>
+                            </vendor_ranking>
+                            <order_sourcing translate="title">
+                                <title>Order Sourcing</title>
+                            </order_sourcing>
+                             <integration translate="title">
+                                <title>Genral Information</title>
+                            </integration>
+                        </children>
+                    </logicbroker>
+					</children>
+				</admin>
+			</resources>
+		</acl>
+                
+                <menu>
+                    <logicbroker translate="title" module="logicbroker">
+                        <title>dropship360</title>
+                        <sort_order>91</sort_order>
+                        <children>
+                           <!--  <suppliers translate="title">
+                                <title>Vendors</title>
+                                <action>logicbroker/adminhtml_logicbroker</action>
+                                <sort_order>10</sort_order>
+                            </suppliers> -->
+							<inventory translate="title">
+                                <title>Vendor Inventory</title>
+                                <action>logicbroker/adminhtml_inventory</action>
+                                <sort_order>11</sort_order>
+                            </inventory>
+                            <vendor_ranking translate="title">
+                                <title>Vendor Ranking</title>
+                                <action>logicbroker/adminhtml_ranking</action>
+                                <sort_order>12</sort_order>
+                            </vendor_ranking>
+                            <order_sourcing translate="title">
+                                <title>Order Sourcing</title>
+                                <action>logicbroker/adminhtml_sourcing/sourcinggrid</action>
+                                <sort_order>13</sort_order>
+                            </order_sourcing>
+                             <logicbroker_integration translate="title">
+                                <title>General Information</title>
+                                <action>adminhtml/system_config/edit/section/logicbroker_integration</action>
+                                <sort_order>14</sort_order>
+                            </logicbroker_integration>
+                            <lb_sourcing translate="title">
+                                <title>Sourcing Configuration</title>
+                                <action>adminhtml/system_config/edit/section/logicbroker_sourcing</action>
+                                <sort_order>15</sort_order>
+                            </lb_sourcing>
+                            <lb_sourcing_cron translate="title">
+                                <title>Sourcing Schedule (Cron Jobs)</title>
+                                <action>adminhtml/system_config/edit/section/logicbroker_cron</action>
+                                <sort_order>16</sort_order>
+                            </lb_sourcing_cron>
+                            <upload_vendor_product translate="title">
+                                <title>Upload Vendor Product</title>
+                                <action>logicbroker/adminhtml_upload/index</action>
+                                <sort_order>17</sort_order>
+                            </upload_vendor_product>
+                        </children>
+                    </logicbroker>
+                </menu>
+	</config>

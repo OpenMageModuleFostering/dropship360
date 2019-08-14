@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    Mage
+ * @package     Mage_Catalog
+ * @copyright   Copyright (c) 2013 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+-->
+<config>
+    <api2>
+        <resource_groups>
+            <logicbroker translate="title" module="api2">
+                <title>Logicbroker</title>
+                <sort_order>30</sort_order>
+                <children>
+                    <product_import translate="title" module="api2">
+                        <title>Catalog</title>
+                        <sort_order>50</sort_order>
+                    </product_import>
+                    <inventory_import translate="title" module="api2">
+                        <title>Inventory</title>
+                        <sort_order>51</sort_order>
+                    </inventory_import>
+                </children>
+            </logicbroker>
+        </resource_groups>
+        <resources>
+            <import translate="title" module="api2">
+                <group>product_import</group>
+                <model>logicbroker/api2_product</model>
+                <working_model>catalog/product</working_model>
+                <title>Catalog Import</title>
+                <sort_order>10</sort_order>
+                <privileges>
+                    <admin>
+                        <create>1</create>
+                    </admin>
+                    <guest>
+                        <create>1</create>
+                    </guest>
+                </privileges>
+                <attributes translate="entity_id type_id attribute_set_id stock_data image_url is_saleable total_reviews_count url buy_now_url has_custom_options is_in_stock regular_price_with_tax regular_price_without_tax final_price_with_tax final_price_without_tax use_config_gift_message_available use_config_gift_wrapping_available url_key_create_redirect" module="api2">
+                    <entity_id>Product ID</entity_id>
+                </attributes>
+                <entity_only_attributes>
+                    <customer>
+                        <read>
+                            <has_custom_options>1</has_custom_options>
+                        </read>
+                    </customer>
+                    <guest>
+                        <read>
+                            <has_custom_options>1</has_custom_options>
+                            <tier_price>1</tier_price>
+                            <total_reviews_count>1</total_reviews_count>
+                            <url>1</url>
+                            <buy_now_url>1</buy_now_url>
+                            <has_custom_options>1</has_custom_options>
+                            <is_in_stock>1</is_in_stock>
+                        </read>
+                    </guest>
+                </entity_only_attributes>
+                <exclude_attributes>
+                    <customer>
+                        <read>
+                            <attribute_set_id>1</attribute_set_id>
+                        </read>
+                    </customer>
+                    <guest>
+                        <read>
+                            <attribute_set_id>1</attribute_set_id>
+                        </read>
+                    </guest>
+                    <admin>
+                        <read>
+                            <allow_open_amount>1</allow_open_amount>
+                        </read>
+                        <write>
+                            <allow_open_amount>1</allow_open_amount>
+                        </write>
+                    </admin>
+                </exclude_attributes>
+                <routes>
+                    <route_entity>
+                        <route>/productsimport/:id</route>
+                        <action_type>collection</action_type>
+                    </route_entity>
+                    <route_collection>
+                        <route>/productsimport</route>
+                        <action_type>collection</action_type>
+                    </route_collection>
+ 
+                </routes>
+                <versions>1</versions>
+            </import>
+            <inventory_import translate="title" module="api2">
+                <group>inventory_import</group>
+                <model>logicbroker/api2_inventory</model>
+                <working_model>logicbroker/inventory</working_model>
+                <title>Inventory Import</title>
+                <sort_order>10</sort_order>
+                <privileges>
+                    <admin>
+                        <create>1</create>
+                    </admin>
+                    <guest>
+                        <create>1</create>
+                    </guest>
+                </privileges>
+                <attributes translate="entity_id type_id attribute_set_id stock_data image_url is_saleable total_reviews_count url buy_now_url has_custom_options is_in_stock regular_price_with_tax regular_price_without_tax final_price_with_tax final_price_without_tax use_config_gift_message_available use_config_gift_wrapping_available url_key_create_redirect" module="api2">
+                    <id>id</id>
+                </attributes>
+                <entity_only_attributes>
+                    <customer>
+                        <read>
+                            <has_custom_options>1</has_custom_options>
+                        </read>
+                    </customer>
+                    <guest>
+                        <read>
+                            <has_custom_options>1</has_custom_options>
+                            <tier_price>1</tier_price>
+                            <total_reviews_count>1</total_reviews_count>
+                            <url>1</url>
+                            <buy_now_url>1</buy_now_url>
+                            <has_custom_options>1</has_custom_options>
+                            <is_in_stock>1</is_in_stock>
+                        </read>
+                    </guest>
+                </entity_only_attributes>
+                <exclude_attributes>
+                    <customer>
+                        <read>
+                            <attribute_set_id>1</attribute_set_id>
+                        </read>
+                    </customer>
+                    <guest>
+                        <read>
+                            <attribute_set_id>1</attribute_set_id>
+                        </read>
+                    </guest>
+                    <admin>
+                        <read>
+                            <allow_open_amount>1</allow_open_amount>
+                        </read>
+                        <write>
+                            <allow_open_amount>1</allow_open_amount>
+                        </write>
+                    </admin>
+                </exclude_attributes>
+                <routes>
+                    <route_entity>
+                        <route>/inventoryimport/:id</route>
+                        <action_type>collection</action_type>
+                    </route_entity>
+                    <route_collection>
+                        <route>/inventoryimport</route>
+                        <action_type>collection</action_type>
+                    </route_collection>
+ 
+                </routes>
+                <versions>1</versions>
+            </inventory_import>
+         </resources>
+    </api2>
+</config>

@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+   
+   <default>
+   		<reference name="notifications">
+            <block type="logicbroker/adminhtml_notification" name="logicbrokernotification" as="logicbrokernotification" template="logicbroker/window.phtml" />
+        </reference>
+    </default>
+    <logicbroker_adminhtml_logicbroker_index>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_logicbroker" name="logicbroker" />
+        </reference>
+    </logicbroker_adminhtml_logicbroker_index>
+    
+    <logicbroker_adminhtml_sourcing_sourcinggrid>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_sourcing" name="logicbroker" />
+        </reference>
+    </logicbroker_adminhtml_sourcing_sourcinggrid>
+    
+    <logicbroker_adminhtml_ranking_index>
+         <reference name="head">
+         	 <action method="addItem"><type>js_css</type><name>prototype/windows/themes/default.css</name></action>
+        	<action method="addItem"><type>css</type><name>prototype/windows/themes/magento.css</name></action>
+        	<action method="addItem"><type>js</type><name>logicbroker/extjs/ext-all.js</name></action>
+        	<action method="addItem"><type>js_css</type><name>logicbroker/extjs/css/ext-all.css</name></action>
+        	<!-- action method="addItem"><type>js_css</type><name>logicbroker/extjs/css/example.css</name></action>
+        	<action method="addItem"><type>js</type><name>logicbroker/extjs/examples.js</name></action-->
+        	<!--action method="addItem"><type>js</type><name>logicbroker/jquery/jquery.min.js</name></action>
+            <action method="addItem"><type>js</type><name>logicbroker/ranking.js</name></action-->
+          </reference>
+          <reference name="js">
+            <block type="core/template" template="logicbroker/inline-edit.phtml" />
+        </reference>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_ranking" name="ranking" />
+        </reference>
+    </logicbroker_adminhtml_ranking_index>
+	
+    <logicbroker_adminhtml_inventory_index>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_inventory" name="inventory" />
+        </reference>
+    </logicbroker_adminhtml_inventory_index>
+    
+    <logicbroker_adminhtml_inventory_vendors>
+        <reference name="content">
+            <block type="core/text_list" name="root" output="toHtml" >
+            <block type="logicbroker/adminhtml_inventory_edit_tab_lbvendor" name="vendors_product_tab" template="logicbroker/vendorproducttab.phtml"/>
+            </block>
+        </reference>
+    </logicbroker_adminhtml_inventory_vendors>
+	
+    <logicbroker_adminhtml_inventory_vendorshistory>
+        <reference name="content">
+            <block type="core/text_list" name="root" output="toHtml" >
+            <block type="logicbroker/adminhtml_inventory_edit_tab_vendortabhistory" name="vendors_product_tab_history" template="logicbroker/vendorproducttabhistory.phtml"/>
+            </block>
+        </reference>
+    </logicbroker_adminhtml_inventory_vendorshistory>
+    
+    <logicbroker_adminhtml_upload_vendorsuploadhistory>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_Vendorproductuploadhistory" name="vendors_product_upload_history" template="logicbroker/vendor_upload_product_history.phtml"/>
+        </reference>
+    </logicbroker_adminhtml_upload_vendorsuploadhistory>
+    
+    <logicbroker_adminhtml_ranking_popup>
+          <remove name="right"/>
+        <remove name="left"/>
+        <remove name="core_profiler"/>
+        <block type="core/template" name="root" output="toHtml" template="logicbroker/popup.phtml"/>
+    </logicbroker_adminhtml_ranking_popup>
+	
+    <logicbroker_adminhtml_ranking_showhistory>
+         <reference name="content">
+            <block type="logicbroker/adminhtml_showhistory" name="showhistory" template="logicbroker/result.phtml"/>
+        </reference>
+    </logicbroker_adminhtml_ranking_showhistory>
+	
+	<logicbroker_adminhtml_upload_index>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_upload" name="upload" />
+        </reference>
+    </logicbroker_adminhtml_upload_index>
+	
+	 <adminhtml_sales_order_view>
+	  <reference name="order_items"> 
+	  		<action method="setTemplate">
+            	<template>logicbroker/sales/items.phtml</template>
+            </action>	
+            <action method="addItemRender">
+            	<type>default</type>
+            	<block>adminhtml/sales_order_view_items_renderer_default</block>
+            	<template>logicbroker/sales/default.phtml</template>
+            </action>
+            <action method="addItemRender">
+	            <type>bundle</type>
+	            <block>bundle/adminhtml_sales_order_view_items_renderer</block>
+	            <template>logicbroker/bundle/renderer.phtml</template>
+            </action>
+            <action method="addItemRender">
+	            <type>downloadable</type>
+	            <block>adminhtml/sales_order_view_items_renderer_default</block>
+	            <template>logicbroker/downloadable/downloadable.phtml</template>
+            </action>
+      </reference> 	 
+	</adminhtml_sales_order_view>
+    
+    <adminhtml_catalog_product_edit>
+        <reference name="product_tabs">
+			<block type="logicbroker/adminhtml_inventory_edit_vendortab" name="vendor_tab"/>
+				<action method="addTab">
+					<name>vendor_tab</name>
+					<block>vendor_tab</block>
+				</action>
+				<block type="logicbroker/adminhtml_inventory_edit_vendortabhistory" name="vendor_tab_history"/>
+				<action method="addTab">
+					<name>vendor_tab_history</name>
+					<block>vendor_tab_history</block>
+				</action>
+        </reference>
+    </adminhtml_catalog_product_edit>
+</layout>

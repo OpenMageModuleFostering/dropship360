@@ -1,0 +1,55 @@
+<?php //$collection = $this->getLogCollection(); //echo '<pre>'; print_r($collection); die(); ?>
+
+<div class="content-header">
+    <table cellspacing="0">
+        <tr>
+            <td style="<?php echo $this->getHeaderWidth() ?>"><?php echo $this->getHeaderHtml() ?></td>
+            <td class="form-buttons"><?php echo $this->getButtonsHtml() ?></td>
+        </tr>
+    </table>
+</div>
+<div class="grid">
+
+   <div class="entry-edit">
+    <?php if(count($this->getLogCollection()) > 0 ): ?>
+    <fieldset>
+        <ul class="note-list">
+        <?php $i = 0 ?>
+        <?php foreach ($this->getLogCollection() as $_item): ?>
+        
+            <li>
+            <strong><?php echo $_item['lb_vendor_code'] ?></strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item['updated_by'] ?></strong>
+            <span class="separator">|</span>
+            
+            <strong><?php echo $_item['success'] ?> successfully updates</strong>
+            <span class="separator">|</span>
+            <strong><?php echo $_item['failure'] ?> failed updates</strong>
+            <?php if(!empty($_item['ftp_error'])): ?>
+            <a href="#" onmouseout = " setTimeout(function(){$('simplediv<?php echo $i ?>').hide();return false;},200); " onmouseover="$('simplediv<?php echo $i ?>').show();return false;"><strong><?php echo $_item['ftp_error'] ?> </strong></a>
+            <div id="simplediv<?php echo $i ?>" style="background-color:none;border:1px solid black;display:none;width:500px;height:auto;word-wrap: break-word;padding:3px"><?php echo $_item['ftp_error_desc'] ?></div>
+            <?php endif; ?>
+            <span class="separator">|</span>
+			<strong> <?php echo $this->formatDate($_item['created_at'], 'medium', true); ?></strong>
+            </li>
+           <?php $i++ ?> 
+        <?php endforeach; ?>
+        </ul>
+    </fieldset>
+    <?php else :?>
+        <h2>No Data Found</h2>
+        <?php endif; ?>
+</div> 
+   
+   
+</div>
+
+<script type="text/javascript">
+function popup()
+{
+		
+}
+</script>
+
+
