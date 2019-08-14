@@ -7,10 +7,9 @@
 @-->
 
 {{if templatevar.isnewreg}}
-A new user has installed Extension on following URL -: {{store url=""}}
+A new user has installed dropship360 Extension on following URL -: {{store url=""}}
 {{else}}
-    Please find the excel sheet in attachment customer details are given below -:<br> Name : {{var templatevar.firstname}} <span>{{var templatevar.lastname}}
-</span> <br> Email : {{var templatevar.email}}
+ {{var templatevar.emailbody}}
 {{/if}}
 
 

@@ -1,12 +1,17 @@
 <?php
- 
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */ 
 $installer = $this;
  
 $installer->startSetup();
 
 $installer->run("
 
-CREATE TABLE IF NOT EXISTS {$this->getTable('logicbroker_vendor_inventory_log')} (
+CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/inventorylog')} (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lb_vendor_code` varchar(50) NOT NULL,
   `lb_vendor_name` varchar(50) NOT NULL,
@@ -20,7 +25,7 @@ CREATE TABLE IF NOT EXISTS {$this->getTable('logicbroker_vendor_inventory_log')}
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
 
-CREATE TABLE IF NOT EXISTS {$this->getTable('logicbroker_vendor_product_import')} (
+CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/uploadvendor')} (
   `file_id` int(11) NOT NULL AUTO_INCREMENT,
   `file_name` varchar(50) NOT NULL,
   `import_status` enum('pending','done','processing') NOT NULL DEFAULT 'pending',
@@ -32,8 +37,8 @@ CREATE TABLE IF NOT EXISTS {$this->getTable('logicbroker_vendor_product_import')
   KEY `import_status` (`import_status`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
 
-DROP TABLE IF EXISTS {$this->getTable('logicbroker_vendor_product_import_log')};
-CREATE TABLE IF NOT EXISTS {$this->getTable('logicbroker_vendor_product_import_log')} (
+DROP TABLE IF EXISTS {$installer->getTable('logicbroker/vendor_import_log')};
+CREATE TABLE IF NOT EXISTS {$installer->getTable('logicbroker/vendor_import_log')} (
   `lb_vendor_code` varchar(50) NOT NULL,
   `updated_by` text NOT NULL,
   `success` int(11) NOT NULL,
@@ -44,13 +49,7 @@ CREATE TABLE IF NOT EXISTS {$this->getTable('logicbroker_vendor_product_import_l
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=0 ;
 ");
 
-$installer->run("ALTER TABLE  {$this->getTable('logicbroker_vendor_inventory_log')} CHANGE  `cost`  `cost` VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
-CHANGE  `stock`  `stock` VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ,
-CHANGE  `activity`  `activity` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL");
-//$installer->run("ALTER TABLE {$this->getTable('logicbroker_vendor_product_import_log')} ADD `ftp_error` text");
-
-//$installer->run("ALTER TABLE {$this->getTable('logicbroker_vendor_product_import_log')} ADD `ftp_error_desc` text");
-
-
-
+$installer->getConnection()->modifyColumn($installer->getTable('logicbroker/inventorylog'),'cost', 'VARCHAR( 50 ) DEFAULT NULL');
+$installer->getConnection()->modifyColumn($installer->getTable('logicbroker/inventorylog'),'stock', 'VARCHAR( 50 ) DEFAULT NULL');
+$installer->getConnection()->modifyColumn($installer->getTable('logicbroker/inventorylog'),'activity', 'VARCHAR( 255 ) DEFAULT NULL');
 $installer->endSetup();

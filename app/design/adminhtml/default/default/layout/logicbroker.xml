@@ -10,11 +10,17 @@
         <reference name="content">
             <block type="logicbroker/adminhtml_logicbroker" name="logicbroker" />
         </reference>
+       <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
+        </reference>
     </logicbroker_adminhtml_logicbroker_index>
     
     <logicbroker_adminhtml_sourcing_sourcinggrid>
         <reference name="content">
             <block type="logicbroker/adminhtml_sourcing" name="logicbroker" />
+        </reference>
+      <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
         </reference>
     </logicbroker_adminhtml_sourcing_sourcinggrid>
     
@@ -24,22 +30,27 @@
         	<action method="addItem"><type>css</type><name>prototype/windows/themes/magento.css</name></action>
         	<action method="addItem"><type>js</type><name>logicbroker/extjs/ext-all.js</name></action>
         	<action method="addItem"><type>js_css</type><name>logicbroker/extjs/css/ext-all.css</name></action>
-        	<!-- action method="addItem"><type>js_css</type><name>logicbroker/extjs/css/example.css</name></action>
-        	<action method="addItem"><type>js</type><name>logicbroker/extjs/examples.js</name></action-->
-        	<!--action method="addItem"><type>js</type><name>logicbroker/jquery/jquery.min.js</name></action>
-            <action method="addItem"><type>js</type><name>logicbroker/ranking.js</name></action-->
           </reference>
           <reference name="js">
             <block type="core/template" template="logicbroker/inline-edit.phtml" />
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
         </reference>
         <reference name="content">
-            <block type="logicbroker/adminhtml_ranking" name="ranking" />
+            <block type="logicbroker/adminhtml_ranking" name="ranking">
+            	 <block type="logicbroker/adminhtml_upload" name="upload" as = "supplier.upload" template = "logicbroker/upload_vendor_product.phtml">
+            	 	 <action method="setHeaderText"><value>Setup Supplier Products</value></action>
+            	 	 <action method="setProductSetupMode"><value>true</value></action>
+            	 </block>
+            </block>
         </reference>
     </logicbroker_adminhtml_ranking_index>
 	
     <logicbroker_adminhtml_inventory_index>
         <reference name="content">
             <block type="logicbroker/adminhtml_inventory" name="inventory" />
+        </reference>
+        <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
         </reference>
     </logicbroker_adminhtml_inventory_index>
     
@@ -63,6 +74,9 @@
         <reference name="content">
             <block type="logicbroker/adminhtml_Vendorproductuploadhistory" name="vendors_product_upload_history" template="logicbroker/vendor_upload_product_history.phtml"/>
         </reference>
+        <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
+        </reference>
     </logicbroker_adminhtml_upload_vendorsuploadhistory>
     
     <logicbroker_adminhtml_ranking_popup>
@@ -76,13 +90,35 @@
          <reference name="content">
             <block type="logicbroker/adminhtml_showhistory" name="showhistory" template="logicbroker/result.phtml"/>
         </reference>
+        <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
+        </reference>
     </logicbroker_adminhtml_ranking_showhistory>
 	
 	<logicbroker_adminhtml_upload_index>
         <reference name="content">
-            <block type="logicbroker/adminhtml_upload" name="upload" />
+            <block type="logicbroker/adminhtml_upload" name="upload" template = "logicbroker/upload_vendor_product.phtml">
+            	 <block type="logicbroker/adminhtml_inventory" name="inventory" />
+            	  <action method="setHeaderText"><value>Supplier Inventory</value></action>
+            </block>
+        </reference>
+        <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
         </reference>
     </logicbroker_adminhtml_upload_index>
+    <logicbroker_adminhtml_upload_run>
+        <remove name="root"/>
+        <block type="adminhtml/page" name="convert_root" output="toHtml" template="page.phtml">
+            <block type="adminhtml/page_head" name="convert_root_head" as="head" template="page/head.phtml">
+                <action method="addJs"><script>prototype/prototype.js</script></action>
+                <action method="addJs"><script>prototype/validation.js</script></action>
+                <action method="addJs"><script>varien/js.js</script></action>
+                <action method="addJs"><script>mage/translate.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/tools.js</script></action>
+            </block>
+            <block type="logicbroker/adminhtml_upload_bulkassign" name="logicbroker_bulkassign" template="logicbroker/process-profile.phtml" output="toHtml"/>
+        </block>
+    </logicbroker_adminhtml_upload_run>
 	
 	 <adminhtml_sales_order_view>
 	  <reference name="order_items"> 
@@ -121,4 +157,15 @@
 				</action>
         </reference>
     </adminhtml_catalog_product_edit>
+    <logicbroker_adminhtml_report_activitymonitor>
+        <update handle="report_sales"/>
+        <reference name="content">
+            <block type="logicbroker/adminhtml_reports_activitymonitor" template="logicbroker/reports/grid/container.phtml" name="report.activitymonitor">
+              <block type="logicbroker/adminhtml_reports_activitymonitor_form" name="report.activitymonitor.form"/>
+            </block>
+        </reference>
+        <reference name="js">
+            <block type="core/template" template="logicbroker/add_help_js.phtml"/>
+        </reference>
+    </logicbroker_adminhtml_report_activitymonitor>
 </layout>

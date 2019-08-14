@@ -1,3 +1,11 @@
+<?php 
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */
+?>
 <?php $dropshipVendorCollection = $this->getVendorCollection('yes'); ?>
 <?php $nonDropshipVendorCollection = $this->getVendorCollection('no'); ?>
 <style type="text/css">
@@ -13,11 +21,16 @@
     </table>
 </div>
 <?php if(Mage::getStoreConfig('logicbroker_sourcing/rank/ranktype') == 'cost'): ?>
-<div id="warning-message"><ul class="messages"><li class="warning-msg"><ul><li><span>Cost Based sourcing rule is currently selected. Vendor ranking will only take effect when Rank Based sourcing rule is selected in the Sourcing Configuration page.</span></li></ul></li></ul></div>
+<div id="warning-message"><ul class="messages"><li class="warning-msg"><ul><li><span>Cost Based sourcing rule is currently selected. Supplier ranking will only take effect when Rank Based sourcing rule is selected in the Sourcing Configuration page.</span></li></ul></li></ul></div>
 <?php endif; ?>
-<div id="notice-message"><ul class="messages"><li class="notice-msg"><ul><li><span>To remove a Active Vendor from dropship360 sourcing rule, drag it to the Non Active Vendor section on the right. To activate that vendor again, simply drag it back to the Active Vendor section.</span></li></ul></li></ul></div>
+<div id="notice-message"><ul class="messages"><li class="notice-msg"><ul><li><span>To remove an Active Supplier from dropship360 Sourcing Rule, drag it to the Non Active Suppliers/Warehouses section on the right. To activate that Supplier again, simply drag it back to the Active Suppliers/Warehouses section.</span></li></ul></li></ul></div>
+<div id="notice-message"><ul class="messages"><li class="notice-msg"><ul><li><span>You will need to create your Supplier/Warehouse in the logicbroker portal first. For details go to <a href="<?php echo $this->getUrl('adminhtml/system_config/edit/section/logicbroker_integration') ?>">Getting Started</a>  and refer to Step 3.</span></li></ul></li></ul></div>
 <div id="message"><ul class="messages"><li class="error-msg"><ul><li><span>You Have Unsubmitted Changes.</span></li></ul></li></ul></div>
 <div id="panel"></div>
+<div class="clear"></div>
+<div>
+    <?php echo $this->getChildHtml('supplier.upload') ?>
+</div>
 <script type="text/javascript">
 var arrVendorName = [];
 var arrDropship = <?php echo $dropshipVendorCollection['arrayData'] ?>;
@@ -36,21 +49,7 @@ Ext.define('DataObject', {
     fields: ['name', 'code']
 });
 
-Ext.onReady(function(){
-
-    /*var myData = [
-        { name : "Rec 0", column1 : "0", column2 : "0" },
-        { name : "Rec 1", column1 : "1", column2 : "1" },
-        { name : "Rec 2", column1 : "2", column2 : "2" },
-        { name : "Rec 3", column1 : "3", column2 : "3" },
-        { name : "Rec 4", column1 : "4", column2 : "4" },
-        { name : "Rec 5", column1 : "5", column2 : "5" },
-        { name : "Rec 6", column1 : "6", column2 : "6" },
-        { name : "Rec 7", column1 : "7", column2 : "7" },
-        { name : "Rec 8", column1 : "8", column2 : "8" },
-        { name : "Rec 9", column1 : "9", column2 : "9" }
-    ];*/
-	
+Ext.onReady(function(){	
 	var dropShipData = <?php echo $dropshipVendorCollection['gridData'] ?>
     // create the data store
     var firstGridStore = Ext.create('Ext.data.Store', {
@@ -62,20 +61,19 @@ Ext.onReady(function(){
     // Column Model shortcut array
     var columns1 = [
 		Ext.create('Ext.grid.RowNumberer',{dataIndex:'id',xtype: 'rownumberer',text:'Ranking',align: 'right',width:50}),
-		{text: "Vendor Name", flex: 1,hideable:false, sortable: false, dataIndex: 'name',editor : {
+		{text: "Supplier Name", flex: 1,hideable:false, sortable: false, dataIndex: 'name',editor : {
                     xtype: 'textfield',
                     allowBlank:false
                 }},
-		{text: "Vendor Code", flex: 1,hidden:false,hideable:false,sortable: false, dataIndex: 'code'}
+		{text: "Supplier Code", flex: 1,hidden:false,hideable:false,sortable: false, dataIndex: 'code'}
     ];
 
     var columns2 = [
-            		//Ext.create('Ext.grid.RowNumberer',{dataIndex:'id',text:'ID'}),
-                    {text: "Vendor Name", flex: 1,sortable: false,hideable:false, dataIndex: 'name',editor : {
+                    {text: "Supplier Name", flex: 1,sortable: false,hideable:false, dataIndex: 'name',editor : {
                     xtype: 'textfield',
                     allowBlank:false
                 }},
-				{text: "Vendor Code", flex: 1,hidden:false,hideable:false,dataIndex: 'code',sortable: false}
+				{text: "Supplier Code", flex: 1,hidden:false,hideable:false,dataIndex: 'code',sortable: false}
                 ];
             	
      // create the destination Grid
@@ -88,12 +86,9 @@ Ext.onReady(function(){
         viewConfig: {
             plugins: {
                 ptype: 'gridviewdragdrop',
-                //dragGroup: 'firstGridDDGroup',
-                //dropGroup: 'secondGridDDGroup'
             },
             listeners: {
                 drop: function(node, data, dropRec, dropPosition) {
-                    //var dropOn = dropRec ? ' ' + dropPosition + ' ' + dropRec.get('name') : ' on empty view';
 					var dropName = dropRec ? dropRec.get('code') : '';
 					var id = 1;
 					
@@ -104,10 +99,8 @@ Ext.onReady(function(){
 					
 						if(item.code == data.records[0].get('code')){
 						arrDropship.splice(index,1);
-							//console.log(arrDropship);
 						}
 					})
-					//console.log($$('.x-grid-cell-row-numberer .x-grid-cell-inner '));
 					if(dropPosition === 'undefined' || dropName == '')
                     {
 					
@@ -120,11 +113,8 @@ Ext.onReady(function(){
 					
 						if(item.code == dropName){
 						firstindexLoc = index
-							//console.log(arrDropship);
 						}
 					})
-						
-						//var indexLoc = arrDropship.indexOf(dropName);
 						if(dropPosition == 'after')
 						{
 							
@@ -145,26 +135,22 @@ Ext.onReady(function(){
 					
 						if(item.code == data.records[0].get('code')){
 						fristIndextemp = index
-							//console.log(arrDropship);
 						}
 					})
-					//var index = arrNonDropship.indexOf(data.records[0].get('name'));
 					if (arrNonDropship.length > 0 && fristIndextemp > -1) {
 							arrNonDropship.splice(fristIndextemp, 1);
 						}
 					$('message').show();
-						//console.log(arrDropship);
-                    //Ext.example.msg("Drag from right to left", 'Dropped ' + data.records[0].get('name') + dropOn);
                 }
             }
         },
         store            : firstGridStore,
         columns          : columns1,
         stripeRows       : true,
-        title            : 'Active Vendor',
+        title            : 'Active Suppliers/Warehouses',
         margins          : '0 2 0 0',
 		tbar: [{
-            text: 'Add Vendor',
+            text: 'Add Active Suppliers/Warehouses',
 			xtype: 'button',
             iconCls: 'vendor-add',
 			handler : function() {
@@ -172,10 +158,9 @@ Ext.onReady(function(){
 
                 // Create a model instance
                 var r = Ext.create('DataObject', {
-                    name: 'New Vendor',
+                    name: 'New Supplier',
                     code: 'temp_lb_vendor_code',
 				});
-				//addNew++;
 				var rowNumber = ($$('.x-grid-cell-row-numberer .x-grid-cell-inner ').length);
                 firstGridStore.insert(rowNumber, r);
                 rowEditing.startEdit(rowNumber, 0);
@@ -186,16 +171,12 @@ Ext.onReady(function(){
 		plugins: [rowEditing],
         listeners: {
                 edit: function(e, editor) {
-				
-                        //console.log(editor.record);
 						var isAvailable;
 						var isNew = false;
 						var rowObject = editor.row.getElementsByClassName('x-grid-cell-inner');
 						if(rowObject[2].innerHTML.match(/temp_lb_vendor_code/g)){
 						var tempClass = editor.row.getElementsByClassName('x-grid-cell')[0].className 
 						editor.row.getElementsByClassName('x-grid-cell')[0].className = tempClass+' x-grid-dirty-cell'; 
-						//editor.record.dirty = true;
-						//secondGrid.setLoading();
 						firstGrid.setLoading();
 						Ext.Ajax.request({
 									url: '<?php echo Mage::getSingleton('adminhtml/url')->getUrl('*/*/addNewVendor') ?>',
@@ -207,15 +188,12 @@ Ext.onReady(function(){
 											// Great, commit the record to hide the red changed flags
 											editor.record.set('code',msg_server.message);
 											editor.record.commit();
-											//secondGrid.getView().refresh();
 											firstGrid.getView().refresh();
 											firstGrid.setLoading(false);
-											//secondGrid.setLoading(false);
 											arrDropship.push({name:editor.record.data['name'],code:msg_server.message});
 											isNew = true;
-											Ext.Msg.alert('Vendor '+editor.record.data['name']+' Add Successfuly');
+											Ext.Msg.alert('Supplier '+editor.record.data['name']+' Add Successfuly');
 											$('message').hide();
-											//$('message').show();
 											  } 
 													},
 									failure: function(action){
@@ -235,7 +213,6 @@ Ext.onReady(function(){
 						if(item.code == rowObject[2].innerHTML){
 						isAvailable = true
 						removeIndex = index
-							//console.log(arrDropship);
 						}
 							})
 						}
@@ -309,17 +286,14 @@ Ext.onReady(function(){
 					
 						if(item.code == dropName){
 						indexLoc = index
-							//console.log(arrDropship);
 						}
 					})
 						arrNonDropship.each(function(item,index){
 					
 						if(item.code == data.records[0].get('code')){
 						arrNonDropship.splice(index,1);
-							//console.log(arrDropship);
 						}
 					})
-						//var indexLoc = arrNonDropship.indexOf(dropName);
 						if(dropPosition == 'after')
 						{
 							indexLoc = indexLoc+1;
@@ -339,10 +313,8 @@ Ext.onReady(function(){
 					
 						if(item.code == data.records[0].get('code')){
 						indextemp = index
-							//console.log(arrDropship);
 						}
 					})	
-					//var index = arrDropship.indexOf(data.records[0].get('name'));
 					if (arrDropship.length > 0 && indextemp > -1) {
 							arrDropship.splice(indextemp, 1);
 							$('message').show();
@@ -351,24 +323,19 @@ Ext.onReady(function(){
 							$('message').hide();
 						}
 					
-						//console.log(arrNonDropship);
-                    //Ext.example.msg("Drag from left to right", 'Dropped ' + data.records[0].get('name') + dropOn);
-					
                 }
             }
         },
         store            : secondGridStore,
         columns          : columns2,
         stripeRows       : true,
-        title            : 'Non Active Vendors',
+        title            : 'Non Active Suppliers/Warehouses',
         margins          : '0 0 0 3',
 		plugins: [
             Ext.create('Ext.grid.plugin.RowEditing', {
                 clicksToEdit : 2,
             listeners: {
-                edit: function(editor, e, eOpts) {
-				
-                        //console.log(e.row.getElementsByClassName('x-grid-cell-inner')[2].innerHTML);
+                edit: function(editor, e, eOpts) {				
 						var isAvailable;
 						var rowObject = e.row.getElementsByClassName('x-grid-cell-inner');
 						
@@ -382,7 +349,6 @@ Ext.onReady(function(){
 						if(item.code == rowObject[1].innerHTML){
 						isAvailable = true
 						removeIndex = index
-							//console.log(arrDropship);
 						}
 							})
 						}
@@ -394,7 +360,6 @@ Ext.onReady(function(){
 							arrVendorName.push({name:e.record.data['name'],code:rowObject[1].innerHTML})
 						}
 							$('message').show();}
-						//$('message').show();
 						return;
 						
                 }   

@@ -1,27 +1,9 @@
 <?php
 /**
- * Magento
+ * Logicbroker
  *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
- * @category    design
- * @package     default_default
- * @copyright   Copyright (c) 2013 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * @category    Community
+ * @package     Logicbroker_Dropship360
  */
 ?>
 
@@ -39,6 +21,9 @@
             }]
     ]);
        
+	var enableId = 'logicbroker_sourcing_cron_settings_upload_enabled'; 
+	var buttonId = 'logicbroker_sourcing_cron_settings_upload_ftp_testconnection'; 
+	var buttonObj = $('logicbroker_sourcing_cron_settings_upload_ftp_testconnection');
 	 function checkButtonState(event) {
         var element = Event.element(event);
 
@@ -53,23 +38,23 @@
     }
   
 	function enableSyncButton() {
-        Form.Element.enable('logicbroker_cron_cron_settings_upload_ftp_testconnection');
-        $('logicbroker_cron_cron_settings_upload_ftp_testconnection').removeClassName('disabled');
+        Form.Element.enable(buttonId);
+		buttonObj.removeClassName('disabled');
     }
 
     function disableSyncButton() {
-        Form.Element.disable('logicbroker_cron_cron_settings_upload_ftp_testconnection');
-        $('logicbroker_cron_cron_settings_upload_ftp_testconnection').addClassName('disabled');
+        Form.Element.disable(buttonId);
+        buttonObj.addClassName('disabled');
     }
 
     Event.observe(window, 'load', function(){
         
-        if($('logicbroker_cron_cron_settings_upload_enabled').value != '1'){
+        if($(enableId).value != '1'){
 			disableSyncButton();
 		}
         
     });
-    $('logicbroker_cron_cron_settings_upload_enabled').observe('change', checkButtonState);	
+    $(enableId).observe('change', checkButtonState);	
     function synchronize(id) {
         
         if(!configForm.validate())
@@ -87,25 +72,18 @@
          }
     
     function successFunc(response){
-        
-      //var content = response.responseText;
-      //return alert(content);
       var container = $('messages');
     var content = response.responseText.evalJSON();
-	//console.log(content);
-	//return;
-    //container.update(content);
 	if(content.error)
         {
 		$('messages').show();	
          container.update('<ul class="messages"><li class="error-msg"><ul><li><span>'+content.message+'</span></li></ul></li></ul>')
          container.scrollTo();
-		 $('logicbroker_cron_cron_settings_upload_ftp_testconnection').innerHTML = '<span><spn>Unsuccessful Tested</span></span>'
+		buttonObj.innerHTML = '<span><spn>Unsuccessful Tested</span></span>'
          return;
         }else
 		{
-		 //container.update('<ul class="messages"><li class="success-msg"><ul><li><span>'+content.success+'</span></li></ul></li></ul>')
-         $('logicbroker_cron_cron_settings_upload_ftp_testconnection').innerHTML = '<span><spn>Successfully Tested</span></span>'
+        buttonObj.innerHTML = '<span><spn>Successfully Tested</span></span>'
 		 $('messages').hide();
         }
 	

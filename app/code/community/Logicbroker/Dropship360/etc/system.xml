@@ -8,7 +8,7 @@
   </tabs>
   <sections>
   <logicbroker_integration  translate="label" module="logicbroker">
-      <label>General Information</label>
+      <label>General Setup</label>
       <tab>logicbroker</tab>
       <frontend_type>text</frontend_type>
       <sort_order>40</sort_order>
@@ -17,8 +17,8 @@
       <show_in_store>0</show_in_store>
       <groups>
         <integration translate="label">
-          <label>General Information</label>
-          <page_heading>Vendors</page_heading>
+          <label>Getting Started</label>
+          <page_heading>Suppliers</page_heading>
           <expanded>1</expanded>
           <frontend_type>text</frontend_type>
           <sort_order>10</sort_order>
@@ -30,135 +30,25 @@
                 <frontend_type>hidden</frontend_type>
                </notificationstatus>
                
-               <soapuser translate="label">
-                <label>SOAP User Name</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-               	<disabled>true</disabled>
-                <sort_order>1</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </soapuser>
+            <getstarted translate="label">
                
-              <!--  <apipassword translate="label">
-                <label>API Password</label>
                 <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-               	<disabled>true</disabled>
-                <sort_order>2</sort_order>
+	               <frontend_model>logicbroker/adminhtml_system_config_fieldset_hint</frontend_model>
+	                <sort_order>6</sort_order>
                 <show_in_default>1</show_in_default>
                 <show_in_website>0</show_in_website>
                 <show_in_store>0</show_in_store>
-               </apipassword> -->
+
+             </getstarted>
                
-               <cunsumer_key translate="label">
-                <label>Consumer Key</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-               	<disabled>true</disabled>
-                <sort_order>3</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </cunsumer_key>
                
-               <consumer_secret translate="label">
-                <label>Consumer Secret Key</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-				<sort_order>4</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </consumer_secret>
-               
-              <!--  <access_token translate="label">
-                <label>Access Token</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <comment>From the logicbroker portal - optional if you do not have an account</comment>
-                <sort_order>5</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </access_token>
-               
-               <access_secret translate="label">
-                <label>Access Secret Key</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <sort_order>6</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </access_secret> -->
-              
-               <magento_version translate="label">
-                <label>Magento Version</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <sort_order>7</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </magento_version>
-               
-               <ds360_version translate="label">
-                <label>Dropship 360 Version</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <sort_order>8</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </ds360_version>
-               
-               <store_list translate="label">
-                <label>Store List</label>
-                <frontend_type>multiselect</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <source_model>logicbroker/system_config_source_store</source_model>
-                <sort_order>9</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </store_list>
-                <soap_webservice_url translate="label">
-                <label>SOAP URL</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <sort_order>10</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </soap_webservice_url>
-               <rest_webservice_url translate="label">
-                <label>REST URL</label>
-                <frontend_type>text</frontend_type>
-                <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
-                <sort_order>11</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </rest_webservice_url> 
-               <need_help>
-		          <label>Don't have a logicbroker account yet? </label>
-		          <frontend_type>link</frontend_type>
-		          <frontend_model>logicbroker/adminhtml_system_config_singuplink</frontend_model>
-		          <href>http://help.logicbroker.com/dropship360</href>
-		          <sort_order>31</sort_order>
-		          <show_in_default>1</show_in_default>
-		          <show_in_website>0</show_in_website>
-		          <show_in_store>0</show_in_store>
-	          </need_help>
             </fields>
         </integration>
       </groups>
     </logicbroker_integration>
     
     <logicbroker_sourcing  translate="label" module="logicbroker">
-      <label>Sourcing Configuration</label>
+      <label>Configuration/Setup</label>
       <tab>logicbroker</tab>
       <frontend_type>text</frontend_type>
       <sort_order>42</sort_order>
@@ -166,35 +56,13 @@
       <show_in_website>0</show_in_website>
       <show_in_store>0</show_in_store>
       <groups>
-        <product translate="label">
-          <label>Product Import</label>
-          <page_heading>Sourcing</page_heading>
-          <expanded>1</expanded>
-          <frontend_type>text</frontend_type>
-          <sort_order>10</sort_order>
-          <show_in_default>1</show_in_default>
-          <show_in_website>0</show_in_website>
-          <show_in_store>0</show_in_store>
-          <fields>
-           <category translate="label">
-                <label>Categories</label>
-                <frontend_type>select</frontend_type>
-                <comment>Default Category In Which New Product Assigned</comment>
-                <source_model>logicbroker/system_config_source_category</source_model>
-                <sort_order>0</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-               </category>
-            </fields>
   
-        </product>
         <rank translate="label">
           <label>Sourcing Logic</label>
           <page_heading>Sourcing</page_heading>
           <expanded>1</expanded>
           <frontend_type>text</frontend_type>
-          <sort_order>11</sort_order>
+          <sort_order>1</sort_order>
           <show_in_default>1</show_in_default>
           <show_in_website>0</show_in_website>
           <show_in_store>0</show_in_store>
@@ -203,7 +71,6 @@
                 <label>Sourcing Rule</label>
                 <frontend_type>select</frontend_type>
                 <source_model>logicbroker/system_config_source_ranktype</source_model>
-                <!-- <comment>Select Rule for Assigning Vendor In Souring</comment> -->
                 <sort_order>0</sort_order>
                 <show_in_default>1</show_in_default>
                 <show_in_website>0</show_in_website>
@@ -211,16 +78,27 @@
                 
             </ranktype>
             <defaultbackorder translate="label">
-                <label>Default Vendor</label>
+                <label>Default Supplier</label>
                 <frontend_type>select</frontend_type>
                 <source_model>logicbroker/system_config_source_vendorlist</source_model>
-                <comment>Selected vendor will override the backorder logic.</comment>
+                <comment>Selected Supplier will override the backorder logic.</comment>
                 <sort_order>1</sort_order>
                 <show_in_default>1</show_in_default>
                 <show_in_website>0</show_in_website>
                 <show_in_store>0</show_in_store>
                 
                </defaultbackorder>
+			<email_shipment translate="label">
+                <label>Email customer when tracking is added</label>
+                <frontend_type>select</frontend_type>
+				<source_model>adminhtml/system_config_source_yesno</source_model>
+                <comment>Shipping information will automatically be sent when tracking is added.</comment>
+                <sort_order>2</sort_order>
+                <show_in_default>1</show_in_default>
+                <show_in_website>0</show_in_website>
+                <show_in_store>0</show_in_store>              
+            </email_shipment>
+			   
             </fields>
   
         </rank>
@@ -230,7 +108,7 @@
           <page_heading>Inventory</page_heading>
           <expanded>1</expanded>
           <frontend_type>text</frontend_type>
-          <sort_order>12</sort_order>
+          <sort_order>2</sort_order>
           <show_in_default>1</show_in_default>
           <show_in_website>0</show_in_website>
           <show_in_store>0</show_in_store>
@@ -238,9 +116,8 @@
            <buffer translate="label">
                 <label>Buffer</label>
                 <frontend_type>text</frontend_type>
-                <!-- source_model>logicbroker/system_config_source_ranktype</source_model-->
                 <sort_order>0</sort_order>
-                <comment>Buffer value will be subtracted from each vendor</comment>
+                <comment>Buffer value will be subtracted from each Supplier's inventory</comment>
                 <validate>required-entry validate-digits</validate>
                 <show_in_default>1</show_in_default>
                 <show_in_website>0</show_in_website>
@@ -251,237 +128,41 @@
             </fields>
   
         </inventory>
-        <order translate="label">
-          <label>Order Statuses</label>
-          <page_heading>Order</page_heading>
-          <expanded>1</expanded>
-          <frontend_type>text</frontend_type>
-          <sort_order>13</sort_order>
-          <show_in_default>1</show_in_default>
-          <show_in_website>0</show_in_website>
-          <show_in_store>0</show_in_store>
-          <fields>
-           <begin_sourcing translate="label">
-                <label>Begin Sourcing</label>
-                <frontend_type>select</frontend_type>
-                <source_model>adminhtml/system_config_source_order_status_processing</source_model>
-                <!-- <comment>Which Orders Need to Pick For Sourcing</comment> -->
-                <validate>validate-select</validate>
-                <sort_order>0</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-          </begin_sourcing>
-          <awaiting_transmission>
-          	<label>Awaiting Transmission</label>
-                <frontend_type>select</frontend_type>
-                <source_model>adminhtml/system_config_source_order_status_processing</source_model>
-                <!-- <comment>Which Orders Need to Pick For Sourcing</comment> -->
-                <validate>validate-select</validate>
-                <sort_order>1</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-          </awaiting_transmission>
-          <backorder translate="label">
-                <label>Backorder</label>
-                <frontend_type>select</frontend_type>
-                <source_model>adminhtml/system_config_source_order_status_processing</source_model>
-               <!--  <comment>Which Orders Need to Pick For Sourcing</comment> -->
-                <validate>validate-select</validate>
-                <sort_order>2</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-          </backorder>
-          <!-- <no_dropship translate="label">
-                <label>No Items To Source</label>
-                <frontend_type>select</frontend_type>
-                <source_model>adminhtml/system_config_source_order_status_processing</source_model>
-                <comment>Which Orders Need to Pick For Sourcing</comment>
-                <validate>validate-select</validate>
-                <sort_order>3</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-          </no_dropship> -->
-          <sourcing_complete translate="label">
-                <label>Sourcing Complete</label>
-                <frontend_type>select</frontend_type>
-                <source_model>adminhtml/system_config_source_order_status_processing</source_model>
-                <!-- <comment>Which Orders Need to Pick For Sourcing</comment> -->
-                <validate>validate-select</validate>
-                <sort_order>4</sort_order>
-                <show_in_default>1</show_in_default>
-                <show_in_website>0</show_in_website>
-                <show_in_store>0</show_in_store>
-          </sourcing_complete>  
-            </fields>
   
-        </order>
-        <help translate="label">
-          <label>Help</label>
-          <page_heading>Order</page_heading>
-          <expanded>1</expanded>
-          <sort_order>14</sort_order>
-          <show_in_default>1</show_in_default>
-          <show_in_website>0</show_in_website>
-          <show_in_store>0</show_in_store>
-          <fields>
-          <need_help>
-           <label>Need Help?</label>
-           <text>Visit dropship360 Knowledge Base</text>
-           <frontend_type>link</frontend_type>
-           <frontend_model>logicbroker/adminhtml_system_config_helplink</frontend_model>
-           <href>http://help.logicbroker.com/dropship360</href>
-           <sort_order>31</sort_order>
-           <show_in_default>1</show_in_default>
-           <show_in_website>0</show_in_website>
-           <show_in_store>0</show_in_store>
-          </need_help>
             
-            </fields>
   
-        </help>
-      </groups>
-    </logicbroker_sourcing>
-	<logicbroker_cron module="logicbroker" translate="label">
-            <label>Sourcing Schedule (Cron Jobs)</label>
-            <sort_order>43</sort_order>
-            <show_in_default>1</show_in_default>
-            <show_in_website>1</show_in_website>
-            <show_in_store>1</show_in_store>
-			 <expanded>1</expanded>
-            <tab>logicbroker</tab>
-           <groups>
 			<cron_settings translate="label">
 			  <label>Cron Schedule Tasks</label>
 			  <page_heading>Cron Schedule Tasks</page_heading>
 			   <frontend_type>text</frontend_type>
 			  <expanded>1</expanded>
-			  <sort_order>1</sort_order>
+			  <sort_order>3</sort_order>
 			  <show_in_default>1</show_in_default>
 			  <show_in_website>0</show_in_website>
 			  <show_in_store>0</show_in_store>
 			  <fields>
-				   <!-- <schedule_sourcing translate="label">
-						<label>Sourcing Scheduled after every</label>
-						<frontend_model>logicbroker/adminhtml_system_config_time</frontend_model>
-						<sort_order>0</sort_order>
-						<show_in_default>1</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</schedule_sourcing>
-					<schedule_sourcing_hour translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>0</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</schedule_sourcing_hour>
-					<schedule_sourcing_min translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>1</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</schedule_sourcing_min>
-					<schedule_backorder translate="label">
-						<label>Backorder Scheduled after every</label>
-						<frontend_model>logicbroker/adminhtml_system_config_time</frontend_model>
-						<sort_order>2</sort_order>
-						<show_in_default>1</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</schedule_backorder>
-					<schedule_backorder_hour translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>0</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</schedule_backorder_hour>
-					<schedule_backorder_min translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>1</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</schedule_backorder_min>
-					
-					<sourcing_updated_time translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>3</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</sourcing_updated_time>
-					<backorder_updated_time translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>4</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</backorder_updated_time>
-					<sourcing_status translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>5</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</sourcing_status>		
-					<backorder_status translate="label">
-						<frontend_type>hidden</frontend_type>
-						<sort_order>6</sort_order>
-						<show_in_default>0</show_in_default>
-						<show_in_website>0</show_in_website>
-						<show_in_store>0</show_in_store>
-					</backorder_status> -->
 					<sourcing_time translate="label">
-                            <label>Sourcing Start Time</label>
-                            <!-- <frontend_type>time</frontend_type> -->
+                            <label>Reprocessing Schedule Frequency</label>
                             <frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
+							<backend_model>logicbroker/system_config_backend_sourcing_cronsourcing</backend_model>
                             <sort_order>0</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
-                            <comment>Cron format HH:MM:SS</comment>
-                           <!--  <depends><enabled>1</enabled></depends> -->
+                            <!-- <comment>Hours Minutes</comment> -->
 	              </sourcing_time>
-	              <sourcing_frequency translate="label">
-	                            <label>Sourcing Frequency</label>
-	                            <frontend_type>select</frontend_type>
-	                            <source_model>adminhtml/system_config_source_cron_frequency</source_model>
-	                            <backend_model>logicbroker/system_config_backend_sourcing_cronsourcing</backend_model>
-	                            <sort_order>1</sort_order>
-	                            <show_in_default>1</show_in_default>
-	                            <show_in_website>0</show_in_website>
-	                            <show_in_store>0</show_in_store>
-	                            <!-- <depends><enabled>1</enabled></depends> -->
-	              </sourcing_frequency>
 	              <backorder_time translate="label">
-                            <label>Backorder Start Time</label>
+                            <label>Backorder Schedule Frequency</label>
                              <frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
+							  <backend_model>logicbroker/system_config_backend_sourcing_cronbackorder</backend_model>
                             <sort_order>2</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>0</show_in_website>
                             <show_in_store>0</show_in_store>
-                            <comment>Cron format HH:MM:SS</comment>
-                           <!--  <depends><enabled>1</enabled></depends> -->
+                           <!--  <comment>Hours Minutes</comment> -->
 	              </backorder_time>
-	              <backorder_frequency translate="label">
-	                            <label>Backorder Frequency</label>
-	                            <frontend_type>select</frontend_type>
-	                            <source_model>adminhtml/system_config_source_cron_frequency</source_model>
-	                            <backend_model>logicbroker/system_config_backend_sourcing_cronbackorder</backend_model>
-	                            <sort_order>3</sort_order>
-	                            <show_in_default>1</show_in_default>
-	                            <show_in_website>0</show_in_website>
-	                            <show_in_store>0</show_in_store>
-	                            <!-- <depends><enabled>1</enabled></depends> -->
-	              </backorder_frequency>
 					<dispaly_sourcing_updated_time translate="label">
-					<label>Last Run Date Sourcing</label>
+					<label>Reprocessing Last Run Date</label>
 						<frontend_type>text</frontend_type>
 						 <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
 						<sort_order>7</sort_order>
@@ -490,7 +171,7 @@
 						<show_in_store>0</show_in_store>
 					</dispaly_sourcing_updated_time>
 					<display_backorder_updated_time translate="label">
-					<label>Last Run Date Backorder</label>
+					<label>Backorder Last Run Date</label>
 						<frontend_type>text</frontend_type>
 						 <frontend_model>logicbroker/adminhtml_system_config_submitbutton</frontend_model>
 						<sort_order>8</sort_order>
@@ -502,109 +183,153 @@
 				</fields>
 			</cron_settings>
 			<cron_settings_upload translate="label">
-			  <label>Cron Schedule Tasks For Upload Vendor Using FTP</label>
-			  <page_heading>Cron Schedule Tasks For Upload Vendor</page_heading>
+			  <label>Cron Schedule Tasks For Upload Supplier Using FTP</label>
+			  <page_heading>Cron Schedule Tasks For Upload Supplier</page_heading>
 			   <frontend_type>text</frontend_type>
 			  <expanded>1</expanded>
-			  <sort_order>2</sort_order>
+			  <sort_order>4</sort_order>
 			  <show_in_default>1</show_in_default>
 			  <show_in_website>0</show_in_website>
 			  <show_in_store>0</show_in_store>
 			  <fields>
 			  <enabled translate="label">
-                            <label>Enable Vendor Product Upload</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_yesno</source_model>
-                            <sort_order>10</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
+					<label>Enable Supplier Product Upload</label>
+					<frontend_type>select</frontend_type>
+					<source_model>adminhtml/system_config_source_yesno</source_model>
+					<sort_order>10</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
               </enabled>
               <ftp_accnumber>
-              				<label>Logicbroker Account Number</label>
-                            <frontend_type>text</frontend_type>
-                            <validate>required-entry</validate>
-                            <sort_order>11</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
+					<label>Logicbroker Account Number</label>
+					<frontend_type>text</frontend_type>
+					<validate>required-entry</validate>
+					<sort_order>11</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
               </ftp_accnumber>
               <ftp_site>
-              				<label>Ftp Site</label>
-                            <frontend_type>text</frontend_type>
-                            <validate>required-entry</validate>
-                            <sort_order>11</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
+					<label>Ftp Site</label>
+					<frontend_type>text</frontend_type>
+					<validate>required-entry</validate>
+					<sort_order>11</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
               </ftp_site>
               <ftp_username>
-            			    <label>Ftp Username</label>
-                            <frontend_type>text</frontend_type>
-                            <validate>required-entry</validate>
-                            <sort_order>12</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
+					<label>Ftp Username</label>
+					<frontend_type>text</frontend_type>
+					<validate>required-entry</validate>
+					<sort_order>12</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
               </ftp_username>
               <ftp_password>
-              				<label>Ftp Password</label>
-                            <frontend_type>password</frontend_type>
-                            <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
-                            <validate>required-entry</validate>
-                            <sort_order>13</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
+					<label>Ftp Password</label>
+					<frontend_type>password</frontend_type>
+					<backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+					<validate>required-entry</validate>
+					<sort_order>13</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
               </ftp_password>
               <ftp_type>
-              				<label>Ftp Type</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>logicbroker/system_config_source_ftptype</source_model>
-                            <validate>required-entry</validate>
-                            <sort_order>14</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
+					<label>Ftp Type</label>
+					<frontend_type>select</frontend_type>
+					<source_model>logicbroker/system_config_source_ftptype</source_model>
+					<validate>required-entry</validate>
+					<sort_order>14</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
               </ftp_type>
               <ftp_testconnection>
-              				 <frontend_type>button</frontend_type>
-                            <frontend_model>logicbroker/adminhtml_system_config_ftpconnectionbutton</frontend_model>
-                            <sort_order>15</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
+					<frontend_type>button</frontend_type>
+					<frontend_model>logicbroker/adminhtml_system_config_ftpconnectionbutton</frontend_model>
+					<sort_order>15</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
               </ftp_testconnection>
 			  <time translate="label">
-                            <label>Start Time</label>
-                             <frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
-                            <sort_order>30</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <comment>Cron format HH:MM:SS</comment>
-                            <depends><enabled>1</enabled></depends>
+					<label>Frequency</label>
+					<frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
+					<backend_model>logicbroker/system_config_backend_uploadvendor_cron</backend_model>
+					<sort_order>30</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<!-- <comment>Hours Minutes</comment> -->
+					<depends><enabled>1</enabled></depends>
               </time>
-              <frequency translate="label">
-                            <label>Frequency</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>adminhtml/system_config_source_cron_frequency</source_model>
-                            <backend_model>logicbroker/system_config_backend_uploadvendor_cron</backend_model>
-                            <sort_order>40</sort_order>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <depends><enabled>1</enabled></depends>
-              </frequency>
 			  </fields>
-			  </cron_settings_upload> 
-		</groups>
-	</logicbroker_cron>
+			  </cron_settings_upload>
+			  
+			  <cron_settings_report translate="label">
+			  <label>Cron Schedule Tasks For Send Report Email</label>
+			  <page_heading>Cron Schedule Tasks For Send Report Email</page_heading>
+			   <frontend_type>text</frontend_type>
+			  <expanded>1</expanded>
+			  <sort_order>5</sort_order>
+			  <show_in_default>1</show_in_default>
+			  <show_in_website>0</show_in_website>
+			  <show_in_store>0</show_in_store>
+			  <fields>
+			  <enabled translate="label">
+					<label>Enable Report Email Notification</label>
+					<frontend_type>select</frontend_type>
+					<source_model>adminhtml/system_config_source_yesno</source_model>
+					<sort_order>10</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+              </enabled>
+              <time translate="label">
+					<label>Frequency</label>
+					<frontend_model>logicbroker/adminhtml_system_config_crontime</frontend_model>
+					<backend_model>logicbroker/system_config_backend_report_email</backend_model>
+					<sort_order>30</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>0</show_in_website>
+					<show_in_store>0</show_in_store>
+					<depends><enabled>1</enabled></depends>
+              </time>
+			  </fields>
+			  </cron_settings_report> 
+		<integration translate="label">
+	          <label>Help</label>
+	          <page_heading>Help</page_heading>
+	          <expanded>1</expanded>
+	          <frontend_type>text</frontend_type>
+	          <sort_order>6</sort_order>
+	          <show_in_default>1</show_in_default>
+	          <show_in_website>0</show_in_website>
+	          <show_in_store>0</show_in_store>
+		          <fields>
+					   <need_help>
+						  <label>Need Help?</label>	
+				          <frontend_type>link</frontend_type>
+				          <frontend_model>logicbroker/adminhtml_system_config_helplink</frontend_model>
+				          <href>http://help.logicbroker.com/dropship360</href>
+				          <sort_order>31</sort_order>
+				          <show_in_default>1</show_in_default>
+				          <show_in_website>0</show_in_website>
+				          <show_in_store>0</show_in_store>
+			          </need_help>
+			      </fields>
+ 	 	</integration> 
+       </groups>
+    </logicbroker_sourcing>
   </sections> 
 </config>

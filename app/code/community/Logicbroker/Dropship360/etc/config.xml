@@ -2,7 +2,7 @@
 <config>
   <modules>
     <Logicbroker_Dropship360>
-      <version>1.0.4</version>
+      <version>1.0.5</version>
     </Logicbroker_Dropship360>
   </modules>
   <global>
@@ -12,7 +12,6 @@
       </logicbroker>
       <adminhtml>
         <rewrite>
-             <!-- catalog_product_edit_tabs>Logicbroker_Dropship360_Block_Adminhtml_Inventory_Edit_Vendortab</catalog_product_edit_tabs-->
 			 <sales_order_view_items>Logicbroker_Dropship360_Block_Adminhtml_Sales_Order_View_Items</sales_order_view_items>
          </rewrite>
      </adminhtml>
@@ -58,7 +57,9 @@
 			  <vendor_import_log>
 			  <table>logicbroker_vendor_product_import_log</table>
 			  </vendor_import_log>
-			   
+			  <tmpdata>
+			  <table>logicbroker_tmp_data</table>
+			  </tmpdata> 
         </entities>
 	  </logicbroker_resource>
 		<sales>
@@ -114,7 +115,16 @@
                         <method>salesOrderShipmentSaveAfter</method>
                     </logicbroker_shipmentemail_sales_order_shipment_save_after>
                 </observers>
-            </sales_order_shipment_save_after>            
+            </sales_order_shipment_save_after>
+			<catalog_product_delete_after> 
+				<observers>
+                    <logicbroker_catalog_product_delete_after>
+                        <type>singleton</type>
+                        <class>logicbroker/observer</class>
+                        <method>catalogProductDeleteAfter</method>
+                    </logicbroker_catalog_product_delete_after>
+                </observers>
+			</catalog_product_delete_after>   	
         </events>
         <template>
             <email>
@@ -175,39 +185,28 @@
         <processing_status>proceesing</processing_status>
         <error_status>error</error_status>
         <sentto_warehouse_status>sent_to_warehouse</sentto_warehouse_status>
-        <ds360_version>2.0.23</ds360_version>
+        <ds360_version>2.1.0</ds360_version>
       </integration>
     </logicbroker_integration>
 	<logicbroker_cron>
-		<cron_settings>
-			<sourcing_time>-2,10,-1</sourcing_time>
-			<sourcing_frequency>D</sourcing_frequency>
-			<backorder_time>-2,15,-1</backorder_time>
-			<backorder_frequency>D</backorder_frequency>
-			<!-- <schedule_sourcing_hour>0</schedule_sourcing_hour>
-			<schedule_sourcing_min>10</schedule_sourcing_min>
-			<schedule_backorder_hour>1</schedule_backorder_hour>
-			<schedule_backorder_min>0</schedule_backorder_min> -->
-		</cron_settings>
-		<cron_settings_upload>
-		<enabled>0</enabled>
-		<time>-2,10,-1</time>
-		</cron_settings_upload>
 	</logicbroker_cron>
 	<logicbroker_sourcing>
       <rank>
         <ranktype>cost</ranktype>
         <defaultbackorder>none</defaultbackorder>
+		<email_shipment>0</email_shipment>
       </rank>
       <inventory>
        <buffer>0</buffer> 
       </inventory>
-      <order>
-      	<begin_sourcing>lb_ready_to_source</begin_sourcing>
-      	<backorder>lb_backorder</backorder>
-      	<awaiting_transmission>lb_transmitting</awaiting_transmission>
-      	<sourcing_complete>lb_order_sourced</sourcing_complete>
-      </order>
+		<cron_settings>
+			<sourcing_time>-2,10</sourcing_time>
+			<backorder_time>-1,0</backorder_time>
+		</cron_settings>
+		<cron_settings_upload>
+		<enabled>0</enabled>
+			<time>23,59</time>
+		</cron_settings_upload>
     </logicbroker_sourcing>
   </default>
     
@@ -224,9 +223,6 @@
 	<toname>logicbroker</toname>
 	<subject>logicbroker new extesnion Installation</subject>
 	</email>
-        <!-- <rolepermission>
-            <data>__root__, catalog,catalog/product, catalog/product/attribute, catalog/product/attribute/info, catalog/product/attribute/option, catalog/product/attribute/option/remove, catalog/product/attribute/option/add, catalog/product/attribute/set, catalog/product/attribute/set/group_add,catalog/product/attribute/set/group_rename, catalog/product/attribute/set/group_remove, catalog/product/attribute/set/attribute_remove, catalog/product/attribute/set/attribute_add, catalog/product/attribute/set/create, catalog/product/attribute/set/remove, catalog/product/attribute/set/list, catalog/product/attribute/remove, catalog/product/attribute/update, catalog/product/attribute/create, catalog/product/attribute/read, catalog/product/link, catalog/product/link/remove, catalog/product/link/update, catalog/product/link/assign, catalog/product/media, catalog/product/media/remove, catalog/product/media/update, catalog/product/media/create, catalog/product/tag, catalog/product/tag/remove, catalog/product/tag/update, catalog/product/tag/add, catalog/product/tag/info, catalog/product/tag/list, catalog/product/option, catalog/product/option/list, catalog/product/option/remove, catalog/product/option/add, catalog/product/option/info, catalog/product/option/types, catalog/product/option/update, catalog/category, catalog/category/info, catalog/category/tree, catalog/category/delete, catalog/category/update, catalog/category/move, catalog/category/create, catalog/category/product, catalog/category/product/remove, catalog/category/product/update, catalog/category/product/assign, sales, sales/order, sales/order/creditmemo, sales/order/creditmemo/list, sales/order/creditmemo/info, sales/order/creditmemo/cancel, sales/order/creditmemo/comment, sales/order/creditmemo/create, sales/order/invoice, sales/order/invoice/cancel, sales/order/invoice/info, sales/order/invoice/void, sales/order/invoice/capture, sales/order/invoice/comment, sales/order/invoice/create, sales/order/shipment, sales/order/shipment/send, sales/order/shipment/info, sales/order/shipment/track, sales/order/shipment/comment, sales/order/shipment/create, sales/order/info, sales/order/change, cataloginventory, cataloginventory/info, cataloginventory/update</data>
-        </rolepermission> -->
     </apiconfig>
     <crontab>
         <jobs>
@@ -245,6 +241,11 @@
                     <model>logicbroker/uploadvendor::ftpParseCsv</model>
                 </run>
             </logicbroker_uploadvendor> 
+            <logicbroker_report_email>
+               <run>
+                    <model>logicbroker/report::sendNotification</model>
+                </run>
+            </logicbroker_report_email>  
         </jobs>
     </crontab>   
 </config> 

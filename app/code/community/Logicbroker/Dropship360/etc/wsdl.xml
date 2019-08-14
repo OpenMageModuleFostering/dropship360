@@ -9,6 +9,7 @@
 			 <complexType name="salesOrderListEntity">
                 <all>
                    <element name="item_details" type="typens:salesOrderListLbItemEntityArray" minOccurs="0" />
+                    <element name="dropship_item" type="xsd:int" minOccurs="0" />
                 </all>
             </complexType>
             
@@ -38,9 +39,6 @@
             </complexType>
             <complexType name="salesOrderLbEntity">
                 <all>
-					<element name="increment_id" type="xsd:string" minOccurs="0" />
-                    <element name="status" type="xsd:string" minOccurs="0" />
-                    <element name="state" type="xsd:string" minOccurs="0" />
                     <element name="ResultCount" type="xsd:int" minOccurs="0" />
                     <element name="orderDetails" type="typens:salesOrderLbStatusEntityArray" minOccurs="0" />
                     <element name="error_message" type="xsd:string" minOccurs="0" />
@@ -57,8 +55,6 @@
               <complexType name="salesOrderLbStatusEntity">
                 <all>
 					<element name="increment_id" type="xsd:string" minOccurs="0" />
-                    <element name="status" type="xsd:string" minOccurs="0" />
-                    <element name="state" type="xsd:string" minOccurs="0" />
                     <element name="error_message" type="xsd:string" minOccurs="0" />
                 </all>
             </complexType>
@@ -99,33 +95,25 @@
       <part name="result" type="xsd:boolean"/>
    </message>
    
-   <message name="salesOrderGetLbOrderStatusRequest">
+   <message name="salesOrderGetLbOrderByItemStatusRequest">
       <part name="sessionId" type="xsd:string"/>
-      <part name="orderIncrementId" type="xsd:string"/>
-      <part name="orderStatus" type="xsd:string"/>
-      <part name="limit" type="xsd:int"/>
+      <part name="storeId" type="xsd:string"/>
+      <part name="itemStatus" type="xsd:string"/>
    </message>
-   <message name="salesOrderGetLbOrderStatusResponse">
+   <message name="salesOrderGetLbOrderByItemStatusResponse">
        <part name="result" type="typens:salesOrderLbEntity" />
    </message>
    
-   <message name="salesOrderSetLbOrderStatusRequest">
+    <message name="salesOrderSetLbOrderItemStatusRequest">
       <part name="sessionId" type="xsd:string"/>
       <part name="orderIncrementId" type="xsd:string"/>
-      <part name="orderStatus" type="xsd:string"/>
+      <part name="itemStatus" type="xsd:string"/>
    </message>
-   <message name="salesOrderSetLbOrderStatusResponse">
+   <message name="salesOrderSetLbOrderItemStatusResponse">
        <part name="result" type="typens:salesOrderSetLbStatusEntity" />
    </message>
    
-   <message name="salesOrderGetLbOrderStatusConfigRequest">
-      <part name="sessionId" type="xsd:string"/>
-   </message>
-   <message name="salesOrderGetLbOrderStatusConfigResponse">
-       <part name="result" type="typens:salesOrderGetLbStatusConfig" />
-   </message>
-   
-   <message name="versionsGetdropship360versionRequest">
+<message name="versionsGetdropship360versionRequest">
       <part name="sessionId" type="xsd:string"/>
    </message>
     <message name="versionsGetdropship360versionResponse">
@@ -138,21 +126,17 @@
 			 <input message="typens:salesOrderUpdateItemStatusRequest"/>
 			 <output message="typens:salesOrderUpdateItemStatusResponse"/>
 		</operation>
-		<operation name="salesOrderGetLbOrderStatus">
-			 <documentation>Retrive order by status</documentation>
-			 <input message="typens:salesOrderGetLbOrderStatusRequest"/>
-			 <output message="typens:salesOrderGetLbOrderStatusResponse"/>
+		<operation name="salesOrderGetLbOrderByItemStatus">
+			 <documentation>Retrive order by item status</documentation>
+			 <input message="typens:salesOrderGetLbOrderByItemStatusRequest"/>
+			 <output message="typens:salesOrderGetLbOrderByItemStatusResponse"/>
 		</operation>
-		<operation name="salesOrderSetLbOrderStatus">
-			 <documentation>Retrive order by status</documentation>
-			 <input message="typens:salesOrderSetLbOrderStatusRequest"/>
-			 <output message="typens:salesOrderSetLbOrderStatusResponse"/>
+		<operation name="salesOrderSetLbOrderItemStatus">
+			 <documentation>Set item Status </documentation>
+			 <input message="typens:salesOrderSetLbOrderItemStatusRequest"/>
+			 <output message="typens:salesOrderSetLbOrderItemStatusResponse"/>
 		</operation>	
-		<operation name="salesOrderGetLbOrderStatusConfig">
-			 <documentation>Retrive order by status</documentation>
-			 <input message="typens:salesOrderGetLbOrderStatusConfigRequest"/>
-			 <output message="typens:salesOrderGetLbOrderStatusConfigResponse"/>
-		</operation>
+		
         <operation name="versionsGetdropship360version">
 			 <documentation>this is an example of api method</documentation>
 			 <input message="typens:versionsGetdropship360versionRequest"/>
@@ -169,7 +153,7 @@
             <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
 		</operation>
-		<operation name="salesOrderGetLbOrderStatus">
+		<operation name="salesOrderGetLbOrderByItemStatus">
          <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
          <input>
             <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
@@ -178,7 +162,7 @@
             <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
 		</operation>
-		<operation name="salesOrderSetLbOrderStatus">
+		<operation name="salesOrderSetLbOrderItemStatus">
          <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
          <input>
             <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
@@ -187,17 +171,7 @@
             <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
 		</operation>
-		<operation name="salesOrderGetLbOrderStatusConfig">
-         <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
-         <input>
-            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </input>
-         <output>
-            <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </output>
-		</operation>
-        
-        <operation name="versionsGetdropship360version">
+		<operation name="versionsGetdropship360version">
          <soap:operation soapAction="urn:{{var wsdl.handler}}Action"/>
          <input>
             <soap:body namespace="urn:{{var wsdl.name}}" use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>

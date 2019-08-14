@@ -1,18 +1,25 @@
 <?php
-
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */
+ 
+ 
 /* ticket LBN - 655 */
 
 $updateddata = array(
         'scope'         => 'default',
         'scope_id'    => '0',
-        'path'       => 'logicbroker_integration/integration/soap_webservice_url',
-        'value'     => Mage::getBaseUrl().'api/v2_soap/'
+        'path'       => 'logicbroker_integration/integration/magento_base_url',
+        'value'     => Mage::getBaseUrl()
         
     );
     
  try {
  
- Mage::getModel('core/config_data')->load('logicbroker_integration/integration/soap_webservice_url','path')->setData($updateddata)->save(); 
+ Mage::getModel('core/config_data')->load('logicbroker_integration/integration/magento_base_url','path')->setData($updateddata)->save(); 
  }
 catch (Exception $e) {
     echo $e->getMessage();
@@ -48,29 +55,15 @@ $coreConfigData = array(
     array(
         'scope'     => 'default',
         'scope_id'  => '0',
-        'path'      => 'logicbroker_cron/cron_settings/sourcing_time',
-        'value'     => '-2,10,-1',
-        
-    ),
-    array(
-        'scope'     => 'default',
-        'scope_id'  => '0',
-        'path'      => 'logicbroker_cron/cron_settings/sourcing_frequency',
-        'value'     => 'D',
+        'path'      => 'logicbroker_sourcing/cron_settings/sourcing_time',
+        'value'     => '-2,10',
         
     ),
     array(
         'scope'         => 'default',
         'scope_id'    => '0',
-        'path'       => 'logicbroker_cron/cron_settings/backorder_time',
-        'value'     => '-2,15,-1',
-        
-    ),
-    array(
-        'scope'      => 'default',
-        'scope_id'   => '0',
-        'path'       => 'logicbroker_cron/cron_settings/backorder_frequency',
-        'value'     =>  'D',
+        'path'       => 'logicbroker_sourcing/cron_settings/backorder_time',
+        'value'     => '-2,15',
         
     ),
     array(

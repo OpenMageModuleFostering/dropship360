@@ -1,6 +1,9 @@
 <?php
 /**
- logicbroker
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
  */
 ?>
 
@@ -23,13 +26,13 @@
     
     
     var actionUrl = '<?php echo Mage::getSingleton('adminhtml/url')->getUrl('*/*/saveranking') ?>'
-    var formdataStart = "<form id='edit_form' action='"+actionUrl+"' method='post'></form>";
+    var formdataStart = "<form id='edit_form_ranking' action='"+actionUrl+"' method='post'></form>";
     var formDataEnd = "<div><input name='partent_save_table_input' id='partent_save_table_input' type='hidden' value=''><input name='dropship_data' id='dropship_data' type='hidden' value=''><input name='nondropship_data' id='nondropship_data' type='hidden' value=''><input name='vendorname_data' id='vendorname_data' type='hidden' value=''> <input name='form_key' type='hidden' value='<?php echo Mage::getSingleton('core/session')->getFormKey() ?>' /></div>";
     
-    if(!$('edit_form'))
+    if(!$('edit_form_ranking'))
         {
             $('panel').insert(formdataStart);
-            $('edit_form').insert(formDataEnd);
+            $('edit_form_ranking').insert(formDataEnd);
         }
         
         
@@ -45,7 +48,7 @@ function setTableName(name){
 
 function submitPartentFrom(){
 	closePopup();
-	$('edit_form').submit();
+	$('edit_form_ranking').submit();
 }
 		
 	function showPopup(sUrl) {

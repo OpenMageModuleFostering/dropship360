@@ -59,10 +59,24 @@
             <?php endif; ?>
         </td>
         <?php  
-        $lbItemStatus = $_item->getLbItemStatus();
-        //(empty($lbItemStatus)) ? 'sourcing' : $lbItemStatus;
+			$lbItemStatus = $_item->getLbItemStatus();
         ?>
-		<td class="a-center"><?php echo $lbItemStatus; ?></td>
+		<td class="a-center">
+			<span id="<?php echo $_item->getItemId() ?>"><?php echo $lbItemStatus; ?></span>
+			<?php if($lbItemStatus!=""): ?>
+			<p><a id="edit" onclick="respondToClick(<?php echo $_item->getItemId() ?>)" style="cursor:pointer"><?php echo $this->__('Edit') ?></a></p>
+			<span id="change_status-<?php echo $_item->getItemId() ?>" style="display:none;">
+				<select name="status" id="status-<?php echo $_item->getItemId() ?>" onchange="respondToChange(this)">
+					<option value=""><?php echo $this->__('Please select') ?></option>	
+					<?php foreach(Mage::helper('logicbroker')->getLbOrderItemStatus() as $status):?>
+						<?php if($lbItemStatus!=$status): ?>
+							<option value="<?php echo $status ?>"><?php echo $status ?></option>
+						<?php endif; ?>	
+					<?php endforeach; ?>
+				</select>
+			</span>
+			<?php endif; ?>
+		</td>
 		<td class="a-center"><?php echo $_item->getLbVendorName() ?></td>
 		<td class="a-center"><?php echo $_item->getLbVendorSku() ?></td>
         <td class="a-right">
@@ -394,3 +408,34 @@
         <td class="last">&nbsp;</td>
     </tr>
 <?php endif; ?>
+<script type="text/javascript">
+
+function respondToClick(id) {
+  $('change_status-'+id).show();
+}
+
+function respondToChange(obj) {
+  var itemId = obj.id.split('-');
+  new Ajax.Request('<?php echo $this->getUrl('logicbroker/adminhtml_logicbroker/changeStatusAjax') ?>', {
+            parameters: {
+						'lb_item_id': itemId[1],
+				        'lb_item_status': obj.value
+					    },
+            method:     'post',
+            onSuccess:  success,
+            onFailure:  fail
+			});			
+}
+
+function success(response){	
+	var data = response.responseText.evalJSON();
+	var id = data.lb_item_id;
+	$(id).innerHTML = data.lb_item_status;
+	alert(data.msg);
+	$('change_status-'+id).hide();
+}
+
+function fail(response){
+	alert("Request cannot be completed");
+}
+</script>

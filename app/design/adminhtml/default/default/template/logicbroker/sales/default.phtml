@@ -27,7 +27,7 @@
 <?php $_item = $this->getItem() ?>
 <?php $lbDetails = Mage::getBlockSingleton('logicbroker/adminhtml_sourcing'); ?>
 <?php $this->setPriceDataObject($_item) ?>
-<tr<?php if (!$this->canDisplayGiftmessage()): ?> class="border"<?php endif; ?>>
+<tr <?php if (!$this->canDisplayGiftmessage()): ?> class="border"<?php endif; ?>>
     <td>
         <?php if ($this->canDisplayContainer()): ?>
         <div id="<?php echo $this->getHtmlId() ?>" class="item-container">
@@ -44,14 +44,30 @@
     $lbItemStatus;
     if($_item->getProductType() == 'configurable'){ 
     	 	 $lbItemStatus = $lbItem->getLbItemStatus();
-    	 	 //$lbItemStatus = (empty($lbItemStatus)) ? 'sourcing' : $lbItemStatus;
-    	 }else{
+		}else{
     	 	 $lbItemStatus = $_item->getLbItemStatus(); 
-    	 	 //$lbItemStatus = (empty($lbItemStatus)) ? 'sourcing' : $lbItemStatus;
-    	 	 }
+		}
     ?>
     <td class="a-center"><?php echo $_item->getStatus() ?></td>
-	<td class="a-center"><?php echo $lbItemStatus; ?></td>
+	<td class="a-center">
+	<span id="<?php echo $lbItem->getItemId() ?>"><?php echo $lbItemStatus; ?></span>
+	<?php if($lbItemStatus!="" && $lbItemStatus!="Completed"): ?>
+	<p><a id="edit" onclick="respondToClick(<?php echo $lbItem->getItemId() ?>)" style="cursor:pointer"><?php echo $this->__('Edit') ?></a></p>
+	<span id="change_status-<?php echo $lbItem->getItemId() ?>" style="display:none;">
+		<select name="status" id="status-<?php echo $lbItem->getItemId() ?>" onchange="respondToChange(this)">
+			<option value=""><?php echo $this->__('Please select') ?></option>	
+			<?php foreach(Mage::helper('logicbroker')->getLbOrderItemStatus() as $status):?>
+				<?php if($lbItemStatus!=$status): ?>
+					<?php if($lbItemStatus=="Sent to Vendor" && $status=="Sent to Supplier"):?>
+						<?php continue; ?>
+					<?php endif; ?>	
+					<option value="<?php echo $status ?>"><?php echo $status ?></option>
+				<?php endif; ?>	
+			<?php endforeach; ?>
+		</select>
+	</span>
+	<?php endif; ?>
+	</td>
 	<td class="a-center"><?php echo ($_item->getProductType() == 'configurable') ? $lbItem->getLbVendorName() : $_item->getLbVendorName() ?></td>
 	<td class="a-center"><?php echo ($_item->getProductType() == 'configurable') ? $lbItem->getLbVendorSku() : $_item->getLbVendorSku() ?></td>
     <td class="a-right"><?php echo $this->displayPriceAttribute('original_price') ?></td>
@@ -259,3 +275,38 @@
         ); ?>
     </td>
 </tr>
+
+<script type="text/javascript">
+
+function respondToClick(id) {
+  $('change_status-'+id).show();
+}
+
+function respondToChange(obj) {
+	if(obj.value){	
+		var itemId = obj.id.split('-');
+		new Ajax.Request('<?php echo $this->getUrl('logicbroker/adminhtml_logicbroker/changeStatusAjax') ?>', {
+				parameters: {
+							'lb_item_id': itemId[1],
+							'lb_item_status': obj.value,
+							'order_id': '<?php echo $this->getRequest()->getParam('order_id'); ?>'
+							},
+				method:     'post',
+				onSuccess:  success,
+				onFailure:  fail
+				});
+	}			
+}
+
+function success(response){	
+	var data = response.responseText.evalJSON();
+	var id = data.lb_item_id;
+	$(id).innerHTML = data.lb_item_status;
+	$('change_status-'+id).hide();
+	window.location.reload(true);
+}
+
+function fail(response){
+	alert("Request cannot be completed");
+}
+</script>

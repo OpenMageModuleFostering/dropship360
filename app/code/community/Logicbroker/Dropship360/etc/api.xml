@@ -3,26 +3,8 @@
 /**
  * Magento
  *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
  * @category    Mage
  * @package     Mage_Sales
- * @copyright   Copyright (c) 2014 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 -->
 <config>
@@ -58,18 +40,15 @@
                         <title>updateItemStatus</title>
                         <acl>sales/order/updateItemStatus</acl>
                     </updateItemStatus>
-                    <getLbOrderStatus>
-                        <title>getLbOrderStatus</title>
-                        <acl>sales/order/getLbOrderStatus</acl>
-                    </getLbOrderStatus> 
-                    <setLbOrderStatus>
-                        <title>setLbOrderStatus</title>
-                        <acl>sales/order/setLbOrderStatus</acl>
-                    </setLbOrderStatus>
-                    <getLbOrderStatusConfig>
-                        <title>getLbOrderStatusConfig</title>
-                        <acl>sales/order/getLbOrderStatusConfig</acl>
-                    </getLbOrderStatusConfig>
+                    <getLbOrderByItemStatus>
+                        <title>getLbOrderByItemStatus</title>
+                        <acl>sales/order/getLbOrderByItemStatus</acl>
+                    </getLbOrderByItemStatus> 
+                    <setLbOrderItemStatus>
+                        <title>setLbOrderItemStatus</title>
+                        <acl>sales/order/setLbOrderItemStatus</acl>
+                    </setLbOrderItemStatus>
+                    
                 </methods>
                 <faults module="sales">
                     <not_exists>
@@ -88,6 +67,10 @@
                         <code>103</code>
                         <message>Order status not changed. Details in error message.</message>
                     </status_not_changed>
+                    <invaild_store>
+                        <code>104</code>
+                        <message>Invaild Store Id</message>
+                    </invaild_store>
                 </faults>
             </sales_order>
             <sales_order_shipment>
@@ -342,15 +325,13 @@
                         <updateItemStatus translate="title" module="sales">
                                 <title>update Item Status</title>
                         </updateItemStatus>
-                        <getLbOrderStatus translate="title" module="sales">
-                        	<title>Retrive orders by status</title>
-                        </getLbOrderStatus>
-                        <setLbOrderStatus translate="title" module="sales">
-                        	<title>Set order status</title>
-                        </setLbOrderStatus>
-                        <getLbOrderStatusConfig translate="title" module="sales">
-                        	<title>Get order status configuration</title>
-                        </getLbOrderStatusConfig>
+                        <getLbOrderByItemStatus translate="title" module="sales">
+                        	<title>Retrive orders by item status</title>
+                        </getLbOrderByItemStatus>
+                        <setLbOrderItemStatus translate="title" module="sales">
+                        	<title>Set order item status</title>
+                        </setLbOrderItemStatus>
+                       
                         <shipment translate="title" module="sales">
                             <title>Order shipments</title>
                             <create translate="title" module="sales">

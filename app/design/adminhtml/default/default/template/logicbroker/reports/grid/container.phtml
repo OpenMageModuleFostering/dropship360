@@ -1,0 +1,254 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     default_default
+ * @copyright   Copyright (c) 2014 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+
+<?php $graph = $this->getGraphData();?>
+<style type="text/css">
+/* .validation-advice {
+  float: right;
+  width : 100px
+} */
+.graph{	
+	width:400px;
+	height:100px;
+	margin: 0 auto;
+	
+	
+}
+.green{
+	width:<?php echo $graph['divgreen'] ?>px;
+	height:50px;
+	float:left;
+	text-align: center;
+	background-color:green;
+	border-top-left-radius : 20px;
+	border-bottom-left-radius: 20px;
+}
+.red{
+	width:<?php echo $graph['divred'] ?>px;
+	height:50px;
+	float:right;
+	text-align: center;
+	background-color:red;
+	border-top-right-radius : 20px;
+	border-bottom-right-radius: 20px;
+}
+</style>
+<div class="content-header">
+    <table cellspacing="0">
+        <tr>
+            <td style="<?php echo $this->getHeaderWidth() ?>"><?php echo $this->getHeaderHtml() ?></td>
+            <td class="form-buttons"><?php echo $this->getButtonsHtml() ?></td>
+        </tr>
+    </table>
+</div>
+<div>
+    <?php echo $this->getChildHtml('report.activitymonitor.form') ?>
+</div>
+
+<div class="graph" id="graph">
+<?php if($graph['greenper'] > 0){ ?>
+<div class = "green" id="green"><span style="padding-top:15px;position: absolute;font-size:15px"><b><?php echo $graph['greenper'] ?>%</b></span></div>
+<?php } ?>
+<?php if($graph['redper'] > 0){ ?>
+<div class = "red" id= "red"><span style="padding-top:15px;position: absolute;font-size:15px"><b><?php echo $graph['redper'] ?>%</b></span></div>
+<div style="float:right;clear: both;width: 400px;padding-top: 10px;font-size: 25px;text-align:center"><?php echo $graph['redper'] ?>%</div>
+<?php } ?>
+</div>
+<div class="clear"></div>
+<div>
+    <?php echo $this->getGridHtml() ?>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+    var htmlsuffixid = 'sales_report_'
+	var counter = Math.floor((Math.random() * 100) + 1);
+	var inputboxname = <?php echo Mage::helper('core')->jsonEncode($this->getHtmlElementName()); ?>;
+    function showinputbox(inputboxid,obj){
+	
+       if(obj.value){
+	   $(inputboxid).show();
+	   //$(inputboxid).addClassName('required-entry validate-digits validate-number-range number-range-1-999');
+	  }else
+	   {
+	   $(inputboxid).value = '';
+	   $(inputboxid).removeClassName('required-entry validate-digits validate-number-range number-range-1-999');
+		
+	    if($$('.validation-advice')){
+			$$('.validation-advice').each(function (e,v){e.setStyle({'display':'none'})})
+		}
+		
+		$(inputboxid).hide();
+		
+		}
+	} 
+	
+	//get email address : start
+		$('choose-email').observe('click', function(event) {
+		   if ($('email-list').style.display == "block") {
+			   $('email-list').style.display = "none";
+			} else {
+				if($('email-list').style.display == "none"){
+					$('email-list').style.display = "block";
+				}else{
+					$('email-list').style.display = "block";
+					new Ajax.Request('<?php echo $this->getUrl('*/*/chooser') ?>', {
+					method:     'post',
+					onSuccess:  success,
+					onFailure:  fail
+					});
+				}			
+			}
+	  
+	});
+	function success(response){	
+	$('email-list').update(response.responseText);
+	}
+
+	function fail(response){
+		alert("Request cannot be completed");
+	}
+	var VarienRulesForm = new Class.create();
+	VarienRulesForm.prototype = {
+		initialize: function (a) {
+			this.newChildUrl = a;
+			this.shownElement = null;
+			this.updateElement = $("sales_report_email_adress");
+			this.chooserSelectedItems = $H({})
+		},
+		chooserGridRowInit: function (a, b) {
+			if (!a.reloadParams) {
+				a.reloadParams = {
+					"selected[]": this.chooserSelectedItems.keys()
+				}
+			}
+		},
+		chooserGridRowClick: function (b, d) {
+			var f = Event.findElement(d, "tr");
+			var a = Event.element(d).tagName == "INPUT";
+			if (f) {
+				var e = Element.select(f, "input");
+				if (e[0]) {
+					var c = a ? e[0].checked : !e[0].checked;
+					b.setCheckboxChecked(e[0], c)
+				}
+			}
+		},
+		chooserGridCheckboxCheck: function (b, a, c) {
+			if (c) {
+				if (!a.up("th")) {
+					this.chooserSelectedItems.set(a.value, 1)
+				}
+			} else {		
+				this.chooserSelectedItems.unset(a.value)
+			}
+			b.reloadParams = {
+				"selected[]": this.chooserSelectedItems.keys()
+			};
+			//this.updateElement.value = this.chooserSelectedItems.keys().join(";")
+			if (c) {
+			
+				//this.updateElement.value += ",";
+				this.updateElement.value = $("sales_report_curr").value+","+this.chooserSelectedItems.keys().join(",")
+			}else{
+				if($("sales_report_curr").value){
+					this.updateElement.value = $("sales_report_curr").value+","+this.chooserSelectedItems.keys().join(",")
+				}else{
+				this.updateElement.value = this.chooserSelectedItems.keys().join(",")
+			}
+		}
+		}
+	};
+
+	var email_fieldset = new VarienRulesForm('sales_report_base_fieldset', '');
+	
+	/*email code end here*/
+	
+	function setTimeStatusValue(){
+		 for(var i = 0; i < inputboxname.length;i++){
+			
+				var elementClassName = $('input_box_'+inputboxname[i]).className.split('#')
+				var input_box_id = elementClassName[0];
+				var select_ele_id = elementClassName[0].replace('input','select');
+				if($(input_box_id).value && $(select_ele_id).value && $(input_box_id).value.length && $(select_ele_id).value.length)
+					$(inputboxname[i]+'_post').value = $(input_box_id).value+'-'+$(select_ele_id).value
+				
+		}
+	
+	}
+	
+	function filterFormRefresh(){
+		$(htmlsuffixid+'refresh').value = 'yes';
+		filterFormSubmit();
+	}
+		
+    function filterFormSubmit() {
+        var filters = $$('#filter_form input', '#filter_form select');
+        var elements = [];
+		var isError = [];
+        
+		this.setTimeStatusValue();
+		//return false;
+		for(var i in filters){
+            if(filters[i].value && filters[i].value.length && !filters[i].disabled) elements.push(filters[i]);
+        }
+        
+		if(!validateEmail())
+		{
+				return false;
+		}
+		
+		var validator  = new Validation('filter_form');
+		
+		if (validator.validate()) {
+			if($(htmlsuffixid+'refresh').value === 'no'){
+				setLocation('<?php echo $this->getFilterUrl(); ?>filter/'+encode_base64(Form.serializeElements(elements))+'/');
+			}else{
+				setLocation('<?php echo $this->getFilterUrl(); ?>refresh/'+encode_base64(Form.serializeElements(elements))+'/counter/'+counter);
+			}
+		}
+		
+    }
+
+    function validateEmail(){
+
+		var emailArray = {}		
+		var exp = /^([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*@([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*\.(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,})$/i
+		 
+		 emailArray = $(htmlsuffixid+'email_adress').value.split(',')
+		 for(var i = 0 ; i < emailArray.length ; i++)
+		 {
+			if(!exp.test(emailArray[i].trim()) && emailArray[i] )
+			{
+				alert( 'Invaild Email address. '+emailArray[i].trim());
+				return false;
+			}
+		 }
+		
+    	return true;
+        }
+//]]>
+</script>

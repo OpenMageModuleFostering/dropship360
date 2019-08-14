@@ -1,5 +1,10 @@
 <?php
-/* logicbroker sourcing */
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */
 ?>
 
 
@@ -9,15 +14,12 @@ var firstStepTemplate = '<div class="option-box" id="vendor_{{id}}">'+
             '<table id="<?php echo $this->getFieldId() ?>_{{id}}" class="option-header" cellpadding="0" cellspacing="0">'+
             '<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_is_delete" name="<?php echo $this->getFieldName() ?>[{{id}}][is_delete]" value="" />'+
             '<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_updated_by" name="<?php echo $this->getFieldName() ?>[{{id}}][updated_by]" value="<?php echo $this->escapeHtml(Mage::getSingleton('admin/session')->getUser()->getUsername()) ?>" />'+
-            //'<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_cost" name="<?php echo $this->getFieldName() ?>[{{id}}][cost]" value="" />'+
-            //'<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_inventory" name="<?php echo $this->getFieldName() ?>[{{id}}][inventory]" value="" />'+
-            //'<input type="hidden" id="<?php echo $this->getFieldId() ?>_{{id}}_lb_vendor_sku" name="<?php echo $this->getFieldName() ?>[{{id}}][lb_vendor_sku]" value="" />'+
             '<thead>'+
                 '<tr>'+
-                    '<th class="opt-title" style="width:307px;"><?php echo Mage::helper('catalog')->__('Vendor') ?> <span class="required">*</span></th>'+
+                    '<th class="opt-title" style="width:307px;"><?php echo Mage::helper('catalog')->__('Supplier') ?> <span class="required">*</span></th>'+
                     '<th class="opt-type" style="width:75px;"><?php echo Mage::helper('catalog')->__('Cost') ?> <span class="required">*</span></th>'+
                     '<th class="opt-req"  style="width:75px;"><?php echo $this->jsQuoteEscape(Mage::helper('logicbroker')->__('Inventory')) ?><span class="required">*</span></th>'+
-                    '<th class="opt-order" style="width:75px;"><?php echo Mage::helper('catalog')->__('Vendor Sku') ?><span class="required">*</span></th>'+
+                    '<th class="opt-order" style="width:75px;"><?php echo Mage::helper('catalog')->__('Supplier Sku') ?><span class="required">*</span></th>'+
                     '<th class="a-right"><?php echo $this->jsQuoteEscape($this->getDeleteButtonHtml()) ?></th>'+
                 '</tr>'+
             '</thead>'+
@@ -55,9 +57,7 @@ var productOptionVendor = {
     },
     remove : function(event){
         var element = $(Event.findElement(event, 'div'));
-        //console.log(element);
         if(element){
-            //alert('product_'+element.readAttribute('id')+'_'+'is_delete');
             $('product_'+element.readAttribute('id')+'_'+'is_delete').value = '1';
             element.addClassName('no-display');
             element.addClassName('ignore-validate');
@@ -112,8 +112,6 @@ var productOptionVendor = {
 
         var group = '';
         var previousGroupElm = $(element.readAttribute('id').sub('_type', '_previous_group'));
-        //alert(element.readAttribute('id'));
-        //previousGroupElm.value = element.getValue();
         }
     }
 

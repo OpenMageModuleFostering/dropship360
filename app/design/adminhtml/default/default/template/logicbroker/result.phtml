@@ -1,4 +1,12 @@
-<?php $collection = $this->getLogCollection(); //echo '<pre>'; print_r($collection); die(); ?>
+<?php 
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */
+?>
+<?php $collection = $this->getLogCollection(); ?>
 
 <div class="content-header">
     <table cellspacing="0">
@@ -17,15 +25,13 @@
                                <td colspan="4"><ul class = " logheading"><li><strong><?php echo $this->formatDate($logArray['created'], 'medium', true); ?><span class="separator">|</span><strong><?php echo $key; ?></strong></li></ul></td>
                                             
                                      </tr>
-                             <?php //$i=0; if($i == 0) {?>
                              <tr class="headings">
-                             				<th>Vendor Name</th>
-                                            <th>Vendor Code</th>
+                             				<th>Supplier Name</th>
+                                            <th>Supplier Code</th>
                                             <th>Ranking</th>
-                                            <th>Dropship</th>
+                                            <th>Active</th>
                                             
-                                        </tr>
-                                        <?php //} $i++; ?>                  
+                                        </tr>              
                             </thead>
                 
         <tbody>
@@ -39,7 +45,7 @@
                    <td class="a-right "><?php echo $value ?> </td>
                    
             <?php } ?>
-		<?php } ?>
+            <?php } ?>
                    </tr>
                    <?php } ?>
        </tbody>
@@ -55,11 +61,7 @@ $$('.logheading').each(function(row){
 
 for(var i=0; i<= headingArr.length; i++ )
 {
-// 	$$('.tablelogheading').each(function(row){
-// 		$(row).innerHTML = '<h1>'+headingArr[i]+'</h1>'})
-//alert(headingArr[i]);
 	if( headingArr[i] !=undefined ){
-		//alert($$('.tablelogheading')[i].innerHTML)
 		try{
 		$$('.tablelogheading')[i].innerHTML = '<td colspan="4"><ul class="" style="border-bottom: 2.5px solid #000000;margin: 15px 0 5px 5px;">'+headingArr[i]+'</ul></td>';
 		}catch(err){

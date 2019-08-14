@@ -1,9 +1,11 @@
-<?php $dropshipVendorCollection = $this->getVendorCollection('yes'); ?>
-<?php $nonDropshipVendorCollection = $this->getVendorCollection('no'); ?>
-<style type="text/css">
-
-
-</style>
+<?php 
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */
+?>
 <div class="content-header">
     <table cellspacing="0">
         <tr>
@@ -12,6 +14,51 @@
         </tr>
     </table>
 </div>
-<!-- <div id="warning-message"><ul class="messages"><li class="warning-msg"><ul><li><span>Cost Based sourcing rule is currently selected. Vendor ranking will only take effect when Rank Based sourcing rule is selected in the Sourcing Configuration page.</span></li></ul></li></ul></div>
-<div id="notice-message"><ul class="messages"><li class="notice-msg"><ul><li><span>To remove a Drop Ship Vendor from dropship360 sourcing rule, drag it to the Non Drop Ship Vendors section on the right. To activate that vendor again, simply drag it back to the Drop Ship Vendors section.</span></li></ul></li></ul></div>
-<div id="message"><ul class="messages"><li class="error-msg"><ul><li><span>You Have Unsubmitted Changes.</span></li></ul></li></ul></div> -->
+<?php echo $this->getFormHtml() ?>
+<div>
+    <?php echo $this->getChildHtml('inventory') ?>
+</div>
+<script type="text/javascript">
+    editForm = new varienForm('edit_form', '<?php echo $this->getValidationUrl() ?>');
+</script>
+<?php if($this->getProductSetupMode()): ?>
+<?php echo $this->getFormScripts() ?>
+<?php endif; ?>
+
+<script type="text/javascript">
+//<![CDATA[
+var isProductModeSteup = '<?php echo $this->getProductSetupMode() ?>';
+var formSubmit = false;
+function downloadSampleCsv()
+		{
+			if(isProductModeSteup)
+			setLocation("<?php echo $this->getUrl('logicbroker/adminhtml_upload/download',array('_query'=>array('isproductsetupmode' => true))) ?>");
+			else
+			setLocation("<?php echo $this->getUrl('logicbroker/adminhtml_upload/download') ?>");
+		}
+		document.observe("dom:loaded", function(){
+			if($('uploadStarted'))
+				$('uploadStarted').value = 0;
+		});
+
+		
+	$('upload_button').observe('click', function() { if(editForm.validate()){formSubmit = true;} });
+	//window.onbeforeunload = confirmExit;
+	function confirmExit(evt) {
+		
+			if(formSubmit){
+		 new Ajax.Request("<?php echo $this->getUrl('*/*/terminate'); ?>", {
+	           method: "post",
+	           parameters: {form_key: '<?php echo $this->getFormKey();?>'},
+				asynchronous : true,
+					 });
+			
+			return;
+			}else
+			{
+				return null;
+			}
+		}
+
+//]]>
+</script>

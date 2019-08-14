@@ -1,3 +1,11 @@
+<?php 
+/**
+ * Logicbroker
+ *
+ * @category    Community
+ * @package     Logicbroker_Dropship360
+ */
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -26,7 +34,7 @@
 
 <div> 
 <input name='form_key' type='hidden' value='<?php echo Mage::getSingleton('core/session')->getFormKey() ?>' />
-<label>Please enter a name for the Vendor Ranking History entry &nbsp;</label><span><input id="save_table_input" class="required-entry" name="save_table" value=""></span>
+<label>Please enter a name for the supplier Ranking History entry &nbsp;</label><span><input id="save_table_input" class="required-entry" name="save_table" value=""></span>
 <div class="validation-advice" id="error-input" style="display: none;">This is a required field.</div>
 
 <button style="margin-left:100px" type="button"  id="save_table" onclick="submitForm()" >Save Table</button>
@@ -48,9 +56,6 @@ function submitForm()
 	parent.saveRanking();
 	parent.setTableName($('save_table_input').value);
 	parent.submitPartentFrom();
-	//window.setTimeout('parent.closePopup()', 2011);
-	//$('save_table_form').submit();
-	
 }
 </script>
 </body>

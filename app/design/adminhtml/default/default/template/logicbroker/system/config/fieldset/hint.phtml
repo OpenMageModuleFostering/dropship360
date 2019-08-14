@@ -1,48 +1,131 @@
 <?php
 /**
- * Magento
+ * Logicbroker
  *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
- * @category    design
- * @package     default_default
- * @copyright   Copyright (c) 2013 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * @category    Community
+ * @package     Logicbroker_Dropship360
  */
 ?>
 <?php
 /**
+ *
  * @see Mage_Paypal_Block_System_Config_Fieldset_Hint
  */
 ?>
+<script type="text/javascript">
+//<![CDATA[
+    if($$('.form-buttons a#page-help-link').length <= 0 ){
+	if($$('.form-buttons button').length > 0){
+		 $$('.form-buttons button')[0].insert({
+  before: "<a style='color:black;padding-right:20px' target='_blank' id='page-help-link' href='<?php echo Mage::helper('logicbroker')->getConfigObject('apiconfig/helpurl/link'); ?>' target='magento_page_help'>Need help from logicbroker?</a>"
+});
+		 }else
+		{
+			 $$('.form-buttons')[0].insert({
+				  top: "<a style='color:black;padding-right:20px' target='_blank' id='page-help-link' href='<?php echo Mage::helper('logicbroker')->getConfigObject('apiconfig/helpurl/link'); ?>' target='magento_page_help'>Need help from logicbroker?</a>"
+				});
+			}
+		}    
+//]]>
+</script>
 
 <div class="logicbroker">
-<div class="logicbroker-notice">
-
+	<div class="logicbroker-notice"></div>
+	<div class="title" style="border-bottom: 1px double #000000;">
+		<h4 style="">Getting Started</h4>
+	</div>
+	<div class="clear"></div>
+	<div style="padding-top: 50px;">
+		<div style="clear: right">
+			<b><span>Step 1:</span>&nbsp; Create a logicbroker account </b>
 </div>
-<div class="title">
+		<div style="border-bottom: 1px double #000000; padding-bottom: 20px">
+			<span><a target="_blank" href="https://portal.logicbroker.com/sign-up">Click Here to Sign up</a></span>&nbsp; Or if you
+			have an existing account <span><a target="_blank" href="https://portal.logicbroker.com/"> Sign in Here</a></span>
+		</div>
+	</div>
+	<div style="border-bottom: 1px double #000000;padding-bottom: 20px;padding-top: 50px;">
+		<div style="clear: right">
+			<b><span>Step 2:</span>&nbsp; Connect logicbroker to your Magento Admin Panel </b>
+		</div>
     
-    <h1 style=""></h1>
+			<p><span>Create your logicbroker SOAP API User > <a href="<?php echo $this->getUrl('logicbroker/adminhtml_logicbroker/getapidetails') ?>">Click Here to
+					update your logicbroker API key</a></span>&nbsp;(this is like your
+			password)</p>
+			<p>	<span>Login to <a target="_blank" href="https://portal.logicbroker.com/">logicbroker</a> and navigate to <b>Systems
+						Managements > Select Magento dropship360</b> > See screenshot below for fields to fill
+				</span></p>
+				<p>
+				<img border="2" width="950px" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA); ?>logicbroker/System_Setup_Update_Step2.png"/>
+				<img border="2" width="950px" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA); ?>logicbroker/System_Setup_Update.png"/>
+			</p>
+		<p></p>
     
-</div>
-    <div class="logicbroker-form">
-        <div class="logicbroker-addnew">
-          <?php //echo $this->getChildHtml('form') ?> 
-            
-        </div>
-    </div>
-</div>
+		<div style="width:500px;padding-bottom:29px">
+		<div style="width:120px;float:left"><label style= "display: block;width: 185px;padding-right: 15px;padding-top: 1px;">
+			<b>Base Magento URL</b></label>
+		</div>
+		<div style="width: 291px; padding-right: 5px;float:left">
+			<input	id="logicbroker_integration_integration_magento_base_url" value="<?php echo Mage::getBaseUrl( Mage_Core_Model_Store::URL_TYPE_WEB, true ); ?>" style="width: 274px;padding: 2px;" type="text" readonly="readonly">
+		</div>
+		</div>
+		<div class="clear"></div>
+		<div style="width:500px;padding-bottom:29px">
+		<div style="width:120px;float:left"><label style= "display: block;width: 185px;padding-right: 15px;padding-top: 1px;">
+			<b>Magento Version</b></label>
+		</div>
+		<div style="width: 291px; padding-right: 5px;float:left">
+			<input	id="logicbroker_integration_integration_magento_base_url" value="<?php echo Mage::getVersion() ?>" style="width:274px;padding: 2px;" type="text" readonly="readonly">
+		</div>
+		</div>
+		<div class="clear"></div>
+		<div style="float:left;">
+			<div style="width:120px;float:left"><label style= "display: block;width: 185px;padding-right: 15px;padding-top: 1px;">
+				<b>Magento Store IDs</b></label>
+			</div>
+		</div>
+		<div style="width: 247px; float:left;border:2px #000 solid;">
+				<div style="background:grey;color:#fff;font-weight:bold;text-align: center;">
+					<div style="float:left; width:50px;margin: 0 15px 0 0;background:grey;">ID</div>
+					<div style="float:left; width:177px">Store Name</div>
+					<div style="clear:both;"></div>
+				</div>
+				<div>
+				<ul>
+				<?php foreach($this->getStoreList() as $storeDetail): ?>
+						<li>
+							<div style="float:left; width:50px;margin: 0 15px 0 0;"><input	id="logicbroker_integration_integration_store_list_val" value="<?php echo $storeDetail['value'] ?>" style="width:50px;padding: 2px;margin: 0 0 0 5px;" type="text" readonly="readonly"></div>
+							<div style="float:left; width:177px"><input	id="logicbroker_integration_integration_store_list_label" value="<?php echo $storeDetail['label'] ?>" style="padding: 2px;" type="text" readonly="readonly"></div>
+							<div style="clear:both;"></div>							
+						</li>
+				<?php endforeach; ?>
+				</ul>
+				</div>
+				
+			</div>
+			<div class="clear"></div>
+	</div>
+	<div class="clear"></div>
+	<div style="padding-top: 50px;">
+		<p >
+			<b><span>Step 3:</span>&nbsp; Add to Supplier/Warehouse </b>
+		</p>
+		<p>
+				<span>Login to <a href="https://portal.logicbroker.com/">logicbroker</a> and navigate to <b>Supplier/Warehouse
+						Management > Click Add New Supplier </b> 
+				</span>
+		</p>
+		<p >
+				<span>The MagVendID Supplier Code must match to the Vendor ID assigned to your supplier set up in the logicbroker Portal. </span> See the below screenshot
+		</p>
+		<p>
+				<img border="2" width="950px" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA); ?>logicbroker/Supplier_Ranking.png"/>
+		</p>
+		<div style="clear:right;padding-bottom:50px"></div>
+		<p>
+				<p>Congratulations, you are now connected to logicbroker. You can now set up your Sourcing Logic rules and Automatic Inventory Update settings</p>
+				<p>For support and help on setting these up please go to <a target="_blank" href="http://help.logicbroker.com/hc/en-us/categories/200150359-dropship360">http://help.logicbroker.com/hc/en-us/categories/200150359-dropship360</a></p>
+				<p>If you have any questions or encounter any issues setting this up please contact <a href="mailto:support@logicbroker.com">support@logicbroker.com</a></p>
+		</p>
+	</div>
+	</div>

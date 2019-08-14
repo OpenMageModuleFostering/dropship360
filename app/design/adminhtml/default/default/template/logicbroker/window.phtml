@@ -1,32 +1,14 @@
 <?php
 /**
- * Magento
+ * Logicbroker
  *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magentocommerce.com for more information.
- *
- * @category    design
- * @package     default_default
- * @copyright   Copyright (c) 2014 Magento Inc. (http://www.magentocommerce.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ * @category    Community
+ * @package     Logicbroker_Dropship360
  */
 ?>
 
 <?php if ($this->canShow()): ?>
-<?php $msg =  $this->getNoticeMessageText();  //print_r($msg); die; ?>
+<?php $msg =  $this->getNoticeMessageText();?>
 <script type="text/javascript">
 //<![CDATA[
     var messagePopupClosed = false;
@@ -63,10 +45,12 @@
 
 	function saveSaopApi()
 	{
-		$('save_button').disabled = true;
+		$('save_button').addClassName('disabled');		
+        $('save_button').disable();
 		if($('api_key').value.length <= 0 ){
 			$('advice-required-entry').show();
 			$('save_button').disabled = false;
+			$('save_button').removeClassName('disabled');
 			return;
 			}
 		new Ajax.Request('<?php echo $this->getUrl('logicbroker/adminhtml_sourcing/saveSoapApi') ?>',
@@ -76,16 +60,14 @@
 				 onSuccess: function(transport){
 					 
 				   var response = transport.responseText.evalJSON() || "no response text";
-				   //alert(response.message);
 				   $('save_button_text').innerHTML = response.message;
 				   $('success').value = response.success
 				   $('api_key').disabled = true;
-				   $('advice-required-entry').hide();
-				   //$('save_button').disabled = true;
-				   
+				   $('advice-required-entry').hide();	   
 				   },
-				 onFailure: function(){ alert('Something went wrong...') 
+				 onFailure: function(){ alert('Something went wrong...please close popup save API password manually (system->web services->SOPA/XML-RPC-Users->logicbroker)') 
 					 $('success').value = 1
+					 $('save_button').removeClassName('disabled');
 					 $('save_button').disabled = false;
 					 }
 				});
